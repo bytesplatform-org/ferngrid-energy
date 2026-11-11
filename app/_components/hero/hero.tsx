@@ -1,95 +1,111 @@
 import { Fragment } from "react";
-import { getImageProps } from "next/image";
-import { HERO_MODE } from "@/lib/config";
+import Image from "next/image";
 import { HOME } from "@/lib/content";
-import { HERO_FRAME_HEIGHT, HERO_FRAME_WIDTH } from "@/lib/hero-frames";
-import banner from "@/public/images/home-banner.webp";
+import poster from "@/public/hero/poster.jpg";
 import { HeroStage } from "./hero-stage";
-import { MonoLink, PillLink } from "../ui/primitives";
+import { HeroAnnotations, LlcRing } from "./hero-annotations";
+import { MonoLink, PillLink, cx } from "../ui/primitives";
 
-const BACKDROP_ALT = "Wind turbines along a snow-covered ridge under a heavy grey sky";
-
-/**
- * Poster frame as the LCP image; under prefers-reduced-motion the browser
- * picks the static Home banner instead (art direction via <picture>).
- */
-function Backdrop() {
-  const common = { alt: BACKDROP_ALT, sizes: "100vw" };
-  const {
-    props: { srcSet: bannerSrcSet },
-  } = getImageProps({ ...common, src: banner });
-  const { props: poster } = getImageProps({
-    ...common,
-    src: "/hero/poster.jpg",
-    width: HERO_FRAME_WIDTH,
-    height: HERO_FRAME_HEIGHT,
-    fetchPriority: "high",
-    loading: "eager",
-  });
-
-  return (
-    <picture>
-      <source media="(prefers-reduced-motion: reduce)" srcSet={bannerSrcSet} sizes="100vw" />
-      {/* eslint-disable-next-line jsx-a11y/alt-text -- alt comes from getImageProps */}
-      <img {...poster} className="absolute inset-0 size-full object-cover" />
-    </picture>
-  );
-}
-
-/** Splits a line into masked words for the word-by-word tagline reveal. */
-function Words({ text, italic }: { text: string; /** accent word (fern) */ italic?: boolean }) {
-  return text.split(" ").map((w, i) => (
-    <Fragment key={i}>
-      {i > 0 && " "}
-      <span className="-mb-[0.12em] inline-block overflow-hidden pb-[0.12em] align-bottom">
-        <span data-word className={italic ? "inline-block text-fern" : "inline-block"}>
-          {w}
-        </span>
-      </span>
-    </Fragment>
-  ));
-}
+/** The verbatim tagline, split into its two display lines of words. */
+const TAGLINE_WORDS = HOME.hero.tagline.split(" ");
+const TAGLINE = [TAGLINE_WORDS.slice(0, 4), TAGLINE_WORDS.slice(4)];
 
 export function Hero() {
   const { hero } = HOME;
 
   return (
-    <HeroStage mode={HERO_MODE} backdrop={<Backdrop />}>
+    <HeroStage
+      backdrop={
+        <Image
+          src={poster}
+          alt="Wind turbines along a snow-covered ridge under a heavy grey sky"
+          fill
+          preload
+          sizes="100vw"
+          placeholder="blur"
+          className="object-cover"
+        />
+      }
+    >
       <p className="sr-only">
-        Background footage: a drone rises over a snowy ridge lined with wind turbines, then the view opens onto a
+        Background video: a drone rises over a snowy ridge lined with wind turbines, then the view opens onto a
         cloud-filled valley crossed by a transmission line.
       </p>
 
-      {/* Centre: wordmark (h1) and tagline */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-10 px-5 pt-16 text-center md:gap-14">
-        <div data-hero-wordmark>
-          <h1 id="hero-title" className="font-display flex flex-col items-center uppercase">
-            <span className="mb-1 block pl-[0.55em] text-[clamp(1.1rem,2.2vw,2.1rem)] tracking-[0.55em] text-paper/85">
+      {/*
+        Centre: wordmark (h1) and tagline. With motion, only the wordmark shows at
+        first; scrolling blurs it out and blurs the tagline in word by word in the
+        same spot (see HeroStage). Without JS / under reduced motion both are
+        simply stacked.
+      */}
+      <div
+        data-hero-text
+        className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-10 px-5 pt-16 text-center md:gap-14"
+      >
+        <div data-hero-wordmark className="relative">
+          <HeroAnnotations />
+          {/*
+            Balanced lockup: a semibold FERNGRID over a light ENERGY, sized so both
+            lines run the same width; LLC sits as a fern badge on a full-width rule.
+          */}
+          <h1 id="hero-title" className="font-display inline-flex flex-col items-stretch uppercase">
+            <span
+              data-wm-line
+              className="block text-center text-[clamp(3rem,9.6vw,11rem)] leading-[0.86] font-semibold tracking-[0.06em]"
+            >
               FernGrid
             </span>{" "}
-            <span className="flex items-start">
-              <span className="text-hero block">Energy</span>{" "}
-              <span className="text-label mt-[0.6em] ml-2 block text-paper/80 md:ml-3">LLC</span>
+            <span
+              data-wm-line
+              className="block text-center text-[clamp(4rem,12.8vw,14.7rem)] leading-[0.86] font-normal tracking-[0.04em]"
+            >
+              Energy
+            </span>{" "}
+            <span className="mt-[clamp(0.75rem,1.6vw,1.75rem)] flex items-center gap-[clamp(0.75rem,1.4vw,1.5rem)]">
+              <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-transparent to-paper/80" />
+              <span className="relative">
+                <LlcRing />
+                <span className="relative block rounded-full bg-fern px-[1.1em] py-[0.5em] pl-[1.55em] font-mono text-[clamp(0.75rem,1vw,1.05rem)] font-medium tracking-[0.45em] text-carbon shadow-[0_8px_24px_-12px_rgb(0_0_0/0.6)]">
+                LLC
+              </span>
+              </span>
+              <span aria-hidden className="h-px flex-1 bg-gradient-to-l from-transparent to-paper/80" />
             </span>
           </h1>
         </div>
 
-        <div data-hero-tagline data-hero-phase="2" className="px-5">
-          <p className="font-display max-w-[18ch] text-[clamp(2.25rem,5vw,4.5rem)] leading-[0.95] text-balance md:max-w-none">
-            <span className="block">
-              <Words text="Reliable Software Starts with" />
-            </span>{" "}
-            <span className="block">
-              <Words text="Reliable" />{" "}
-              <Words text="Engineering" italic />
-            </span>
+        <div
+          data-hero-tagline
+          className="motion-safe:[.js_&]:absolute motion-safe:[.js_&]:inset-0 motion-safe:[.js_&]:flex motion-safe:[.js_&]:items-center motion-safe:[.js_&]:justify-center motion-safe:[.js_&]:pt-16"
+        >
+          <p
+            className="font-display max-w-[18ch] px-5 text-[clamp(2.25rem,5vw,4.5rem)] leading-[0.95] text-balance md:max-w-none motion-safe:[.js_&]:max-w-[16ch] motion-safe:[.js_&]:text-[clamp(3.25rem,8vw,9rem)] motion-safe:[.js_&]:leading-[0.92]"
+          >
+            {TAGLINE.map((line, l) => (
+              <Fragment key={l}>
+                {l > 0 && " "}
+                <span className="block">
+                  {line.map((w, i) => (
+                    <Fragment key={w}>
+                      {i > 0 && " "}
+                      <span
+                        data-hero-word
+                        className={cx("inline-block motion-safe:[.js_&]:invisible motion-safe:[.js_&]:opacity-0", w === "Engineering" && "text-fern")}
+                      >
+                        {w}
+                      </span>
+                    </Fragment>
+                  ))}
+                </span>
+              </Fragment>
+            ))}
           </p>
         </div>
       </div>
 
       {/* Bottom bar */}
       <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-4 px-5 pb-6 md:px-10 md:pb-10">
-        <div data-hero-phase="1" className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-6">
+        <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-6">
           <PillLink href={hero.buttons.learn.href} tone="paper" icon="up-right">
             {hero.buttons.learn.label}
           </PillLink>
@@ -97,12 +113,9 @@ export function Hero() {
             {hero.buttons.explore.label}
           </MonoLink>
         </div>
-
-        <div data-hero-phase="2" data-hero-contact>
-          <PillLink href={hero.buttons.contact.href} tone="fern" icon="up-right">
-            {hero.buttons.contact.label}
-          </PillLink>
-        </div>
+        <PillLink href={hero.buttons.contact.href} tone="fern" icon="up-right">
+          {hero.buttons.contact.label}
+        </PillLink>
       </div>
     </HeroStage>
   );

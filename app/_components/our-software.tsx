@@ -1,68 +1,367 @@
-import Image from "next/image";
-import { FRAGMENTS, HOME, ROUTES } from "@/lib/content";
-import { FadeUp, SplitReveal } from "./motion/reveal";
-import { Parallax } from "./motion/parallax";
-import { MonoLink, SectionLabel } from "./ui/primitives";
-import softwareImg from "@/public/images/our-software.webp";
+"use client";
 
-/** 01 / Our Software — light editorial split, Trident's "damage starts quietly" layout. */
+import Image from "next/image";
+import { Fragment, useRef, useState } from "react";
+import { FRAGMENTS, HOME, ROUTES } from "@/lib/content";
+import { gsap, ScrollTrigger, useGSAP, MQ } from "./motion/gsap";
+import { MonoLink, PillLink, cx } from "./ui/primitives";
+import softwareImg from "@/public/images/our-software.webp";
+import gridImg from "@/public/images/fest-1.webp";
+
+/** Scroll distance the story stays pinned for. */
+const PIN_LENGTH = "+=340%";
+
+/** Phrases in the (verbatim) paragraph that light up in fern. */
+const HIGHLIGHTS = [
+  "Fuel and Energy Security Tool (FEST)",
+  "Near Term Energy Reliability Assessments (ERA)",
+  "Balancing Authorities",
+  "April 2027",
+  "NERC BAL-007-1",
+];
+
+/** Split the paragraph into words, flagging those inside a highlight phrase. */
+function splitWords(text: string) {
+  const marks = new Array(text.length).fill(false);
+  for (const phrase of HIGHLIGHTS) {
+    let i = text.indexOf(phrase);
+    while (i !== -1) {
+      for (let k = i; k < i + phrase.length; k++) marks[k] = true;
+      i = text.indexOf(phrase, i + phrase.length);
+    }
+  }
+  const words: { w: string; hi: boolean }[] = [];
+  let pos = 0;
+  for (const w of text.split(" ")) {
+    words.push({ w, hi: marks[pos] });
+    pos += w.length + 1;
+  }
+  return words;
+}
+
+/** Spec cards: structural labels with values taken from the copy. */
+const SPECS = [
+  { label: "Product", value: "Fuel and Energy Security Tool (FEST)", at: "lg:top-[16%] lg:right-[6%]" },
+  { label: "Standard", value: "NERC BAL-007-1", at: "lg:top-[38%] lg:right-[22%]" },
+  { label: "Timeline", value: FRAGMENTS.beginningApril.replace(/\.$/, ""), at: "lg:top-[52%] lg:right-[4%]" },
+  { label: "For", value: "Balancing Authorities", at: "lg:top-[72%] lg:right-[18%]" },
+];
+
+/**
+ * 01 / Our Software — a pinned, scroll-scrubbed story (Trident-style):
+ * 1. "OUR SOFTWARE" rises in, huge; then rolls out as "BEGINNING APRIL 2027." rolls in.
+ * 2. Two photos fly in from opposite corners across the title (grid → software).
+ * 3. They converge; the software photo expands to fill the screen.
+ * 4. The paragraph brightens word by word, key terms in fern.
+ * 5. Spec cards pop in, then the CTA; the pin releases.
+ * Static editorial layout without JS / under reduced motion.
+ */
 export function OurSoftware() {
   const { ourSoftware } = HOME;
+  const ref = useRef<HTMLElement>(null);
+  const [story, setStory] = useState(false);
+  const words = splitWords(ourSoftware.body);
+  const [line1, ...rest] = FRAGMENTS.beginningApril.split(" ");
+  const titleLines = [[line1], rest];
+
+  // Story layout whenever motion is allowed.
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add(MQ.motion, () => {
+      setStory(true);
+      return () => setStory(false);
+    });
+  });
+
+  useGSAP(
+    () => {
+      const section = ref.current;
+      if (!story || !section) return;
+      const q = gsap.utils.selector(section);
+      const cardA = q("[data-card='a']")[0];
+      const cardB = q("[data-card='b']")[0];
+      const W = () => window.innerWidth;
+      const H = () => window.innerHeight;
+      const cw = () => (W() < 768 ? W() * 0.7 : W() * 0.34);
+      const ch = () => cw() * 0.64;
+
+      // Cards start hidden and fully off-screen (past the corner by their own size).
+      gsap.set([cardA, cardB], { xPercent: -50, yPercent: -50, width: cw, height: ch, autoAlpha: 0 });
+      const offX = () => W() / 2 + cw() * 0.75 + 60;
+      const offY = () => H() / 2 + ch() * 0.75 + 60;
+
+      const tl = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: section,
+          start: "top top",
+          end: PIN_LENGTH,
+          pin: true,
+          scrub: 0.7,
+          invalidateOnRefresh: true,
+        },
+      });
+
+      // 1. "Our Software" rises in as the section arrives (before the pin locks)
+      gsap.from(q("[data-heading-word]"), {
+        yPercent: 115,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: { trigger: section, start: "top 80%", end: "top 15%", scrub: 0.6 },
+      });
+
+      tl
+        // 1b. "Our Software" rolls out, "Beginning April 2027." rolls in
+        .to(q("[data-heading-word]"), { yPercent: -115, duration: 0.07, stagger: 0.025, ease: "power3.in" }, 0.01)
+        .fromTo(
+          q("[data-title-word]"),
+          { yPercent: 115 },
+          { yPercent: 0, duration: 0.08, stagger: 0.03, ease: "power3.out" },
+          0.07,
+        )
+        // 2. photos fly in from opposite corners, crossing the title
+        .fromTo(
+          cardA,
+          { x: () => -offX(), y: () => offY(), rotate: -14, autoAlpha: 0 },
+          { x: () => -W() * 0.14, y: () => H() * 0.1, rotate: -4, autoAlpha: 1, duration: 0.3, ease: "power2.out" },
+          0.19,
+        )
+        .fromTo(
+          cardB,
+          { x: () => offX(), y: () => -offY(), rotate: 14, autoAlpha: 0 },
+          { x: () => W() * 0.15, y: () => -H() * 0.12, rotate: 5, autoAlpha: 1, duration: 0.3, ease: "power2.out" },
+          0.23,
+        )
+        // 3. converge, then the software photo fills the screen
+        .to([cardA, cardB], { x: 0, y: 0, rotate: 0, duration: 0.12, ease: "power2.inOut" }, 0.54)
+        .to(cardB, { autoAlpha: 0, scale: 0.9, duration: 0.05 }, 0.64)
+        .to(cardA, { width: W, height: H, borderRadius: 0, duration: 0.14, ease: "power2.inOut" }, 0.66)
+        .to(q("[data-on-image]"), { color: "#f8f9f7", duration: 0.08 }, 0.7)
+        .to(q("[data-shade]"), { autoAlpha: 1, duration: 0.1 }, 0.72)
+        // 4. title leaves; paragraph brightens word by word
+        .to(q("[data-title]"), { yPercent: -35, autoAlpha: 0, filter: "blur(12px)", duration: 0.08 }, 0.78)
+        .to(q("[data-para]"), { autoAlpha: 1, duration: 0.03 }, 0.8)
+        .fromTo(
+          q("[data-word]"),
+          { opacity: 0.14 },
+          { opacity: 1, duration: 0.02, stagger: 0.17 / words.length },
+          0.82,
+        )
+        // 5. spec cards, then the CTA
+        .fromTo(
+          q("[data-spec]"),
+          { autoAlpha: 0, y: 30, scale: 0.94 },
+          { autoAlpha: 1, y: 0, scale: 1, duration: 0.05, stagger: 0.03, ease: "power3.out" },
+          1,
+        )
+        .fromTo(q("[data-cta]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.04 }, 1.11)
+        .to({}, { duration: 0.04 });
+
+      // This pin is created after a state change, so re-order and re-measure.
+      ScrollTrigger.sort();
+      ScrollTrigger.refresh();
+    },
+    { scope: ref, dependencies: [story], revertOnUpdate: true },
+  );
+
   return (
     <section
+      ref={ref}
       id="our-software"
       aria-labelledby="our-software-title"
-      className="surface-light relative bg-paper px-5 pt-24 pb-[22vh] md:px-10 md:pt-36"
+      className={cx(
+        "surface-light arc-prev relative bg-paper",
+        story ? "h-svh overflow-hidden" : "px-5 pt-24 md:px-10 md:pt-36",
+      )}
     >
-      <div className="mx-auto grid max-w-[1600px] gap-14 lg:grid-cols-12 lg:gap-10">
-        <div className="lg:col-span-7 lg:pr-6">
-          <SectionLabel index="01">Our Software</SectionLabel>
-          <h2 id="our-software-title" className="mt-10 text-sm font-medium tracking-tight text-muted">
-            {ourSoftware.title}
-          </h2>
-
-          <SplitReveal
-            as="p"
-            className="font-condensed text-condensed-xl mt-4 max-w-[10ch] uppercase lg:text-[clamp(4rem,9.5vw,10rem)]"
+      {/* Inner wrapper: the next section's parallax moves this, never the pinned section. */}
+      <div data-software-inner className={cx(story && "absolute inset-0")}>
+        <div className={cx(story ? "absolute inset-0" : "mx-auto grid max-w-[1600px] gap-14 lg:grid-cols-12 lg:gap-10")}>
+          {/* Photos (story: flying cards; static: the right-hand figure) */}
+          {story && (
+            <div
+              data-card="b"
+              className="absolute top-1/2 left-1/2 z-10 overflow-hidden rounded-[18px] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.55)]"
+            >
+              <Image src={gridImg} alt="" fill sizes="40vw" className="photo object-cover" />
+            </div>
+          )}
+          <figure
+            data-card={story ? "a" : undefined}
+            className={cx(
+              "overflow-hidden",
+              story
+                ? "absolute top-1/2 left-1/2 z-10 rounded-[18px] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.55)]"
+                : "relative aspect-[3/4] bg-paper-warm lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:mt-28",
+            )}
           >
-            {FRAGMENTS.beginningApril}
-          </SplitReveal>
-
-          <FadeUp className="mt-10 max-w-[60ch] md:mt-14">
-            <p className="text-base leading-relaxed text-muted md:text-lg">{ourSoftware.body}</p>
-
-            <dl className="text-label mt-10 grid gap-px border-y border-line sm:grid-cols-2">
-              <div className="flex flex-col gap-2 py-4 sm:pr-6">
-                <dt className="text-muted">Product</dt>
-                <dd className="text-fg">Fuel and Energy Security Tool (FEST)</dd>
-              </div>
-              <div className="flex flex-col gap-2 border-line py-4 sm:border-l sm:pl-6">
-                <dt className="text-muted">Standard</dt>
-                <dd className="text-fg">NERC BAL-007-1</dd>
-              </div>
-            </dl>
-
-            <MonoLink href={ROUTES.fest} className="mt-8 text-carbon">
-              {HOME.closing.buttons.explore.label}
-            </MonoLink>
-          </FadeUp>
-        </div>
-
-        <figure className="relative lg:col-span-5 lg:mt-28">
-          <Parallax className="relative aspect-[3/4] overflow-hidden bg-paper-warm" amount={10}>
             <Image
               src={softwareImg}
               alt="Greyscale desk at dusk: a monitor showing source code beside a desk lamp, laptop and keyboard"
               fill
-              sizes="(min-width: 1024px) 40vw, 100vw"
+              sizes={story ? "100vw" : "(min-width: 1024px) 40vw, 100vw"}
               placeholder="blur"
               className="photo object-cover"
             />
-          </Parallax>
-          <figcaption className="text-label absolute top-4 left-4 z-10 rounded-full bg-paper px-3 py-1.5 text-carbon">
-            FEST
-          </figcaption>
-        </figure>
+            {story && (
+              <div
+                data-shade
+                aria-hidden
+                className="invisible absolute inset-0 opacity-0 [background:linear-gradient(to_right,rgb(18_22_10/0.88),rgb(18_22_10/0.55)_55%,rgb(18_22_10/0.35)),linear-gradient(to_top,rgb(18_22_10/0.6),transparent_45%)]"
+              />
+            )}
+            {!story && (
+              <figcaption className="text-label absolute top-4 left-4 z-10 rounded-full bg-paper px-3 py-1.5 text-carbon">
+                FEST
+              </figcaption>
+            )}
+          </figure>
+
+          {/* Titles: "Our Software" first, then "Beginning April 2027." in the same spot */}
+          <div className={cx(story ? "pointer-events-none absolute inset-0 z-20" : "lg:col-span-7 lg:row-start-1 lg:pr-6")}>
+            <div
+              data-title
+              className={cx(story && "absolute inset-0 grid place-items-center px-5 text-center")}
+            >
+              <h2
+                id="our-software-title"
+                className={cx(
+                  "font-condensed uppercase",
+                  story
+                    ? "col-start-1 row-start-1 text-[clamp(3.5rem,13vw,15rem)] leading-[0.86] text-carbon"
+                    : "text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.9]",
+                )}
+              >
+                {story
+                  ? ourSoftware.title.split(" ").map((w, i) => (
+                      <Fragment key={w}>
+                        {i > 0 && " "}
+                        <span className="block overflow-hidden pb-[0.04em]">
+                          <span data-heading-word className="inline-block">
+                            {w}
+                          </span>
+                        </span>
+                      </Fragment>
+                    ))
+                  : ourSoftware.title}
+              </h2>
+
+              <p
+                data-on-image
+                className={cx(
+                  "font-condensed uppercase",
+                  story
+                    ? "col-start-1 row-start-1 text-[clamp(3.5rem,13vw,15rem)] leading-[0.86] text-carbon"
+                    : "text-condensed-xl mt-6 max-w-[10ch] lg:text-[clamp(4rem,9.5vw,10rem)]",
+                )}
+              >
+                {titleLines.map((line, l) => (
+                  <Fragment key={l}>
+                    {l > 0 && " "}
+                    <span className={cx("block", story && "overflow-hidden pb-[0.04em]")}>
+                      {story ? (
+                        <span data-title-word className="inline-block">
+                          {line.join(" ")}
+                        </span>
+                      ) : (
+                        line.join(" ")
+                      )}
+                    </span>
+                  </Fragment>
+                ))}
+              </p>
+            </div>
+          </div>
+
+          {/* Paragraph, specs, CTA */}
+          <div
+            className={cx(
+              story
+                ? "pointer-events-none absolute inset-0 z-20"
+                : "max-w-[60ch] lg:col-span-7 lg:row-start-2",
+            )}
+          >
+            <div
+              data-para
+              className={cx(
+                story &&
+                  "invisible absolute top-1/2 left-5 w-[min(88vw,640px)] -translate-y-1/2 opacity-0 md:left-10 lg:w-[44vw] lg:max-w-[760px]",
+              )}
+            >
+              <p
+                className={cx(
+                  story
+                    ? "font-display text-[clamp(1.35rem,2.3vw,2.6rem)] leading-[1.16] text-paper"
+                    : "text-base leading-relaxed text-muted md:text-lg",
+                )}
+              >
+                {story
+                  ? words.map(({ w, hi }, i) => (
+                      <Fragment key={i}>
+                        {i > 0 && " "}
+                        <span data-word className={cx(hi && "text-fern")}>
+                          {w}
+                        </span>
+                      </Fragment>
+                    ))
+                  : ourSoftware.body}
+              </p>
+            </div>
+
+            <dl
+              className={cx(
+                story
+                  ? "hidden lg:block"
+                  : "text-label mt-10 grid gap-px border-y border-line sm:grid-cols-2",
+              )}
+            >
+              {SPECS.map((s, i) =>
+                story ? (
+                  <div
+                    key={s.label}
+                    data-spec
+                    className={cx(
+                      "invisible absolute w-[min(24vw,340px)] rounded-[16px] bg-paper/95 p-5 text-carbon opacity-0 shadow-[0_24px_60px_-24px_rgb(0_0_0/0.6)] backdrop-blur-sm",
+                      s.at,
+                    )}
+                  >
+                    <span aria-hidden className="absolute -top-1.5 -left-1.5 flex size-3">
+                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-fern opacity-60" />
+                      <span className="relative inline-flex size-3 rounded-full bg-fern" />
+                    </span>
+                    <dt className="text-label text-carbon/60">
+                      {String(i + 1).padStart(2, "0")} — {s.label}
+                    </dt>
+                    <dd className="font-display mt-2 text-[clamp(1.1rem,1.5vw,1.6rem)] leading-tight">{s.value}</dd>
+                  </div>
+                ) : (
+                  // Static: the original two-column meta row (Product, Standard).
+                  i < 2 && (
+                    <div
+                      key={s.label}
+                      className={cx("flex flex-col gap-2 py-4", i === 0 ? "sm:pr-6" : "border-line sm:border-l sm:pl-6")}
+                    >
+                      <dt className="text-muted">{s.label}</dt>
+                      <dd className="text-fg">{s.value}</dd>
+                    </div>
+                  )
+                ),
+              )}
+            </dl>
+
+            {story ? (
+              <div data-cta className="pointer-events-auto invisible absolute right-5 bottom-[8%] opacity-0 md:right-10">
+                <PillLink href={ROUTES.fest} tone="paper" size="lg">
+                  {HOME.closing.buttons.explore.label}
+                </PillLink>
+              </div>
+            ) : (
+              <MonoLink href={ROUTES.fest} className="mt-8 text-carbon">
+                {HOME.closing.buttons.explore.label}
+              </MonoLink>
+            )}
+          </div>
+        </div>
       </div>
     </section>
   );

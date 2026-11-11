@@ -1,197 +1,199 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { gsap, ScrollTrigger, useGSAP, MQ } from "../motion/gsap";
-import { FrameSequence, drawCover } from "./frame-sequence";
-import { HERO_FRAME_COUNT } from "@/lib/hero-frames";
+import { gsap, useGSAP, MQ } from "../motion/gsap";
+import { HeroGrid } from "./hero-grid";
 
-type Props = {
-  mode: "scrub" | "video";
-  backdrop: ReactNode;
-  children: ReactNode;
-};
+/** Scroll distance the hero stays pinned for the headline swap. */
+const PIN_LENGTH = "180%";
+/** Max drift (px) at the hero's edges: the video moves against the cursor, the text with it. */
+const DRIFT = 32;
+const GRID_DRIFT = 14;
+const TEXT_DRIFT = 14;
+/** Extra drift for the annotations on top of the text's (nearest layer). */
+const ANNO_DRIFT = 12;
+/** Over-scale so the video drift never reveals an edge. */
+const SCALE = 1.08;
 
-const frameUrl = (dir: "frames" | "frames-sm") => (i: number) =>
-  `/hero/${dir}/f_${String(i + 1).padStart(3, "0")}.webp`;
-
-/** Scroll timing (fractions of the pinned scroll). Frames 100–114 dissolve at ≈0.52–0.60. */
-const T = {
-  phase1Out: 0.28,
-  wordmarkOut: 0.3,
-  taglineIn: 0.535,
-  wordsStart: 0.565,
-  contactIn: 0.72,
-} as const;
+const VIDEO_SRC = "/hero/hero.mp4";
 
 /**
- * Client stage for the hero. Owns the canvas / video layer and the pinned
- * ScrollTrigger timeline. All text is server-rendered by the parent and passed
- * as children, so the hero is complete before (and without) JS.
+ * Hero section shell.
+ * - Background: the poster still (server-rendered, LCP) with a looping muted
+ *   video faded in over it once it plays. The video only loads when motion is
+ *   allowed and pauses while the hero is off screen.
+ * - Cursor parallax (mouse/trackpad only; off under reduced motion): the video
+ *   drifts against the cursor and the centre text drifts with it.
  */
-export function HeroStage({ mode, backdrop, children }: Props) {
+export function HeroStage({ backdrop, children }: { backdrop: ReactNode; children: ReactNode }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Scrub mode: frame sequence + pinned timeline.
+  useEffect(() => {
+    const video = videoRef.current;
+    const section = sectionRef.current;
+    if (!video || !section || !window.matchMedia(MQ.motion).matches) return;
+
+    const show = () => video.classList.replace("opacity-0", "opacity-100");
+    video.addEventListener("playing", show, { once: true });
+    video.src = VIDEO_SRC;
+
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) video.play().catch(() => {});
+      else video.pause();
+    });
+    io.observe(section);
+
+    return () => {
+      io.disconnect();
+      video.removeEventListener("playing", show);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    };
+  }, []);
+
+  // Pinned, scroll-scrubbed headline swap: the wordmark blurs out, then the
+  // tagline blurs in word by word. After the pin the hero scrolls away normally.
   useGSAP(
     () => {
-      if (mode !== "scrub") return;
       const mm = gsap.matchMedia();
-
       mm.add(MQ.motion, () => {
         const section = sectionRef.current!;
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext("2d", { alpha: true });
-        if (!ctx) return;
+        const words = section.querySelectorAll<HTMLElement>("[data-hero-word]");
 
-        const small = window.innerWidth < 768;
-        const state = { frame: 0 };
-        let drawn = -1;
-        let size = { w: 0, h: 0 };
-        let lastImg: HTMLImageElement | null = null;
-
-        const render = (force = false) => {
-          const index = Math.round(state.frame);
-          const img = seq.get(index);
-          if (!img || (!force && index === drawn && img === lastImg)) return;
-          ctx.clearRect(0, 0, size.w, size.h);
-          drawCover(ctx, img, size.w, size.h);
-          drawn = index;
-          lastImg = img;
-        };
-
-        const seq = new FrameSequence(HERO_FRAME_COUNT, frameUrl(small ? "frames-sm" : "frames"), {
-          onFrameLoaded: (i) => {
-            // Repaint if the frame we need (or a closer neighbour) just arrived.
-            if (Math.abs(i - Math.round(state.frame)) <= 12) render(true);
-          },
-        });
-
-        const resize = () => {
-          const dpr = Math.min(window.devicePixelRatio || 1, 2);
-          const w = section.clientWidth;
-          const h = section.clientHeight;
-          canvas.width = Math.round(w * dpr);
-          canvas.height = Math.round(h * dpr);
-          size = { w: canvas.width, h: canvas.height };
-          render(true);
-        };
-        const ro = new ResizeObserver(resize);
-        ro.observe(section);
-        resize();
-        seq.start();
-
-        const words = section.querySelectorAll<HTMLElement>("[data-word]");
-        const next = section.nextElementSibling as HTMLElement | null;
-
-        // Let the next section's arc rise over the final frames of the pin.
-        if (next) gsap.set(next, { marginTop: "-40vh" });
-
+        // Annotations + LLC ring draw in on load (they start hidden via their classes).
+        gsap
+          .timeline({ delay: 0.9 })
+          .set("[data-anno], [data-llc-ring]", { autoAlpha: 1 })
+          .fromTo(
+            "[data-anno-path]",
+            { strokeDashoffset: 1 },
+            { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.15 },
+          )
+          .from("[data-anno] span", { autoAlpha: 0, y: 6, duration: 0.6, ease: "power2.out", stagger: 0.12 }, 0.35);
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
             trigger: section,
             start: "top top",
-            end: "+=300%",
+            end: `+=${PIN_LENGTH}`,
             pin: true,
-            scrub: 0.5,
-            anticipatePin: 1,
+            scrub: 0.6,
           },
         });
-
-        tl.to(state, { frame: HERO_FRAME_COUNT - 1, duration: 1, onUpdate: () => render() }, 0)
-          .to("[data-hero-phase='1']", { autoAlpha: 0, y: -20, duration: 0.1, ease: "power2.in" }, T.phase1Out)
-          // Wordmark drifts up slower than the footage and fades.
-          .to("[data-hero-wordmark]", { yPercent: -40, autoAlpha: 0, duration: 0.22, ease: "power1.in" }, T.wordmarkOut)
-          .to("[data-hero-vignette]", { opacity: 1, duration: 0.2 }, 0.45)
-          .to("[data-hero-tagline]", { autoAlpha: 1, duration: 0.01 }, T.taglineIn)
+        tl.to(
+          "[data-hero-wordmark]",
+          { autoAlpha: 0, filter: "blur(20px)", scale: 0.96, duration: 0.3, ease: "power1.in" },
+          0.02,
+        )
           .fromTo(
             words,
-            { yPercent: 115 },
-            { yPercent: 0, duration: 0.07, stagger: 0.022, ease: "power3.out" },
-            T.wordsStart,
+            { autoAlpha: 0, filter: "blur(14px)", y: 18 },
+            { autoAlpha: 1, filter: "blur(0px)", y: 0, duration: 0.14, stagger: 0.09, ease: "power2.out" },
+            0.3,
           )
-          .to("[data-hero-contact]", { autoAlpha: 1, duration: 0.05 }, T.contactIn);
+          // brief hold on the full tagline before the pin releases
+          .to({}, { duration: 0.12 });
+      });
+    },
+    { scope: sectionRef },
+  );
 
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine)", () => {
+        const section = sectionRef.current!;
+        const layer = layerRef.current!;
+        gsap.set(layer, { scale: SCALE });
+        const text = section.querySelector<HTMLElement>("[data-hero-text]");
+        const grid = section.querySelector<HTMLElement>("[data-hero-grid]");
+        const annos = section.querySelector<HTMLElement>("[data-hero-annos]");
+        const ease = { duration: 1.4, ease: "power3.out" };
+        const xTo = gsap.quickTo(layer, "x", ease);
+        const yTo = gsap.quickTo(layer, "y", ease);
+        const txTo = text ? gsap.quickTo(text, "x", ease) : null;
+        const tyTo = text ? gsap.quickTo(text, "y", ease) : null;
+        const gxTo = grid ? gsap.quickTo(grid, "x", ease) : null;
+        const gyTo = grid ? gsap.quickTo(grid, "y", ease) : null;
+        const axTo = annos ? gsap.quickTo(annos, "x", ease) : null;
+        const ayTo = annos ? gsap.quickTo(annos, "y", ease) : null;
+
+        // Listen on the window (the fixed navbar sits over the hero, so section
+        // events would stop at it); only react while the hero is on screen.
+        const onMove = (e: PointerEvent) => {
+          if (section.getBoundingClientRect().bottom <= 0) return;
+          // -1…1 from the centre of the screen
+          const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+          const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+          xTo(-nx * DRIFT);
+          yTo(-ny * DRIFT);
+          txTo?.(nx * TEXT_DRIFT);
+          tyTo?.(ny * TEXT_DRIFT);
+          gxTo?.(-nx * GRID_DRIFT);
+          gyTo?.(-ny * GRID_DRIFT);
+          axTo?.(nx * ANNO_DRIFT);
+          ayTo?.(ny * ANNO_DRIFT);
+        };
+        const onLeave = () => {
+          xTo(0);
+          yTo(0);
+          txTo?.(0);
+          tyTo?.(0);
+          gxTo?.(0);
+          gyTo?.(0);
+          axTo?.(0);
+          ayTo?.(0);
+        };
+        window.addEventListener("pointermove", onMove, { passive: true });
+        document.documentElement.addEventListener("pointerleave", onLeave);
         return () => {
-          ro.disconnect();
-          seq.dispose();
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          window.removeEventListener("pointermove", onMove);
+          document.documentElement.removeEventListener("pointerleave", onLeave);
         };
       });
     },
-    { scope: sectionRef, dependencies: [mode] },
-  );
-
-  // Video mode: only attach the source when motion is allowed.
-  useEffect(() => {
-    if (mode !== "video") return;
-    const video = videoRef.current;
-    if (!video || !window.matchMedia(MQ.motion).matches) return;
-    video.src = "/hero/hero.mp4";
-    video.play().catch(() => {});
-    return () => {
-      video.pause();
-      video.removeAttribute("src");
-      video.load();
-    };
-  }, [mode]);
-
-  // Subtle entrance for the static hero text (video mode only; scrub owns its own timing).
-  useGSAP(
-    () => {
-      if (mode !== "video") return;
-      const mm = gsap.matchMedia();
-      mm.add(MQ.motion, () => {
-        gsap.from("[data-hero-wordmark] > *, [data-word], [data-hero-phase]", {
-          y: 24,
-          autoAlpha: 0,
-          duration: 1.2,
-          ease: "expo.out",
-          stagger: 0.05,
-          delay: 0.15,
-        });
-        ScrollTrigger.refresh();
-      });
-    },
-    { scope: sectionRef, dependencies: [mode] },
+    { scope: sectionRef },
   );
 
   return (
     <section
       ref={sectionRef}
       id="top"
-      data-hero-mode={mode}
       aria-labelledby="hero-title"
-      className="surface-dark relative z-0 h-svh min-h-[560px] w-full overflow-hidden bg-carbon-deep"
+      className="surface-dark relative z-0 h-[calc(100svh+var(--arc-depth))] min-h-[calc(560px+var(--arc-depth))] w-full overflow-hidden bg-carbon-deep"
     >
-      {backdrop}
+      {/* Inner wrapper: the next section's parallax moves this, never the pinned section itself. */}
+      <div data-hero-inner className="absolute inset-0">
+        <div ref={layerRef} className="absolute inset-0 will-change-transform">
+          {backdrop}
+          <video
+            ref={videoRef}
+            aria-hidden
+            muted
+            loop
+            playsInline
+            preload="none"
+            className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-700"
+          />
+        </div>
 
-      {mode === "scrub" ? (
-        <canvas ref={canvasRef} aria-hidden data-motion-only className="absolute inset-0 size-full" />
-      ) : (
-        <video
-          ref={videoRef}
+        {/* Carbon vignette: radial plus top/bottom so nav and text stay legible. */}
+        <div
           aria-hidden
-          data-motion-only
-          muted
-          loop
-          playsInline
-          preload="none"
-          poster="/hero/poster.jpg"
-          className="absolute inset-0 size-full object-cover"
+          className="pointer-events-none absolute inset-0 [background:radial-gradient(120%_85%_at_50%_40%,transparent_45%,rgb(18_22_10/0.5)_100%),linear-gradient(to_bottom,rgb(18_22_10/0.72)_0%,rgb(18_22_10/0.05)_20%,rgb(18_22_10/0)_42%,rgb(18_22_10/0.55)_72%,rgb(18_22_10/0.45)_100%)]"
         />
-      )}
 
-      {/* Carbon vignette: radial plus top/bottom so nav and text stay legible over bright cloud. */}
-      <div
-        aria-hidden
-        data-hero-vignette
-        className="pointer-events-none absolute inset-0 opacity-85 [background:radial-gradient(120%_85%_at_50%_45%,transparent_45%,rgb(18_22_10/0.6)_100%),linear-gradient(to_bottom,rgb(18_22_10/0.72)_0%,rgb(18_22_10/0.05)_26%,rgb(18_22_10/0)_55%,rgb(18_22_10/0.78)_100%)]"
-      />
+        {/* Power-grid line art (mid depth). */}
+        <div data-hero-grid className="absolute inset-x-0 top-0 h-svh min-h-[560px]">
+          <HeroGrid />
+        </div>
 
-      {children}
+        {/* Content occupies the first screen; the strip below the fold shows through the next section's curve. */}
+        <div className="absolute inset-x-0 top-0 h-svh min-h-[560px]">{children}</div>
+      </div>
     </section>
   );
 }

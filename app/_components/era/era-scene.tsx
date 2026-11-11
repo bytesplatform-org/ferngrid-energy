@@ -62,7 +62,6 @@ export function EraScene() {
         start: "top top",
         end: PIN_LENGTH,
         pin: true,
-        anticipatePin: 1,
         onUpdate: (self) => {
           const p = self.progress;
           setActive(Math.min(STEPS.length - 1, Math.floor((p / STEPS_END) * STEPS.length)));
@@ -132,6 +131,13 @@ export function EraScene() {
     () => {
       if (!pinned) return;
       gsap.to("[data-era-stage]", { autoAlpha: closing ? 0 : 1, duration: 0.6, overwrite: true });
+      // Back to plain carbon for the closing beat so the next section's curved corners match.
+      gsap.to(sectionRef.current, {
+        backgroundColor: closing ? TONES[0] : TONES[active],
+        duration: 1,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
       gsap.to("[data-closing]", { autoAlpha: closing ? 1 : 0, duration: 0.4, overwrite: true });
       gsap.to("[data-closing-word]", {
         yPercent: closing ? 0 : 110,
@@ -173,7 +179,7 @@ export function EraScene() {
       aria-labelledby="era-title"
       className={cx(
         "surface-dark relative z-10 bg-carbon",
-        pinned ? "h-svh overflow-hidden" : "overflow-clip px-5 py-24 md:px-10 md:py-32",
+        pinned ? "h-svh overflow-hidden" : "arc-prev overflow-clip px-5 pt-24 md:px-10 md:pt-32",
       )}
     >
       <div data-era-stage className={cx(pinned && "absolute inset-0")}>

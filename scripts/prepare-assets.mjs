@@ -2,24 +2,19 @@
 /**
  * One-off asset pipeline for the FernGrid homepage.
  *
- *   node scripts/prepare-assets.mjs            # everything
- *   node scripts/prepare-assets.mjs images     # photos + logos only
- *   node scripts/prepare-assets.mjs hero       # hero video derivatives only
+ *   node scripts/prepare-assets.mjs
  *
- * Reads from public/client-sent/ and public/*.mp4 (never modified) and writes:
+ * Reads from public/client-sent/ (never modified) and writes:
  *   public/images/*.webp           optimized greyscale photos
+ *   public/images/og.jpg           1200×630 social card
  *   public/images/logo-*.png       logo mark crops + lockup
  *   app/icon.png, app/apple-icon.png
- *   public/hero/frames/f_###.webp  1280w scrub frames
- *   public/hero/frames-sm/f_###.webp 720w scrub frames (mobile)
- *   public/hero/poster.jpg, end.jpg, hero.mp4
- *   lib/hero-frames.ts             generated HERO_FRAME_COUNT constant
+ *   public/hero/hero.mp4, poster.jpg  hero background video (needs ffmpeg; skipped if absent)
  *
- * Requires ffmpeg on PATH. See scripts/README.md.
+ * See scripts/README.md.
  */
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync, existsSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -28,13 +23,12 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = path.join(ROOT, "public/client-sent");
 const OUT_IMG = path.join(ROOT, "public/images");
 const OUT_HERO = path.join(ROOT, "public/hero");
-const VIDEO = path.join(ROOT, "public/Drone_rising_over_snowy_ridge_8b1688bb.mp4");
+const VIDEO = path.join(ROOT, "public/Drone_rising_over_snowy_ridge_loop.mp4");
 
 const CARBON = { r: 0x1d, g: 0x22, b: 0x0f };
 const PAPER = { r: 0xf8, g: 0xf9, b: 0xf7 };
 const FERN = { r: 0x87, g: 0xa9, b: 0x6b };
 
-const which = process.argv[2] ?? "all";
 
 /* ------------------------------------------------------------------ */
 /* Photos                                                              */
@@ -73,6 +67,14 @@ async function photos() {
     const meta = await sharp(out).metadata();
     console.log(`  images/${name}.webp  ${meta.width}x${meta.height}`);
   }
+
+  // Open Graph / social card from the Home banner.
+  await sharp(path.join(SRC, "Photos/Home_Banner_Greyscale_n40_Brightness.png"), { limitInputPixels: false })
+    .resize(1200, 630, { fit: "cover", position: "centre" })
+    .grayscale()
+    .jpeg({ quality: 82, mozjpeg: true })
+    .toFile(path.join(OUT_IMG, "og.jpg"));
+  console.log("  images/og.jpg  1200x630");
 }
 
 /* ------------------------------------------------------------------ */
@@ -128,18 +130,10 @@ async function logos() {
 }
 
 /* ------------------------------------------------------------------ */
-/* Hero video                                                          */
+/* Hero background video                                               */
 /* ------------------------------------------------------------------ */
 
 const ff = (...args) => execFileSync("ffmpeg", ["-loglevel", "error", "-y", ...args], { stdio: "inherit" });
-
-function ffmpegHasWebp() {
-  try {
-    return execFileSync("ffmpeg", ["-hide_banner", "-encoders"], { encoding: "utf8" }).includes("libwebp");
-  } catch {
-    return false;
-  }
-}
 
 /** The source clip is letterboxed; find the active picture area (e.g. "crop=1280:568:0:76"). */
 function letterboxCrop() {
@@ -154,70 +148,28 @@ function letterboxCrop() {
   return best ? `crop=${best}` : "null";
 }
 
-async function hero() {
-  if (!existsSync(VIDEO)) throw new Error(`Missing ${VIDEO}`);
-  // Crop the letterbox and fully desaturate (the clip has a faint orange lens
-  // flare near the end) so it matches the greyscale photo family.
-  const crop = `${letterboxCrop()},hue=s=0`;
-  console.log(`  filter: ${crop}`);
-  const frames = path.join(OUT_HERO, "frames");
-  const framesSm = path.join(OUT_HERO, "frames-sm");
-  for (const d of [frames, framesSm]) {
-    rmSync(d, { recursive: true, force: true });
-    mkdirSync(d, { recursive: true });
+function heroVideo() {
+  if (spawnSync("ffmpeg", ["-version"]).status !== 0 || !existsSync(VIDEO)) {
+    console.log("  skipped (ffmpeg or source clip missing)");
+    return;
   }
-
-  if (ffmpegHasWebp()) {
-    ff("-i", VIDEO, "-vf", `${crop},scale=1280:-2`, "-c:v", "libwebp", "-quality", "72", path.join(frames, "f_%03d.webp"));
-    ff("-i", VIDEO, "-vf", `${crop},scale=720:-2`, "-c:v", "libwebp", "-quality", "68", path.join(framesSm, "f_%03d.webp"));
-  } else {
-    // Fallback for ffmpeg builds without libwebp (e.g. current Homebrew bottle):
-    // extract lossless PNGs, then encode with sharp at the same sizes/qualities.
-    const tmp = mkdtempSync(path.join(tmpdir(), "ferngrid-frames-"));
-    ff("-i", VIDEO, "-vf", crop, path.join(tmp, "f_%03d.png"));
-    const pngs = readdirSync(tmp).filter((f) => f.endsWith(".png")).sort();
-    await Promise.all(
-      pngs.map(async (f) => {
-        const src = path.join(tmp, f);
-        const base = f.replace(".png", ".webp");
-        await sharp(src).resize({ width: 1280 }).webp({ quality: 72 }).toFile(path.join(frames, base));
-        await sharp(src).resize({ width: 720 }).webp({ quality: 68 }).toFile(path.join(framesSm, base));
-      }),
-    );
-    rmSync(tmp, { recursive: true, force: true });
-  }
-
-  ff("-i", VIDEO, "-vf", crop, "-frames:v", "1", "-q:v", "3", path.join(OUT_HERO, "poster.jpg"));
-  // `-sseof -0.05 -frames:v 1` decodes no frame on some builds; seek back a
-  // little further and keep overwriting so the last decoded frame wins.
-  ff("-sseof", "-0.5", "-i", VIDEO, "-vf", crop, "-update", "1", "-q:v", "3", path.join(OUT_HERO, "end.jpg"));
+  mkdirSync(OUT_HERO, { recursive: true });
+  // Crop the letterbox and fully desaturate (removes a faint orange lens flare).
+  const vf = `${letterboxCrop()},hue=s=0`;
+  ff("-i", VIDEO, "-vf", vf, "-frames:v", "1", "-q:v", "3", path.join(OUT_HERO, "poster.jpg"));
   ff(
-    "-i", VIDEO, "-vf", crop, "-an", "-c:v", "libx264", "-crf", "22", "-preset", "veryfast",
+    "-i", VIDEO, "-vf", vf, "-an", "-c:v", "libx264", "-crf", "22", "-preset", "veryfast",
     "-pix_fmt", "yuv420p", "-movflags", "+faststart", path.join(OUT_HERO, "hero.mp4"),
   );
-
-  const count = readdirSync(frames).filter((f) => f.endsWith(".webp")).length;
-  const first = await sharp(path.join(frames, "f_001.webp")).metadata();
-  writeFileSync(
-    path.join(ROOT, "lib/hero-frames.ts"),
-    `// Generated by scripts/prepare-assets.mjs. Do not edit by hand.\n` +
-      `export const HERO_FRAME_COUNT = ${count};\n` +
-      `export const HERO_FRAME_WIDTH = ${first.width};\n` +
-      `export const HERO_FRAME_HEIGHT = ${first.height};\n`,
-  );
-  console.log(`  hero: ${count} frames (${first.width}x${first.height}) → lib/hero-frames.ts`);
+  console.log(`  hero/hero.mp4, hero/poster.jpg  (${vf})`);
 }
 
 /* ------------------------------------------------------------------ */
 
-if (which === "all" || which === "images") {
-  console.log("Photos");
-  await photos();
-  console.log("Logos");
-  await logos();
-}
-if (which === "all" || which === "hero") {
-  console.log("Hero");
-  await hero();
-}
+console.log("Photos");
+await photos();
+console.log("Logos");
+await logos();
+console.log("Hero video");
+heroVideo();
 console.log("Done.");

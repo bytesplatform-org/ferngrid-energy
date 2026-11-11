@@ -16,7 +16,7 @@ export function ClosingCta() {
     <section
       id="consultation"
       aria-labelledby="closing-title"
-      className="surface-dark relative z-10 overflow-hidden bg-carbon px-5 py-28 md:px-10 md:py-40"
+      className="surface-dark arc-prev relative z-10 overflow-hidden bg-carbon px-5 pt-28 md:px-10 md:pt-40"
     >
       <Parallax className="absolute inset-0" amount={12}>
         <Image

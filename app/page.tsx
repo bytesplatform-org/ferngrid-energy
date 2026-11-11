@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { HERO_MODE } from "@/lib/config";
 import { SITE } from "@/lib/content";
 import { Hero } from "./_components/hero/hero";
 import { Statement } from "./_components/statement";
@@ -21,7 +20,7 @@ export default function HomePage() {
     <>
       <main id="main" className="overflow-x-clip">
         <Hero />
-        <Statement heroMode={HERO_MODE} />
+        <Statement />
         <OurSoftware />
         <CapacityEnergy />
         <EraScene />

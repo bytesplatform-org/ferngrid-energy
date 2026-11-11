@@ -1,5 +1,5 @@
 import { FRAGMENTS, HOME } from "@/lib/content";
-import { ArcTop } from "./motion/arc-top";
+import { ArcSurface } from "./motion/arc-surface";
 import { FadeUp } from "./motion/reveal";
 import { ImageStrip } from "./image-strip";
 import { SectionLabel } from "./ui/primitives";
@@ -31,9 +31,9 @@ export function ServicesTraining() {
   return (
     <section
       aria-labelledby="services-title"
-      className="surface-dark relative z-10 bg-carbon-deep px-5 pt-20 pb-24 md:px-10 md:pt-28 md:pb-32"
+      className="surface-dark arc-next relative z-10 px-5 pb-24 md:px-10 md:pb-32"
     >
-      <ArcTop className="bg-carbon-deep" />
+      <ArcSurface tone="carbon-deep" parallax="#inside-fest" />
       <div className="mx-auto max-w-[1600px]">
         <SectionLabel index="05">Services &amp; Training</SectionLabel>
 

@@ -2,13 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { HOME, ROUTES, SITE } from "@/lib/content";
 import { BigMenu } from "./big-menu";
-import { ArcTop } from "./motion/arc-top";
+import { ArcSurface } from "./motion/arc-surface";
 import lockup from "@/public/images/logo-lockup.png";
 
 export function Footer() {
   return (
-    <footer className="surface-light relative z-10 overflow-x-clip bg-paper-warm px-5 pt-16 pb-8 md:px-10 md:pt-24">
-      <ArcTop className="bg-paper-warm" height="16vh" />
+    <footer className="surface-light arc-next relative z-10 overflow-x-clip px-5 pb-8 md:px-10">
+      <ArcSurface tone="paper-warm" parallax="#consultation" />
 
       {/* Soft fern-tinted arc in the background */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">

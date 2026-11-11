@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Dosis, Geist_Mono, Inter } from "next/font/google";
 import { HOME, SITE } from "@/lib/content";
+import { Cursor } from "./_components/cursor";
 import { Nav } from "./_components/nav";
 import { SmoothScroll } from "./_components/motion/smooth-scroll";
 import "./globals.css";
@@ -38,11 +39,11 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `Home | ${SITE.name}`,
     description: DESCRIPTION,
-    images: [{ url: "/hero/end.jpg", width: 1280, height: 568, alt: "Wind turbines above a cloud-filled valley" }],
+    images: [{ url: "/images/og.jpg", width: 1200, height: 630, alt: "Wind turbines along a snow-covered ridge" }],
   },
   twitter: {
     card: "summary_large_image",
-    images: ["/hero/end.jpg"],
+    images: ["/images/og.jpg"],
   },
 };
 
@@ -58,8 +59,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${dosis.variable} ${inter.variable} ${geistMono.variable} antialiased`}
     >
       <head>
-        {/* Marks JS as available before first paint so motion-only states never hide content without JS. */}
-        <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
+        {/*
+          Before first paint: mark JS as available, and stop the browser restoring the
+          previous scroll position on reload (scroll-driven pages should start at the top).
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "document.documentElement.classList.add('js');if('scrollRestoration' in history)history.scrollRestoration='manual';",
+          }}
+        />
       </head>
       {/* suppressHydrationWarning: browser extensions (e.g. ColorZilla) inject attributes on <body> */}
       <body suppressHydrationWarning>
@@ -72,6 +81,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SmoothScroll />
         <Nav />
         {children}
+        <Cursor />
       </body>
     </html>
   );

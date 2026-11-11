@@ -1,5 +1,5 @@
 import { FRAGMENTS, NERC } from "@/lib/content";
-import { ArcTop } from "./motion/arc-top";
+import { ArcSurface } from "./motion/arc-surface";
 import { FadeUp, SplitReveal } from "./motion/reveal";
 import { FestModel } from "./fest-model";
 import { SectionLabel } from "./ui/primitives";
@@ -10,9 +10,10 @@ export function InsideFest() {
     <section
       id="inside-fest"
       aria-labelledby="inside-fest-title"
-      className="surface-light relative z-10 bg-paper px-5 pt-20 pb-28 md:px-10 md:pt-28 md:pb-40"
+      className="surface-light arc-next arc-prev relative z-10 px-5 md:px-10"
     >
-      <ArcTop className="bg-paper" />
+      {/* No parallax: the ERA scene above is pinned. */}
+      <ArcSurface tone="paper" />
       <div className="mx-auto max-w-[1400px]">
         <SectionLabel index="04">Inside FEST</SectionLabel>
 

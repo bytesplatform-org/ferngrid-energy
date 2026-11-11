@@ -31,12 +31,20 @@
 }
 
 :root {
+  /* Depth of the curved section tops (see ArcSurface). */
+  --arc-depth: 10vh;
   /* light surface defaults */
   --fg: var(--color-carbon);
   --line: rgb(29 34 15 / 0.12);
   /* 70% (not 60%) so muted body copy clears WCAG AA on paper */
   --muted: rgb(29 34 15 / 0.7);
   color-scheme: light;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --arc-depth: 22vh;
+  }
 }
 
 .surface-dark {
@@ -144,6 +152,16 @@ html.lenis body {
   filter: grayscale(1) contrast(1.06);
 }
 
+/* A section that rises over the previous one with a curved top (pair with <ArcSurface>). */
+@utility arc-next {
+  margin-top: calc(-1 * var(--arc-depth));
+  padding-top: calc(var(--arc-depth) + 3rem);
+}
+/* The section above an arc-next section: keeps its content clear of the curve. */
+@utility arc-prev {
+  padding-bottom: calc(var(--arc-depth) + 5rem);
+}
+
 @utility text-outline {
   color: transparent;
   -webkit-text-stroke: 1.5px currentColor;
@@ -151,45 +169,9 @@ html.lenis body {
 
 /* ------------------------------------------------------------------ */
 /* Motion-dependent states                                             */
-/* `html.js` is set by an inline script before paint so these never   */
-/* hide content when JS is unavailable.                                */
+/* `html.js` is set by an inline script before paint.                  */
 /* ------------------------------------------------------------------ */
-@media (prefers-reduced-motion: no-preference) {
-  /* Scrub-mode hero: phase-2 content waits for its scroll beat. */
-  html.js [data-hero-mode="scrub"] [data-hero-phase="2"] {
-    opacity: 0;
-    visibility: hidden;
-  }
-  html.js [data-hero-mode="scrub"] [data-hero-tagline] {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  html.js [data-hero-mode="scrub"] [data-hero-tagline] > p {
-    max-width: 16ch;
-    font-size: clamp(3.25rem, 9vw, 10rem);
-    line-height: 0.9;
-  }
-}
-
-/* Arc transitions: shallow static curve without JS / motion. */
-html:not(.js) [data-arc] {
-  height: 5vh !important;
-}
-html:not(.js) [data-arc="motion-only"] {
-  display: none;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  [data-arc] {
-    height: 5vh !important;
-  }
-  [data-arc="motion-only"] {
-    display: none;
-  }
   *,
   *::before,
   *::after {

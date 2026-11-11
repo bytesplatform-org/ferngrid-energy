@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRef } from "react";
 import { FRAGMENTS, HOME } from "@/lib/content";
-import { ArcTop } from "./motion/arc-top";
+import { ArcSurface } from "./motion/arc-surface";
 import { gsap, useGSAP, MQ } from "./motion/gsap";
 import { SectionLabel } from "./ui/primitives";
 import logoMark from "@/public/images/logo-mark.png";
@@ -17,26 +17,39 @@ const COLUMNS = [
 /** Circle radius in the 1000×1000 viewBox and the text that wraps it. */
 const R = 380;
 const CIRC = 2 * Math.PI * R;
-const RING_TEXT = `${FRAGMENTS.statement.toUpperCase()} · `;
+// One normal trailing space + filling the exact circumference makes the join
+// ("…ENGINEERING. RELIABLE…") spaced like every other word gap.
+const RING_TEXT = `${FRAGMENTS.statement.toUpperCase()} `;
 
 /**
  * 00 — "The statement". Rises over the hero as a paper arc; the statement
- * (lifted from the tagline) is set on a circle that rotates and settles.
+ * (lifted from the tagline) is set on a circle that keeps rotating as you scroll.
  */
-export function Statement({ heroMode }: { heroMode: "scrub" | "video" }) {
+export function Statement() {
   const ref = useRef<HTMLElement>(null);
 
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
       mm.add(MQ.motion, () => {
+        // Rotates the whole time the section is on screen (scrubbed, both directions).
         gsap.fromTo(
           "[data-ring]",
-          { rotate: -110, scale: 0.86 },
+          { rotate: -150 },
           {
-            rotate: 0,
+            rotate: 210,
+            ease: "none",
+            scrollTrigger: { trigger: ref.current, start: "top bottom", end: "bottom top", scrub: 0.6 },
+          },
+        );
+        // Scale-in as it arrives.
+        gsap.fromTo(
+          "[data-ring]",
+          { scale: 0.86 },
+          {
             scale: 1,
             ease: "none",
+            immediateRender: false,
             scrollTrigger: { trigger: ref.current, start: "top 95%", end: "center 55%", scrub: 0.6 },
           },
         );
@@ -80,16 +93,9 @@ export function Statement({ heroMode }: { heroMode: "scrub" | "video" }) {
     <section
       ref={ref}
       aria-labelledby="statement-title"
-      className="surface-light relative z-10 bg-paper-warm px-5 pt-10 pb-28 md:px-10 md:pb-40"
+      className="surface-light arc-next relative z-10 px-5 pb-28 md:px-10 md:pb-40"
     >
-      {/* Rises over the hero; motion-only so it never covers the static hero. */}
-      <ArcTop
-        className="bg-paper-warm"
-        height={heroMode === "scrub" ? "35vh" : "24vh"}
-        width="150vw"
-        motionOnly
-        grow={heroMode === "video"}
-      />
+      <ArcSurface tone="paper-warm" parallax="[data-hero-inner]" />
 
       <SectionLabel index="00">FernGrid Energy</SectionLabel>
       <h2 id="statement-title" className="sr-only">
@@ -106,8 +112,8 @@ export function Statement({ heroMode }: { heroMode: "scrub" | "video" }) {
             />
           </defs>
           <circle cx="500" cy="500" r={R - 46} fill="none" stroke="currentColor" strokeOpacity="0.14" />
-          <text className="font-display fill-current text-[56px] tracking-[0.04em]">
-            <textPath href="#statement-ring" textLength={CIRC - 6} lengthAdjust="spacing">
+          <text className="font-display fill-current text-[56px] tracking-[0.04em]" style={{ whiteSpace: "pre" }}>
+            <textPath href="#statement-ring" textLength={CIRC} lengthAdjust="spacing">
               {RING_TEXT}
             </textPath>
           </text>
