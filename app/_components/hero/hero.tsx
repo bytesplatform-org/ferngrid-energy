@@ -61,7 +61,7 @@ export function Hero() {
             >
               Energy
             </span>{" "}
-            <span className="mt-[clamp(0.75rem,1.6vw,1.75rem)] flex items-center gap-[clamp(0.75rem,1.4vw,1.5rem)]">
+            <span data-wm-llc className="mt-[clamp(0.75rem,1.6vw,1.75rem)] flex items-center gap-[clamp(0.75rem,1.4vw,1.5rem)]">
               <span aria-hidden className="h-px flex-1 bg-gradient-to-r from-transparent to-paper/80" />
               <span className="relative">
                 <LlcRing />
@@ -106,16 +106,22 @@ export function Hero() {
       {/* Bottom bar */}
       <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-4 px-5 pb-6 md:px-10 md:pb-10">
         <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-6">
-          <PillLink href={hero.buttons.learn.href} tone="paper" icon="up-right">
-            {hero.buttons.learn.label}
-          </PillLink>
-          <MonoLink href={hero.buttons.explore.href} className="text-paper">
-            {hero.buttons.explore.label}
-          </MonoLink>
+          <span data-hero-cta className="inline-block">
+            <PillLink href={hero.buttons.learn.href} tone="paper" icon="up-right">
+              {hero.buttons.learn.label}
+            </PillLink>
+          </span>
+          <span data-hero-cta className="inline-block">
+            <MonoLink href={hero.buttons.explore.href} className="text-paper">
+              {hero.buttons.explore.label}
+            </MonoLink>
+          </span>
         </div>
-        <PillLink href={hero.buttons.contact.href} tone="fern" icon="up-right">
-          {hero.buttons.contact.label}
-        </PillLink>
+        <span data-hero-cta className="inline-block">
+          <PillLink href={hero.buttons.contact.href} tone="fern" icon="up-right">
+            {hero.buttons.contact.label}
+          </PillLink>
+        </span>
       </div>
     </HeroStage>
   );

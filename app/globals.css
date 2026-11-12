@@ -162,6 +162,21 @@ html.lenis body {
   padding-bottom: calc(var(--arc-depth) + 5rem);
 }
 
+/* Page loader: scroll stays locked while it covers the page. If scripts never
+   run, the failsafe fades the loader out (and the head script unlocks scroll). */
+html.is-loading {
+  overflow: hidden;
+}
+.loader-failsafe {
+  animation: loader-failsafe 0.5s 10s forwards;
+}
+@keyframes loader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Motion-dependent states                                             */
 /* `html.js` is set by an inline script before paint.                  */

@@ -6,6 +6,8 @@ import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react
 import { usePathname } from "next/navigation";
 import { HOME, ROUTES, SITE } from "@/lib/content";
 import { BigMenu, isActivePath } from "./big-menu";
+import { gsap, useGSAP, MQ } from "./motion/gsap";
+import { onIntro } from "./motion/intro";
 import { setScrollLocked } from "./motion/smooth-scroll";
 import { PillLink, cx } from "./ui/primitives";
 import logoMark from "@/public/images/logo-mark.png";
@@ -121,6 +123,22 @@ export function Nav() {
   const menuId = useId();
   const overlayRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
+
+  // Drops in as the loader lifts (part of the loader's exit timeline).
+  useGSAP(() => {
+    const mm = gsap.matchMedia();
+    mm.add(MQ.motion, () =>
+      onIntro((tl) => {
+        tl.fromTo(
+          headerRef.current,
+          { yPercent: -120 },
+          { yPercent: 0, duration: 1.1, ease: "expo.out", clearProps: "transform" },
+          1.05,
+        );
+      }),
+    );
+  });
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -186,6 +204,7 @@ export function Nav() {
   return (
     <>
       <header
+        ref={headerRef}
         className={cx(
           "fixed inset-x-0 top-0 z-50 rounded-b-[28px] transition-[background-color,box-shadow,color,backdrop-filter] duration-300 md:rounded-b-[36px]",
           solid

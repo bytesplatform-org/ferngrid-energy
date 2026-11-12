@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 import { gsap, useGSAP, MQ } from "../motion/gsap";
+import { introPending, onIntro } from "../motion/intro";
 import { HeroGrid } from "./hero-grid";
 
 /** Scroll distance the hero stays pinned for the headline swap. */
@@ -63,16 +64,54 @@ export function HeroStage({ backdrop, children }: { backdrop: ReactNode; childre
         const section = sectionRef.current!;
         const words = section.querySelectorAll<HTMLElement>("[data-hero-word]");
 
-        // Annotations + LLC ring draw in on load (they start hidden via their classes).
-        gsap
-          .timeline({ delay: 0.9 })
-          .set("[data-anno], [data-llc-ring]", { autoAlpha: 1 })
-          .fromTo(
-            "[data-anno-path]",
-            { strokeDashoffset: 1 },
-            { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.15 },
-          )
-          .from("[data-anno] span", { autoAlpha: 0, y: 6, duration: 0.6, ease: "power2.out", stagger: 0.12 }, 0.35);
+        // Annotations + LLC ring draw in (they start hidden via their classes).
+        const drawAnnotations = (tl: gsap.core.Timeline, at: number) =>
+          tl
+            .set("[data-anno], [data-llc-ring]", { autoAlpha: 1 }, at)
+            .fromTo(
+              "[data-anno-path]",
+              { strokeDashoffset: 1 },
+              { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.15 },
+              at,
+            )
+            .from(
+              "[data-anno] span",
+              { autoAlpha: 0, y: 6, duration: 0.6, ease: "power2.out", stagger: 0.12 },
+              at + 0.35,
+            );
+
+        // Entrance, played on the loader's exit timeline as the panel lifts: the
+        // scene settles from a zoom, then the lockup, LLC, grid and buttons.
+        // fromTo with explicit end states, so a repeated registration (React
+        // StrictMode runs effects twice in dev) can never leave anything hidden.
+        let unregister: (() => void) | undefined;
+        if (introPending()) {
+          unregister = onIntro((tl) => {
+            tl.fromTo("[data-hero-inner]", { scale: 1.22 }, { scale: 1, duration: 1.9, ease: "expo.out" }, 0.5)
+              .fromTo("[data-hero-grid]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 1.4, ease: "power1.out" }, 1.1)
+              .fromTo(
+                "[data-wm-line]",
+                { yPercent: 55, autoAlpha: 0, filter: "blur(14px)" },
+                { yPercent: 0, autoAlpha: 1, filter: "blur(0px)", duration: 1.1, stagger: 0.12, ease: "expo.out" },
+                0.95,
+              )
+              .fromTo(
+                "[data-wm-llc]",
+                { scaleX: 0.4, autoAlpha: 0 },
+                { scaleX: 1, autoAlpha: 1, duration: 1, ease: "expo.out" },
+                1.25,
+              )
+              .fromTo(
+                "[data-hero-cta]",
+                { y: 28, autoAlpha: 0 },
+                { y: 0, autoAlpha: 1, duration: 0.9, stagger: 0.09, ease: "expo.out" },
+                1.35,
+              );
+            drawAnnotations(tl, 1.7);
+          });
+        } else {
+          drawAnnotations(gsap.timeline({ delay: 0.4 }), 0);
+        }
         const tl = gsap.timeline({
           defaults: { ease: "none" },
           scrollTrigger: {
@@ -96,6 +135,8 @@ export function HeroStage({ backdrop, children }: { backdrop: ReactNode; childre
           )
           // brief hold on the full tagline before the pin releases
           .to({}, { duration: 0.12 });
+
+        return () => unregister?.();
       });
     },
     { scope: sectionRef },

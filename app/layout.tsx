@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Dosis, Geist_Mono, Inter } from "next/font/google";
 import { HOME, SITE } from "@/lib/content";
 import { Cursor } from "./_components/cursor";
+import { Loader } from "./_components/loader";
 import { Nav } from "./_components/nav";
 import { SmoothScroll } from "./_components/motion/smooth-scroll";
 import "./globals.css";
@@ -60,13 +61,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         {/*
-          Before first paint: mark JS as available, and stop the browser restoring the
-          previous scroll position on reload (scroll-driven pages should start at the top).
+          Before first paint: mark JS as available, lock scrolling while the loader
+          covers the page (released by the loader; failsafe after 11s), and stop the
+          browser restoring the previous scroll position on reload.
         */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "document.documentElement.classList.add('js');if('scrollRestoration' in history)history.scrollRestoration='manual';",
+              "(function(){var d=document.documentElement;d.classList.add('js','is-loading');setTimeout(function(){d.classList.remove('is-loading')},11000);if('scrollRestoration' in history)history.scrollRestoration='manual'})();",
           }}
         />
       </head>
@@ -82,6 +84,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Nav />
         {children}
         <Cursor />
+        <Loader />
       </body>
     </html>
   );

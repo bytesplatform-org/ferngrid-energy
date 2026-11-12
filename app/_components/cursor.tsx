@@ -66,7 +66,7 @@ export function Cursor() {
     <div
       ref={ref}
       aria-hidden
-      className="pointer-events-none invisible fixed top-0 left-0 z-[80] -mt-5 -ml-5 size-10 rounded-full bg-paper opacity-0 mix-blend-difference"
+      className="pointer-events-none invisible fixed top-0 left-0 z-[110] -mt-5 -ml-5 size-10 rounded-full bg-paper opacity-0 mix-blend-difference"
     />
   );
 }
