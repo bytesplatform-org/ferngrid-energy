@@ -150,8 +150,7 @@ export function Loader() {
           playIntro(tl);
           return;
         }
-        tl.to(q("[data-charge]"), { autoAlpha: 1, duration: 0.15 }, 0)
-          .to(
+        tl.to(
             q("[data-lockup]"),
             { yPercent: -40, autoAlpha: 0, duration: 0.6, ease: "power3.in" },
             0.15,
@@ -196,7 +195,6 @@ export function Loader() {
         gsap.set(q("[data-lockup]"), { yPercent: 0, autoAlpha: 1 });
         gsap.set(digits, { yPercent: 0 });
         gsap.set(q("[data-meta]"), { autoAlpha: 1 });
-        gsap.set(q("[data-charge]"), { autoAlpha: 0 });
         gsap.set([edgeTop, edgeBottom], { scaleY: 1 });
         render(0);
         if (reduced) {
@@ -371,10 +369,6 @@ export function Loader() {
               className="absolute inset-0 [clip-path:inset(0_100%_0_0)]"
             >
               <Lockup className="text-fern" />
-            </div>
-            {/* brief paper flash once fully charged */}
-            <div data-charge className="invisible absolute inset-0 opacity-0">
-              <Lockup className="text-paper" />
             </div>
           </div>
         </div>
