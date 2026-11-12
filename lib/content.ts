@@ -171,3 +171,39 @@ export const FEST_MODEL: readonly FestNode[] = [
     items: ["Simultaneous or One Fuel Model", "Gas Constraints", "Oil/Coal Constraints"],
   },
 ];
+
+/* ------------------------------------------------------------------ */
+/* About page — verbatim from ferngrid-energy.com/about-us             */
+/* ------------------------------------------------------------------ */
+
+export const ABOUT = {
+  title: "About Us",
+  expertise: {
+    heading: "Built on Power Systems Expertise",
+    paragraphs: [
+      "Founded in 2026, FernGrid Energy brings more than a decade of power industry experience to the development of reliable, practical power systems software. With Masters of Science in Electrical Engineering and Data Science, our leadership team combines technical expertise with extensive industry experience.",
+      "FernGrid Energy’s experience spans the power industry including work with Utilities, Independent System Operators, and Power Systems software companies. This broad perspective includes supporting control center operators in real time, conducting long-range compliance planning studies, and developing/maintaining the software used to perform those studies. This hands-on industry experience includes developing custom tools to assess a system’s fuel security, which eventually evolved into software with the ability to support the upcoming NERC BAL-007-1 compliance requirements.",
+      "By combining operational experience, power systems expertise, and software development knowledge, FernGrid Energy understands both the technical requirements behind reliability studies and the practical challenges faced by the professionals responsible for completing them.",
+    ],
+  },
+  trust: {
+    heading: "Engineering You Can Trust",
+    /** Split around the phrase the live page underlines. */
+    before:
+      "While our team has experience applying Data Science, Machine Learning, and Artificial Intelligence techniques, FernGrid Energy’s Fuel and Energy Security Tool (FEST) is built on a firm foundation of power systems engineering expertise. FEST was written, developed, and tested by a Power Systems Engineer with ",
+    emphasis: "no assistance from Large Language Models (LLMs)",
+    after:
+      ". Customers can trust that our software is built with a deep understanding of power system operations, reliability requirements, and the practical needs of the industry.",
+  },
+} as const;
+
+/** Display fragments lifted from the About copy (labels and big type only). */
+export const ABOUT_FRAGMENTS = {
+  founded: "Founded in",
+  year: "2026",
+  decade: "More than a decade of power industry experience",
+  sectors: ["Utilities", "Independent System Operators", "Power Systems software companies"],
+  evolution: ["Custom tools to assess a system’s fuel security", "Software", "NERC BAL-007-1 compliance requirements"],
+  combine: ["Operational experience", "Power systems expertise", "Software development knowledge"],
+  verbs: ["Written.", "Developed.", "Tested."],
+} as const;
