@@ -4,7 +4,7 @@ import { Fragment, useCallback, useRef, useState, type KeyboardEvent } from "rea
 import { FRAGMENTS, NERC } from "@/lib/content";
 import { gsap, ScrollTrigger, useGSAP, MQ } from "../motion/gsap";
 import { scrollToTarget } from "../motion/smooth-scroll";
-import { SectionLabel, cx } from "../ui/primitives";
+import { cx } from "../ui/primitives";
 import { Callouts } from "./callouts";
 import { PointCloud, type PointCloudHandle } from "./point-cloud";
 import { SHAPES } from "./shapes";
@@ -185,8 +185,7 @@ export function EraScene() {
       <div data-era-stage className={cx(pinned && "absolute inset-0")}>
         {/* Header */}
         <header className={cx(pinned ? "absolute top-24 left-10 z-10 w-[min(44vw,620px)]" : "mx-auto max-w-[1600px]")}>
-          <SectionLabel index="03">What a Near-Term ERA must account for</SectionLabel>
-          <h2 id="era-title" className="mt-6 text-sm font-medium text-paper/80">
+          <h2 id="era-title" className="text-sm font-medium text-paper/80">
             {NERC.requirements.heading}
           </h2>
           <p className="mt-3 max-w-[58ch] text-base leading-relaxed text-muted">{NERC.requirements.intro}</p>

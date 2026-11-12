@@ -13,8 +13,8 @@ import gridImg from "@/public/images/fest-1.webp";
 const PIN_VH = 3.8;
 /** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
 const APPROACH_VH = 0.8;
-/** Timeline time spent on the approach (keeps it ≈ APPROACH_VH / total of the timeline). */
-const LEAD = 0.27;
+// The first 0.27 of timeline time is the approach (before the pin); the
+// positions below already include that offset.
 /**
  * Hold on the finished scene (timeline time) after the CTA lands. The next
  * section's arc rises over the last --arc-depth of the pin, so everything must

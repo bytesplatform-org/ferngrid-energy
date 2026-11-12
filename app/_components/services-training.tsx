@@ -2,7 +2,6 @@ import { FRAGMENTS, HOME } from "@/lib/content";
 import { ArcSurface } from "./motion/arc-surface";
 import { FadeUp } from "./motion/reveal";
 import { ImageStrip } from "./image-strip";
-import { SectionLabel } from "./ui/primitives";
 
 function Chips({ items, arrows }: { items: readonly string[]; arrows?: boolean }) {
   return (
@@ -35,9 +34,7 @@ export function ServicesTraining() {
     >
       <ArcSurface tone="carbon-deep" parallax="#inside-fest" />
       <div className="mx-auto max-w-[1600px]">
-        <SectionLabel index="05">Services &amp; Training</SectionLabel>
-
-        <div className="mt-12 grid gap-16 lg:grid-cols-12 lg:gap-10">
+        <div className="grid gap-16 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-28">
               <FadeUp as="h2" id="services-title" className="font-condensed text-condensed-xl uppercase">

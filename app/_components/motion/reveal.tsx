@@ -38,15 +38,26 @@ export function SplitReveal<T extends ElementType = "div">({
           mask: "lines",
           linesClass: "split-line",
           autoSplit: true,
-          onSplit: (self) =>
-            gsap.from(self.lines, {
-              yPercent: 110,
+          onSplit: (self) => {
+            // Each line sits in an overflow-hidden mask exactly one line tall, which
+            // clips descenders (g, y, p) at tight line-heights. Give the masks room
+            // above/below, cancelled by negative margins so the layout doesn't move.
+            gsap.set(self.masks, {
+              paddingTop: "0.08em",
+              marginTop: "-0.08em",
+              paddingBottom: "0.24em",
+              marginBottom: "-0.24em",
+            });
+            // Start far enough down to stay hidden below the taller mask.
+            return gsap.from(self.lines, {
+              yPercent: 140,
               duration: 1.15,
               ease: "expo.out",
               stagger: 0.07,
               delay,
               scrollTrigger: { trigger: el, start, once: true },
-            }),
+            });
+          },
         });
         return () => split.revert();
       });

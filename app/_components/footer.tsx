@@ -17,8 +17,7 @@ export function Footer() {
 
       <div className="relative mx-auto grid max-w-[1600px] gap-14 lg:grid-cols-12">
         <div className="lg:col-span-4">
-          <p className="text-label text-muted">07 / Menu</p>
-          <Link href={ROUTES.home} aria-label={`${SITE.shortName} home`} className="mt-8 inline-block">
+          <Link href={ROUTES.home} aria-label={`${SITE.shortName} home`} className="inline-block">
             <Image src={lockup} alt="FernGrid Energy" sizes="220px" className="h-auto w-[180px] md:w-[220px]" />
           </Link>
           {/* TODO: confirm social URLs with client */}

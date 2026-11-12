@@ -5,7 +5,6 @@ import { useRef } from "react";
 import { FRAGMENTS, HOME } from "@/lib/content";
 import { ArcSurface } from "./motion/arc-surface";
 import { gsap, useGSAP, MQ } from "./motion/gsap";
-import { SectionLabel } from "./ui/primitives";
 import logoMark from "@/public/images/logo-mark.png";
 
 const COLUMNS = [
@@ -97,7 +96,6 @@ export function Statement() {
     >
       <ArcSurface tone="paper-warm" parallax="[data-hero-inner]" />
 
-      <SectionLabel index="00">FernGrid Energy</SectionLabel>
       <h2 id="statement-title" className="sr-only">
         {FRAGMENTS.statement}
       </h2>

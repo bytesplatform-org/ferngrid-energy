@@ -2,7 +2,6 @@ import { FRAGMENTS, NERC } from "@/lib/content";
 import { ArcSurface } from "./motion/arc-surface";
 import { FadeUp, SplitReveal } from "./motion/reveal";
 import { FestModel } from "./fest-model";
-import { SectionLabel } from "./ui/primitives";
 
 /** 04 / Inside FEST — the FEST data model, rebuilt. */
 export function InsideFest() {
@@ -15,9 +14,7 @@ export function InsideFest() {
       {/* No parallax: the ERA scene above is pinned. */}
       <ArcSurface tone="paper" />
       <div className="mx-auto max-w-[1400px]">
-        <SectionLabel index="04">Inside FEST</SectionLabel>
-
-        <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:items-end">
+        <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <SplitReveal
             as="h2"
             id="inside-fest-title"

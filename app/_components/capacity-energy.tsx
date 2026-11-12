@@ -5,7 +5,6 @@ import { FRAGMENTS, NERC } from "@/lib/content";
 import { ArcSurface } from "./motion/arc-surface";
 import { gsap, useGSAP, MQ } from "./motion/gsap";
 import { SplitReveal, FadeUp } from "./motion/reveal";
-import { SectionLabel } from "./ui/primitives";
 
 /* Diagram geometry (viewBox 0 0 1200 640). Illustrative only: no values, no value axes. */
 const VB = { w: 1200, h: 640 };
@@ -119,8 +118,7 @@ export function CapacityEnergy() {
       <ArcSurface tone="carbon-deep" parallax="[data-software-inner]" />
 
       <div className="mx-auto max-w-[1600px]">
-        <SectionLabel index="02">Capacity vs. Energy</SectionLabel>
-        <h2 id="capacity-title" className="text-label-md mt-10 max-w-[44ch] leading-relaxed text-paper/80">
+        <h2 id="capacity-title" className="text-label-md max-w-[44ch] leading-relaxed text-paper/80">
           {NERC.eraDifference.heading}
         </h2>
         <SplitReveal
@@ -231,7 +229,6 @@ export function CapacityEnergy() {
                 <span aria-hidden>→</span>
               </span>
             </div>
-            <figcaption className="text-label mt-14 text-paper/50 sm:mt-10">Illustrative diagram.</figcaption>
             <p className="sr-only">
               Diagram: a single tall bar labelled capacity, a point in time, splits into a long row of thin hourly bars
               along a timeline labelled hour by hour, through the study period. A stepped line labelled fuel storage

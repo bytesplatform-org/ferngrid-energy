@@ -2,7 +2,7 @@ import Image from "next/image";
 import { HOME, SITE } from "@/lib/content";
 import { FadeUp, SplitReveal } from "./motion/reveal";
 import { Parallax } from "./motion/parallax";
-import { PillLink, SectionLabel } from "./ui/primitives";
+import { PillLink } from "./ui/primitives";
 import pylon from "@/public/images/about-pylon.webp";
 
 /** Closing CTA over the pylon-in-fog photograph. */
@@ -32,12 +32,10 @@ export function ClosingCta() {
       <div aria-hidden className="absolute inset-0 bg-[radial-gradient(90%_70%_at_30%_40%,transparent,rgb(18_22_10/0.6))]" />
 
       <div className="relative mx-auto max-w-[1600px]">
-        <SectionLabel index="06">Technical consultation</SectionLabel>
-
         <SplitReveal
           as="h2"
           id="closing-title"
-          className="font-display mt-12 text-[clamp(2.75rem,6.8vw,7.75rem)] leading-[0.98]"
+          className="font-display text-[clamp(2.75rem,6.8vw,7.75rem)] leading-[0.98]"
         >
           <span className="block">{l1}</span> <span className="block">{l2}</span>{" "}
           <span className="block">
