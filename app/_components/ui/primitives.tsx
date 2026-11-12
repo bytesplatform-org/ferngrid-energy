@@ -1,4 +1,5 @@
-import Link from "next/link";
+import type Link from "next/link";
+import { TransitionLink } from "./transition-link";
 import type { ComponentProps, ReactNode } from "react";
 
 export function cx(...parts: Array<string | false | null | undefined>) {
@@ -58,7 +59,7 @@ type PillProps = Omit<ComponentProps<typeof Link>, "className"> & {
 export function PillLink({ tone = "paper", size = "md", icon = "none", className, children, ...rest }: PillProps) {
   const sizes = { sm: "h-9 px-3.5 text-[13px]", md: "h-11 px-5 text-sm", lg: "h-13 px-6 text-[15px]" };
   return (
-    <Link
+    <TransitionLink
       {...rest}
       className={cx(
         "group/pill inline-flex items-center gap-2 rounded-full font-medium tracking-[-0.005em] whitespace-nowrap",
@@ -73,14 +74,14 @@ export function PillLink({ tone = "paper", size = "md", icon = "none", className
         <ArrowUpRight className="transition-transform duration-300 group-hover/pill:translate-x-0.5 group-hover/pill:-translate-y-0.5" />
       )}
       {icon === "right" && <ArrowRight className="transition-transform duration-300 group-hover/pill:translate-x-0.5" />}
-    </Link>
+    </TransitionLink>
   );
 }
 
 /** Mono underlined text link (e.g. "Explore FEST"). */
 export function MonoLink({ className, children, ...rest }: ComponentProps<typeof Link>) {
   return (
-    <Link
+    <TransitionLink
       {...rest}
       className={cx(
         "text-label-md relative inline-flex items-center gap-2 py-2",
@@ -89,6 +90,6 @@ export function MonoLink({ className, children, ...rest }: ComponentProps<typeof
       )}
     >
       {children}
-    </Link>
+    </TransitionLink>
   );
 }

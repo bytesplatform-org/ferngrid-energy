@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { TransitionLink as Link } from "./ui/transition-link";
 import { NAV } from "@/lib/content";
 import { ArrowUpRight, cx } from "./ui/primitives";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { TransitionLink as Link } from "./ui/transition-link";
 import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { HOME, ROUTES, SITE } from "@/lib/content";

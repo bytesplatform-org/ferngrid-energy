@@ -62,13 +62,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/*
           Before first paint: mark JS as available, lock scrolling while the loader
-          covers the page (released by the loader; failsafe after 11s), and stop the
-          browser restoring the previous scroll position on reload.
+          covers the page (released by the loader; failsafe after 11s), stop the
+          browser restoring the previous scroll position on reload, and, if a page
+          transition ended in a full reload, paint the loader at the charge it had
+          reached (no restart from 0).
         */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              "(function(){var d=document.documentElement;d.classList.add('js','is-loading');setTimeout(function(){d.classList.remove('is-loading')},11000);if('scrollRestoration' in history)history.scrollRestoration='manual'})();",
+              "(function(){var d=document.documentElement;d.classList.add('js','is-loading');setTimeout(function(){d.classList.remove('is-loading')},11000);if('scrollRestoration' in history)history.scrollRestoration='manual';try{var r=JSON.parse(sessionStorage.getItem('fg:transition')||'null');if(r&&Date.now()-r.at<8000){d.classList.add('fg-resume');d.style.setProperty('--fg-p',String(r.p))}}catch(e){}})();",
           }}
         />
       </head>

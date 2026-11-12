@@ -170,6 +170,16 @@ html.is-loading {
 .loader-failsafe {
   animation: loader-failsafe 0.5s 10s forwards;
 }
+/* A page transition that ended in a full reload: first paint continues its charge. */
+html.fg-resume [data-fill] {
+  clip-path: inset(0 calc(100% - var(--fg-p) * 100%) 0 0);
+}
+html.fg-resume [data-bar] {
+  transform: scaleX(var(--fg-p));
+}
+html.fg-resume [data-count] {
+  opacity: 0;
+}
 @keyframes loader-failsafe {
   to {
     opacity: 0;

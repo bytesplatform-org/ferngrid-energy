@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { TransitionLink as Link } from "./ui/transition-link";
 import { HOME, ROUTES, SITE } from "@/lib/content";
 import { BigMenu } from "./big-menu";
 import { FooterFill } from "./footer-fill";
