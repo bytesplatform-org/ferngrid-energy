@@ -17,10 +17,13 @@ export function BigMenu({
   onNavigate,
   className,
   pathname = null,
+  fit = false,
 }: {
   onNavigate?: () => void;
   className?: string;
   pathname?: string | null;
+  /** Size rows by viewport height too, so the whole menu fits on one screen (footer). */
+  fit?: boolean;
 }) {
   return (
     <ul className={cx("border-t border-line", className)}>
@@ -32,14 +35,15 @@ export function BigMenu({
               href={item.href}
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
-              className="group flex items-baseline gap-4 py-3 md:gap-6 md:py-4"
+              className={cx("group flex items-baseline gap-4 md:gap-6", fit ? "py-[min(0.9rem,1.1svh)]" : "py-3 md:py-4")}
             >
               <span className={cx("text-label w-6 shrink-0", active ? "text-fern" : "text-muted")}>
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span
                 className={cx(
-                  "font-condensed text-[clamp(2.25rem,6vw,5.5rem)] leading-[0.9] uppercase transition-transform duration-500 ease-out-expo group-hover:translate-x-2",
+                  "font-condensed leading-[0.9] uppercase transition-transform duration-500 ease-out-expo group-hover:translate-x-2",
+                  fit ? "text-[clamp(1.75rem,min(6vw,7svh),5.5rem)]" : "text-[clamp(2.25rem,6vw,5.5rem)]",
                   active && "text-fern",
                 )}
               >

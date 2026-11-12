@@ -151,45 +151,84 @@ const generation: ShapeDef = {
   ],
 };
 
-/* 3 — Transfers: two balancing areas with an energy transfer between them */
+/* 3 — Transfers: two balancing areas side by side, the interface between them,
+   and tie lines carrying energy across it in both directions */
+const AREAS = [
+  { x: 28, cx: 98 },
+  { x: 232, cx: 302 },
+] as const;
+const AREA_W = 140;
+const AREA_TOP = 92;
+const AREA_H = 216;
+const TIE_Y = [146, 200, 254] as const;
+/** Flow direction per tie line: 1 = left → right. */
+const TIE_DIR = [1, -1, 1] as const;
+
 const transfers: ShapeDef = {
   key: "transfers",
   draw(ctx) {
-    for (const cx of [104, 296]) {
+    for (const { x, cx } of AREAS) {
+      // area outline (very light fill so the points gather on the structure)
       ctx.beginPath();
-      ctx.arc(cx, 200, 76, 0, Math.PI * 2);
-      fill(ctx, 0.14);
-      stroke(ctx, 1, 4);
+      ctx.roundRect(x, AREA_TOP, AREA_W, AREA_H, 26);
+      fill(ctx, 0.04);
+      stroke(ctx, 1, 4.5);
+      // internal network: two columns of nodes, laced together
+      const cols = [cx - 34, cx + 34];
+      const nodes = TIE_Y.flatMap((y) => cols.map((c) => [c, y] as const));
       ctx.beginPath();
-      ctx.arc(cx, 200, 50, 0, Math.PI * 2);
-      stroke(ctx, 0.35, 2);
-      // node at centre
-      ctx.beginPath();
-      ctx.arc(cx, 200, 9, 0, Math.PI * 2);
-      fill(ctx, 1);
+      for (const [a, b] of [
+        [0, 1],
+        [2, 3],
+        [4, 5],
+        [0, 2],
+        [2, 4],
+        [1, 3],
+        [3, 5],
+        [0, 3],
+        [3, 4],
+      ]) {
+        ctx.moveTo(...nodes[a]);
+        ctx.lineTo(...nodes[b]);
+      }
+      stroke(ctx, 0.5, 2.5);
+      for (const [nx, ny] of nodes) {
+        ctx.beginPath();
+        ctx.arc(nx, ny, 9, 0, Math.PI * 2);
+        fill(ctx, 1);
+      }
     }
-    // two-way transfer arrow
-    const arrow = (y: number, dir: 1 | -1) => {
-      const x0 = dir === 1 ? 166 : 234;
-      const x1 = dir === 1 ? 234 : 166;
+    // the interface: a dashed line down the channel between the areas
+    ctx.setLineDash([10, 9]);
+    ctx.beginPath();
+    ctx.moveTo(200, 56);
+    ctx.lineTo(200, 344);
+    stroke(ctx, 0.9, 3);
+    ctx.setLineDash([]);
+    // tie lines across the interface, each with a direction chevron in the channel
+    const innerA = AREAS[0].cx + 34;
+    const innerB = AREAS[1].cx - 34;
+    TIE_Y.forEach((y, i) => {
       ctx.beginPath();
-      ctx.moveTo(x0, y);
-      ctx.lineTo(x1, y);
-      stroke(ctx, 1, 4);
-      ctx.beginPath();
-      ctx.moveTo(x1, y);
-      ctx.lineTo(x1 - dir * 14, y - 9);
-      ctx.moveTo(x1, y);
-      ctx.lineTo(x1 - dir * 14, y + 9);
-      stroke(ctx, 1, 4);
-    };
-    arrow(186, 1);
-    arrow(214, -1);
+      ctx.moveTo(innerA, y);
+      ctx.lineTo(innerB, y);
+      stroke(ctx, 1, 5.5);
+      const d = TIE_DIR[i];
+      for (const off of [-10, 8]) {
+        const tip = 200 + d * (off + 6);
+        ctx.beginPath();
+        ctx.moveTo(tip - d * 13, y - 13);
+        ctx.lineTo(tip, y);
+        ctx.lineTo(tip - d * 13, y + 13);
+        stroke(ctx, 1, 5);
+      }
+    });
   },
   callouts: [
-    { label: "Interface", ax: 0.5, ay: 186 / BOX, lx: 0.5, ly: 0.12, align: "left" },
-    { label: "BA", ax: 104 / BOX, ay: 276 / BOX, lx: 0.08, ly: 0.88, align: "left" },
-    { label: "BA", ax: 296 / BOX, ay: 276 / BOX, lx: 0.92, ly: 0.88, align: "right" },
+    { label: "Interface", ax: 0.5, ay: 64 / BOX, lx: 0.08, ly: 0.06, align: "left" },
+    { label: "Energy transfer", ax: 214 / BOX, ay: 146 / BOX, lx: 0.94, ly: 0.06, align: "right" },
+    { label: "Balancing Authority", ax: 98 / BOX, ay: 308 / BOX, lx: 0.04, ly: 0.92, align: "left" },
+    { label: "Other BA", ax: 302 / BOX, ay: 308 / BOX, lx: 0.96, ly: 0.92, align: "right" },
   ],
 };
 

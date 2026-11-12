@@ -4,7 +4,12 @@ import { useEffect, useImperativeHandle, useRef, type Ref } from "react";
 import { gsap } from "../motion/gsap";
 import { SHAPES, morphSeeds, samplePoints } from "./shapes";
 
-export type PointCloudHandle = { morphTo: (index: number) => void };
+export type PointCloudHandle = {
+  /** Timed morph to a shape (used by the stepped layout). */
+  morphTo: (index: number) => void;
+  /** Scroll-driven: draw shape `a` morphed `t` (0–1) of the way to shape `b`. */
+  blend: (a: number, b: number, t: number) => void;
+};
 
 type Props = {
   /** Shape shown first (and the only one, in static mode). */
@@ -24,10 +29,17 @@ const DOT = "rgba(248, 249, 247, 0.88)";
  */
 export function PointCloud({ initial, mode, count = 2400, className, ref }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const api = useRef<PointCloudHandle>({ morphTo: () => {} });
+  const api = useRef<PointCloudHandle>({ morphTo: () => {}, blend: () => {} });
   const pending = useRef<number>(initial);
 
-  useImperativeHandle(ref, () => ({ morphTo: (i: number) => api.current.morphTo(i) }), []);
+  useImperativeHandle(
+    ref,
+    () => ({
+      morphTo: (i: number) => api.current.morphTo(i),
+      blend: (a: number, b: number, t: number) => api.current.blend(a, b, t),
+    }),
+    [],
+  );
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -92,10 +104,31 @@ export function PointCloud({ initial, mode, count = 2400, className, ref }: Prop
       to.set(shapes[current]);
       state.p = 1;
       resize();
-      if (pending.current !== current) handle.morphTo(pending.current);
+      if (pendingBlend) handle.blend(...pendingBlend);
+      else if (pending.current !== current) handle.morphTo(pending.current);
+    };
+
+    let pendingBlend: [number, number, number] | null = null;
+    let pair = "";
+    handle.blend = (a: number, b: number, t: number) => {
+      if (!shapes || mode === "static") {
+        pendingBlend = [a, b, t];
+        return;
+      }
+      tween?.kill();
+      const key = `${a}>${b}`;
+      if (key !== pair) {
+        from.set(shapes[a]);
+        to.set(shapes[b]);
+        pair = key;
+      }
+      state.p = Math.min(1, Math.max(0, t));
+      current = state.p >= 1 ? b : a;
+      draw();
     };
 
     handle.morphTo = (index: number) => {
+      pair = "";
       pending.current = index;
       if (!shapes || mode === "static" || index === current) return;
       current = index;
@@ -129,6 +162,7 @@ export function PointCloud({ initial, mode, count = 2400, className, ref }: Prop
       ro.disconnect();
       tween?.kill();
       handle.morphTo = () => {};
+      handle.blend = () => {};
     };
   }, [initial, mode, count]);
 

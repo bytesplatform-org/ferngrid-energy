@@ -5,7 +5,6 @@ import { Statement } from "./_components/statement";
 import { OurSoftware } from "./_components/our-software";
 import { CapacityEnergy } from "./_components/capacity-energy";
 import { EraScene } from "./_components/era/era-scene";
-import { InsideFest } from "./_components/inside-fest";
 import { ServicesTraining } from "./_components/services-training";
 import { Marquee } from "./_components/marquee";
 import { ClosingCta } from "./_components/closing-cta";
@@ -24,7 +23,6 @@ export default function HomePage() {
         <OurSoftware />
         <CapacityEnergy />
         <EraScene />
-        <InsideFest />
         <ServicesTraining />
         <Marquee />
         <ClosingCta />

@@ -162,11 +162,6 @@ html.lenis body {
   padding-bottom: calc(var(--arc-depth) + 5rem);
 }
 
-@utility text-outline {
-  color: transparent;
-  -webkit-text-stroke: 1.5px currentColor;
-}
-
 /* ------------------------------------------------------------------ */
 /* Motion-dependent states                                             */
 /* `html.js` is set by an inline script before paint.                  */

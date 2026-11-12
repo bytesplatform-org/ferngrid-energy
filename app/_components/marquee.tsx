@@ -16,7 +16,8 @@ function Row1() {
           <span
             className={cx(
               "font-condensed px-[0.25em] text-[clamp(3.5rem,10vw,10rem)] leading-[0.95] uppercase",
-              i % 2 === 1 && "text-outline",
+              // Outlined words: the stroke needs a real colour (currentColor would be transparent).
+              i % 2 === 1 && "text-transparent [-webkit-text-stroke:1.5px_var(--color-carbon)]",
             )}
           >
             {t}
@@ -43,7 +44,7 @@ function Row2() {
 
 /**
  * Two-row marquee band. Scroll velocity nudges speed (and direction);
- * pauses on hover; static under reduced motion.
+ * keeps running under the cursor; static under reduced motion.
  */
 export function Marquee() {
   const ref = useRef<HTMLElement>(null);
@@ -55,15 +56,13 @@ export function Marquee() {
         const a = gsap.to("[data-track='1']", { xPercent: -50, duration: 38, ease: "none", repeat: -1 });
         const b = gsap.fromTo("[data-track='2']", { xPercent: -50 }, { xPercent: 0, duration: 46, ease: "none", repeat: -1 });
         const tweens = [a, b];
-        let hovered = false;
 
         const st = ScrollTrigger.create({
           trigger: ref.current,
           start: "top bottom",
           end: "bottom top",
-          onToggle: (self) => tweens.forEach((t) => (self.isActive && !hovered ? t.play() : t.pause())),
+          onToggle: (self) => tweens.forEach((t) => (self.isActive ? t.play() : t.pause())),
           onUpdate: (self) => {
-            if (hovered) return;
             const v = self.getVelocity();
             const boost = gsap.utils.clamp(-5, 5, v / 300);
             const scale = (self.direction >= 0 ? 1 : -1) * (1 + Math.abs(boost));
@@ -74,22 +73,7 @@ export function Marquee() {
             );
           },
         });
-
-        const el = ref.current!;
-        const enter = () => {
-          hovered = true;
-          tweens.forEach((t) => t.pause());
-        };
-        const leave = () => {
-          hovered = false;
-          if (st.isActive) tweens.forEach((t) => t.play());
-        };
-        el.addEventListener("mouseenter", enter);
-        el.addEventListener("mouseleave", leave);
-        return () => {
-          el.removeEventListener("mouseenter", enter);
-          el.removeEventListener("mouseleave", leave);
-        };
+        return () => st.kill();
       });
     },
     { scope: ref },

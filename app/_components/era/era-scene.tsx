@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useCallback, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useRef, useState } from "react";
 import { FRAGMENTS, NERC } from "@/lib/content";
 import { gsap, ScrollTrigger, useGSAP, MQ } from "../motion/gsap";
 import { scrollToTarget } from "../motion/smooth-scroll";
@@ -9,322 +9,309 @@ import { Callouts } from "./callouts";
 import { PointCloud, type PointCloudHandle } from "./point-cloud";
 import { SHAPES } from "./shapes";
 
-/** Structural titles / ghost words for the four BAL-007-1 requirements. */
-const STEPS = [
-  { key: "load", title: "Load", ghost: "LOAD" },
-  { key: "generation", title: "Generation", ghost: "GENERATION" },
-  { key: "transfers", title: "Transfers", ghost: "TRANSFERS" },
-  { key: "transmission", title: "Transmission", ghost: "TRANSMISSION" },
-] as const;
+/** Short titles for the four BAL-007-1 requirements (structural labels). */
+const STEPS = ["Load", "Generation", "Transfers", "Transmission"] as const;
 
-/** carbon → warmer carbon → olive-tinted carbon */
+/** carbon → warmer carbon → olive-tinted carbon, blended continuously with scroll */
 const TONES = ["#1d220f", "#21230f", "#222711", "#252c14"];
 
-const STEPS_END = 0.86; // remainder of the pin is the closing beat
-const PIN_LENGTH = "+=360%";
-const CLOSING = FRAGMENTS.eeaForecast.toUpperCase().replace("ERAS", "ERAs");
-const pad = (n: number) => String(n).padStart(2, "0");
+/** Scroll distance (viewport heights) the story stays pinned for. */
+const PIN_VH = 4.6;
+/** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
+const APPROACH_VH = 0.8;
 
+const words = (text: string) => text.split(" ");
+
+/** Masked words for rise-in reveals. */
+function MaskedWords({ text, attr }: { text: string; attr: string }) {
+  return words(text).map((w, i) => (
+    <Fragment key={i}>
+      {i > 0 && " "}
+      <span className="-mb-[0.14em] inline-block overflow-hidden pb-[0.14em] align-bottom">
+        <span {...{ [attr]: "" }} className="inline-block">
+          {w}
+        </span>
+      </span>
+    </Fragment>
+  ));
+}
+
+/**
+ * 03 — What a Near-Term ERA must account for. A pinned, scroll-scrubbed story
+ * (same structure as Our Software: one timeline owns everything):
+ * 1. "New BAL-007-1 Requirements" rises in, huge; then parks small top-left.
+ * 2. The intro brightens word by word.
+ * 3. The four requirements slide in horizontally; the point cloud morphs
+ *    continuously with scroll between their shapes; a quiet step row tracks
+ *    (and jumps to) the current one.
+ * 4. Closing line rises in, holds, releases.
+ * Static stacked layout without JS / under reduced motion.
+ */
 export function EraScene() {
-  const sectionRef = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLElement>(null);
   const cloudRef = useRef<PointCloudHandle>(null);
-  const triggerRef = useRef<ScrollTrigger | null>(null);
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [pinned, setPinned] = useState(false);
-  const [active, setActive] = useState(0);
-  const [closing, setClosing] = useState(false);
+  const jumpRef = useRef<(i: number) => void>(() => {});
+  const [story, setStory] = useState(false);
+  const reqs = NERC.requirements.accountFor;
 
-  // Decide layout: pinned stepper on desktop with motion, stacked cards otherwise.
   useGSAP(() => {
     const mm = gsap.matchMedia();
-    mm.add(MQ.desktopMotion, () => {
-      setPinned(true);
-      return () => setPinned(false);
+    mm.add(MQ.motion, () => {
+      setStory(true);
+      return () => setStory(false);
     });
   });
 
-  // Pin + scroll → step mapping.
   useGSAP(
     () => {
-      const section = sectionRef.current;
-      if (!pinned || !section) return;
+      const section = ref.current;
+      if (!story || !section) return;
+      const q = gsap.utils.selector(section);
+      const W = () => window.innerWidth;
+      const n = STEPS.length;
+      const callouts = q("[data-callouts]");
+      const stepBtns = q("[data-step]");
 
-      const panels = section.querySelectorAll<HTMLElement>("[data-panel]");
-      const ghosts = section.querySelectorAll<HTMLElement>("[data-ghost]");
-      const callouts = section.querySelectorAll<HTMLElement>("[data-callouts]");
-      gsap.set([...panels, ...ghosts, ...callouts].filter((_, i, a) => a.indexOf(_) === i), { autoAlpha: 0 });
-      gsap.set([panels[0], ghosts[0], callouts[0]], { autoAlpha: 1 });
-      gsap.set("[data-closing]", { autoAlpha: 0 });
-      gsap.set("[data-closing-word]", { yPercent: 110 });
+      // Explicit starting states (staggered tweens only pre-render their first target).
+      gsap.set(q("[data-heading-word]"), { yPercent: 120 });
+      gsap.set(q("[data-kicker]"), { autoAlpha: 0, y: 12 });
+      gsap.set(q("[data-intro]"), { autoAlpha: 0 });
+      gsap.set(q("[data-intro-word]"), { opacity: 0.14 });
+      gsap.set(q("[data-track]"), { x: W });
+      gsap.set(q("[data-visual]"), { autoAlpha: 0, scale: 0.92 });
+      gsap.set(q("[data-steps]"), { autoAlpha: 0, y: 16 });
+      gsap.set(callouts, { autoAlpha: 0 });
+      gsap.set(q("[data-closing-word]"), { yPercent: 120 });
 
-      triggerRef.current = ScrollTrigger.create({
-        trigger: section,
-        start: "top top",
-        end: PIN_LENGTH,
-        pin: true,
-        onUpdate: (self) => {
-          const p = self.progress;
-          setActive(Math.min(STEPS.length - 1, Math.floor((p / STEPS_END) * STEPS.length)));
-          setClosing(p > STEPS_END + 0.01);
+      // Scroll-driven position through the requirements (0 … n-1, fractional).
+      const proxy = { f: 0 };
+      let lastActive = -1;
+      const tone = gsap.utils.interpolate(TONES);
+      const renderSteps = () => {
+        const f = proxy.f;
+        const a = Math.min(n - 1, Math.floor(f));
+        const b = Math.min(n - 1, a + 1);
+        cloudRef.current?.blend(a, b, f - a);
+        callouts.forEach((c, i) => gsap.set(c, { autoAlpha: Math.max(0, 1 - Math.abs(f - i) * 3) }));
+        gsap.set(section, { backgroundColor: tone(f / (n - 1)) });
+        const active = Math.round(f);
+        if (active !== lastActive) {
+          lastActive = active;
+          stepBtns.forEach((btn, i) => {
+            if (i === active) btn.setAttribute("aria-current", "step");
+            else btn.removeAttribute("aria-current");
+          });
+        }
+      };
+
+      // ---- pinned part -------------------------------------------------------
+      const pin = gsap.timeline({ defaults: { ease: "none" } });
+      pin
+        // heading rolls out; kicker (same heading, small) parks top-left
+        .to(q("[data-heading-word]"), { yPercent: -120, duration: 0.1, stagger: 0.02, ease: "power3.in" }, 0.02)
+        .to(q("[data-kicker]"), { autoAlpha: 1, y: 0, duration: 0.06 }, 0.1)
+        // intro brightens word by word
+        .to(q("[data-intro]"), { autoAlpha: 1, duration: 0.04 }, 0.1)
+        .to(q("[data-intro-word]"), { opacity: 1, duration: 0.02, stagger: 0.24 / words(NERC.requirements.intro).length }, 0.14)
+        .to(q("[data-intro]"), { autoAlpha: 0, yPercent: -18, filter: "blur(10px)", duration: 0.08 }, 0.44)
+        // first requirement slides in, illustration appears
+        .to(q("[data-track]"), { x: 0, duration: 0.14, ease: "power3.out" }, 0.48)
+        .to(q("[data-visual]"), { autoAlpha: 1, scale: 1, duration: 0.12, ease: "power3.out" }, 0.5)
+        .to(q("[data-steps]"), { autoAlpha: 1, y: 0, duration: 0.06 }, 0.54)
+        .addLabel("step0", 0.64);
+
+      // rest on each requirement, then slide to the next while the dots morph
+      let t = 0.64;
+      for (let i = 1; i < n; i++) {
+        t += 0.16;
+        pin
+          .to(q("[data-track]"), { x: () => -i * W(), duration: 0.24, ease: "power2.inOut" }, t)
+          .to(proxy, { f: i, duration: 0.24, ease: "power2.inOut", onUpdate: renderSteps }, t);
+        t += 0.24;
+        pin.addLabel(`step${i}`, t);
+      }
+      t += 0.16;
+
+      // closing line takes over
+      pin
+        .to(q("[data-track], [data-visual], [data-steps], [data-kicker]"), { autoAlpha: 0, duration: 0.08 }, t)
+        .to(q("[data-closing-word]"), { yPercent: 0, duration: 0.1, stagger: 0.012, ease: "power3.out" }, t + 0.06)
+        // hold the finished scene (the next section's arc rises over the end of the pin)
+        .to({}, { duration: 0.36 });
+
+      // ---- master: approach (heading rises) + pinned part, one ScrollTrigger --
+      const approach = (pin.duration() * APPROACH_VH) / PIN_VH;
+      const master = gsap.timeline({
+        defaults: { ease: "none" },
+        scrollTrigger: {
+          trigger: section,
+          start: "top 80%",
+          end: () => `+=${window.innerHeight * (APPROACH_VH + PIN_VH)}`,
+          scrub: 0.7,
+          invalidateOnRefresh: true,
         },
       });
+      master
+        .to(q("[data-heading-word]"), { yPercent: 0, duration: approach * 0.85, stagger: approach * 0.05, ease: "power3.out" }, 0)
+        .add(pin, approach);
+
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: () => `+=${window.innerHeight * PIN_VH}`,
+        pin: true,
+        invalidateOnRefresh: true,
+      });
+
+      renderSteps();
+
+      // Step buttons scroll to their resting point.
+      jumpRef.current = (i: number) => {
+        const st = master.scrollTrigger;
+        if (!st) return;
+        const time = approach + pin.labels[`step${i}`];
+        scrollToTarget(st.start + (time / master.duration()) * (st.end - st.start));
+      };
 
       ScrollTrigger.sort();
       ScrollTrigger.refresh();
 
       return () => {
-        triggerRef.current = null;
-        gsap.set(
-          [section, ...panels, ...ghosts, ...callouts, ...section.querySelectorAll("[data-panel-line],[data-era-stage],[data-closing],[data-closing-word]")],
-          { clearProps: "all" },
-        );
-        setActive(0);
-        setClosing(false);
+        jumpRef.current = () => {};
       };
     },
-    { dependencies: [pinned], revertOnUpdate: true },
+    { scope: ref, dependencies: [story], revertOnUpdate: true },
   );
 
-  // Step transitions (discrete, not scrubbed).
-  useGSAP(
-    () => {
-      const section = sectionRef.current;
-      if (!pinned || !section) return;
-      const panels = gsap.utils.toArray<HTMLElement>("[data-panel]", section);
-      const ghosts = gsap.utils.toArray<HTMLElement>("[data-ghost]", section);
-      const callouts = gsap.utils.toArray<HTMLElement>("[data-callouts]", section);
-
-      panels.forEach((panel, i) => {
-        const on = i === active;
-        const lines = panel.querySelectorAll("[data-panel-line]");
-        if (on) {
-          gsap.to(panel, { autoAlpha: 1, duration: 0.3, overwrite: true });
-          gsap.fromTo(
-            lines,
-            { y: 40, autoAlpha: 0 },
-            { y: 0, autoAlpha: 1, duration: 0.9, ease: "expo.out", stagger: 0.06, overwrite: true },
-          );
-        } else {
-          gsap.to(panel, { autoAlpha: 0, duration: 0.35, overwrite: true });
-        }
-      });
-      ghosts.forEach((g, i) =>
-        gsap.to(g, {
-          autoAlpha: i === active ? 1 : 0,
-          xPercent: i === active ? 0 : i < active ? -6 : 6,
-          duration: 1.1,
-          ease: "expo.out",
-          overwrite: true,
-        }),
-      );
-      callouts.forEach((c, i) =>
-        gsap.to(c, { autoAlpha: i === active ? 1 : 0, duration: 0.5, delay: i === active ? 0.6 : 0, overwrite: true }),
-      );
-      gsap.to(section, { backgroundColor: TONES[active], duration: 1, ease: "power2.out", overwrite: "auto" });
-      cloudRef.current?.morphTo(active);
-    },
-    { dependencies: [active, pinned] },
-  );
-
-  // Closing beat.
-  useGSAP(
-    () => {
-      if (!pinned) return;
-      gsap.to("[data-era-stage]", { autoAlpha: closing ? 0 : 1, duration: 0.6, overwrite: true });
-      // Back to plain carbon for the closing beat so the next section's curved corners match.
-      gsap.to(sectionRef.current, {
-        backgroundColor: closing ? TONES[0] : TONES[active],
-        duration: 1,
-        ease: "power2.out",
-        overwrite: "auto",
-      });
-      gsap.to("[data-closing]", { autoAlpha: closing ? 1 : 0, duration: 0.4, overwrite: true });
-      gsap.to("[data-closing-word]", {
-        yPercent: closing ? 0 : 110,
-        duration: closing ? 1.1 : 0.4,
-        ease: closing ? "expo.out" : "power2.in",
-        stagger: closing ? 0.04 : 0,
-        overwrite: true,
-      });
-    },
-    { scope: sectionRef, dependencies: [closing, pinned] },
-  );
-
-  /** Scroll so the pinned scene lands in the middle of step i. */
-  const goTo = useCallback((i: number) => {
-    const st = triggerRef.current;
-    if (!st) return;
-    scrollToTarget(st.start + ((i + 0.5) / STEPS.length) * STEPS_END * (st.end - st.start));
-  }, []);
-
-  const onTabKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    const keys: Record<string, number> = {
-      ArrowRight: (active + 1) % STEPS.length,
-      ArrowLeft: (active - 1 + STEPS.length) % STEPS.length,
-      Home: 0,
-      End: STEPS.length - 1,
-    };
-    if (!(e.key in keys)) return;
-    e.preventDefault();
-    const next = keys[e.key];
-    tabRefs.current[next]?.focus();
-    goTo(next);
-  };
-
-  const reqs = NERC.requirements.accountFor;
-
-  return (
-    <section
-      ref={sectionRef}
-      aria-labelledby="era-title"
-      className={cx(
-        "surface-dark relative z-10 bg-carbon",
-        pinned ? "h-svh overflow-hidden" : "arc-prev overflow-clip px-5 pt-24 md:px-10 md:pt-32",
-      )}
-    >
-      <div data-era-stage className={cx(pinned && "absolute inset-0")}>
-        {/* Header */}
-        <header className={cx(pinned ? "absolute top-24 left-10 z-10 w-[min(44vw,620px)]" : "mx-auto max-w-[1600px]")}>
-          <h2 id="era-title" className="text-sm font-medium text-paper/80">
+  /* ---------------------------------------------------------------------- */
+  /* Static layout (no JS / reduced motion)                                  */
+  /* ---------------------------------------------------------------------- */
+  if (!story) {
+    return (
+      <section
+        ref={ref}
+        aria-labelledby="era-title"
+        className="surface-dark arc-prev relative z-10 overflow-clip bg-carbon px-5 pt-24 md:px-10 md:pt-32"
+      >
+        <div className="mx-auto max-w-[1600px]">
+          <h2 id="era-title" className="font-condensed text-[clamp(2.5rem,6vw,6rem)] leading-[0.9] uppercase">
             {NERC.requirements.heading}
           </h2>
-          <p className="mt-3 max-w-[58ch] text-base leading-relaxed text-muted">{NERC.requirements.intro}</p>
-        </header>
-
-        {/* Steps */}
-        <ol className={cx(pinned ? "absolute inset-0" : "mx-auto mt-16 max-w-[1600px] space-y-20 md:mt-24")}>
-          {STEPS.map((s, i) => (
-            <li
-              key={s.key}
-              id={`era-panel-${s.key}`}
-              data-panel
-              role={pinned ? "tabpanel" : undefined}
-              aria-labelledby={pinned ? `era-tab-${s.key}` : undefined}
-              aria-hidden={pinned && i !== active ? true : undefined}
-              inert={pinned && i !== active ? true : undefined}
-              className={cx(
-                pinned
-                  ? "pointer-events-none absolute inset-0"
-                  : "relative grid gap-10 border-t border-line pt-10 md:grid-cols-2 md:gap-12",
-              )}
-            >
-              <span
-                data-ghost
-                aria-hidden
-                className={cx(
-                  "font-display text-ghost pointer-events-none absolute whitespace-nowrap text-paper/[0.06] uppercase select-none",
-                  pinned ? "bottom-[4vh] left-[-1.5vw]" : "top-6 right-0 text-[clamp(4rem,22vw,22rem)]",
-                )}
-              >
-                {s.ghost}
-              </span>
-
-              <div
-                className={cx(
-                  pinned
-                    ? "pointer-events-auto absolute top-1/2 left-10 w-[min(42vw,600px)] -translate-y-[28%]"
-                    : "relative",
-                )}
-              >
-                <p data-panel-line className="text-label text-muted">
-                  {pad(i + 1)} / {pad(STEPS.length)}
-                </p>
-                <h3
-                  data-panel-line
-                  className="font-display mt-4 text-[clamp(3.75rem,8.5vw,10rem)] leading-[0.88]"
-                >
-                  {s.title}
-                </h3>
-                <p data-panel-line className="mt-6 max-w-[40ch] text-lg leading-relaxed text-paper/80">
-                  {reqs[i]}
-                </p>
-                <p data-panel-line className="text-label mt-8 flex flex-wrap gap-x-6 gap-y-2 border-t border-line pt-4 text-muted">
-                  <span>BAL-007-1</span>
-                  <span>Requirement {pad(i + 1)}</span>
-                  <span>Near-Term ERA</span>
-                </p>
+          <p className="mt-6 max-w-[58ch] text-lg leading-relaxed text-muted">{NERC.requirements.intro}</p>
+        </div>
+        <ol className="mx-auto mt-16 max-w-[1600px] space-y-20 md:mt-24">
+          {STEPS.map((title, i) => (
+            <li key={title} className="grid gap-10 border-t border-line pt-10 md:grid-cols-2 md:gap-12">
+              <div>
+                <h3 className="font-display text-[clamp(3rem,6.4vw,7.5rem)] leading-[0.9]">{title}</h3>
+                <p className="mt-6 max-w-[40ch] text-lg leading-relaxed text-paper/80">{reqs[i]}</p>
               </div>
-
-              {!pinned && (
-                <div className="relative mx-auto aspect-square w-full max-w-[460px]">
-                  <PointCloud mode="static" initial={i} className="absolute inset-0 size-full" />
-                  <Callouts items={SHAPES[i].callouts} />
-                </div>
-              )}
+              <div className="relative mx-auto aspect-square w-full max-w-[460px]">
+                <PointCloud mode="static" initial={i} className="absolute inset-0 size-full" />
+                <Callouts items={SHAPES[i].callouts} />
+              </div>
             </li>
           ))}
         </ol>
+        <p className="font-display mx-auto mt-28 max-w-[22ch] text-center text-[clamp(2.25rem,6vw,7rem)] leading-[0.98] md:mt-40">
+          {FRAGMENTS.eeaForecast}
+        </p>
+      </section>
+    );
+  }
 
-        {/* Shared morphing visual (pinned only) */}
-        {pinned && (
-          <div className="absolute top-1/2 right-10 aspect-square w-[min(40vw,62vh)] -translate-y-[44%]">
-            <PointCloud ref={cloudRef} mode="morph" initial={0} className="absolute inset-0 size-full" />
-            {SHAPES.map((shape) => (
-              <div key={shape.key} data-callouts className="absolute inset-0">
-                <Callouts items={shape.callouts} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Tabs (pinned only) */}
-        {pinned && (
-          <div className="absolute inset-x-0 bottom-7 z-20 flex justify-center">
-            <div
-              role="tablist"
-              aria-label="BAL-007-1 requirements"
-              className="flex gap-1.5 rounded-full bg-carbon/70 p-1.5 ring-1 ring-paper/10 backdrop-blur-sm"
-            >
-              {STEPS.map((s, i) => {
-                const selected = i === active;
-                return (
-                  <button
-                    key={s.key}
-                    ref={(el) => {
-                      tabRefs.current[i] = el;
-                    }}
-                    id={`era-tab-${s.key}`}
-                    role="tab"
-                    type="button"
-                    aria-selected={selected}
-                    aria-controls={`era-panel-${s.key}`}
-                    tabIndex={selected ? 0 : -1}
-                    onClick={() => goTo(i)}
-                    onKeyDown={onTabKey}
-                    className={cx(
-                      "text-label flex h-9 items-center gap-2 rounded-full px-4 transition-colors duration-300",
-                      selected ? "bg-paper text-carbon" : "text-paper/70 hover:text-paper",
-                    )}
-                  >
-                    {selected && <span aria-hidden className="size-1.5 rounded-full bg-fern" />}
-                    {pad(i + 1)} {s.title}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
+  /* ---------------------------------------------------------------------- */
+  /* Story layout                                                            */
+  /* ---------------------------------------------------------------------- */
+  return (
+    <section
+      ref={ref}
+      aria-labelledby="era-title"
+      className="surface-dark arc-prev relative z-10 h-svh overflow-hidden bg-carbon"
+    >
+      {/* 1. Heading, huge and centred */}
+      <div className="pointer-events-none absolute inset-0 grid place-items-center px-5 text-center">
+        <h2
+          id="era-title"
+          className="font-condensed max-w-[12ch] text-[clamp(3.25rem,10.5vw,12rem)] leading-[0.88] uppercase"
+        >
+          <MaskedWords text={NERC.requirements.heading} attr="data-heading-word" />
+        </h2>
       </div>
 
-      {/* Closing beat */}
+      {/* Kicker: the same heading, parked small top-left for context */}
+      <div aria-hidden data-kicker className="absolute top-24 left-5 z-10 md:top-28 md:left-10">
+        <p className="font-condensed text-[clamp(1.25rem,1.8vw,1.75rem)] leading-none uppercase">
+          {NERC.requirements.heading}
+        </p>
+        <span className="mt-3 block h-[2px] w-14 bg-fern" />
+      </div>
+
+      {/* 2. Intro, revealed word by word */}
       <div
-        data-closing
-        className={cx(
-          "flex items-center justify-center text-center",
-          pinned ? "absolute inset-0 px-10" : "mx-auto mt-28 max-w-[1600px] md:mt-40",
-        )}
+        data-intro
+        className="pointer-events-none absolute inset-x-5 top-1/2 -translate-y-1/2 md:inset-x-10 lg:right-auto lg:w-[60vw]"
       >
-        <p className="font-display max-w-[22ch] text-[clamp(2.25rem,6vw,7rem)] leading-[0.98]">
-          {CLOSING.split(" ").map((w, i) => (
+        <p className="font-display text-[clamp(1.6rem,3.4vw,3.6rem)] leading-[1.12] text-paper">
+          {words(NERC.requirements.intro).map((w, i) => (
             <Fragment key={i}>
               {i > 0 && " "}
-              <span className="-mb-[0.1em] inline-block overflow-hidden pb-[0.1em] align-bottom">
-                <span data-closing-word className="inline-block">
-                  {w}
-                </span>
-              </span>
+              <span data-intro-word>{w}</span>
             </Fragment>
           ))}
+        </p>
+      </div>
+
+      {/* 3. Requirements: a horizontal track of full-width panels */}
+      <div data-track className="absolute inset-y-0 left-0 flex" style={{ width: `${STEPS.length * 100}vw` }}>
+        {STEPS.map((title, i) => (
+          <div key={title} className="relative h-full w-screen">
+            <div className="absolute inset-x-5 bottom-[16%] md:inset-x-10 lg:top-1/2 lg:right-auto lg:bottom-auto lg:w-[42vw] lg:-translate-y-[30%]">
+              <h3 className="font-display text-[clamp(3.25rem,8vw,9.5rem)] leading-[0.92]">{title}</h3>
+              <p className="mt-5 max-w-[34ch] text-lg leading-relaxed text-paper/80 md:text-xl">{reqs[i]}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Illustration: one point cloud that morphs with scroll */}
+      <div className="pointer-events-none absolute top-[17%] left-1/2 aspect-square w-[min(74vw,46vh)] -translate-x-1/2 lg:top-1/2 lg:right-10 lg:left-auto lg:w-[min(40vw,62vh)] lg:translate-x-0 lg:-translate-y-[46%]">
+        <div data-visual className="absolute inset-0">
+          <PointCloud ref={cloudRef} mode="morph" initial={0} className="absolute inset-0 size-full" />
+          {SHAPES.map((shape) => (
+            <div key={shape.key} data-callouts className="absolute inset-0">
+              <Callouts items={shape.callouts} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Step row: words only, current one underlined; click to jump */}
+      <nav aria-label="BAL-007-1 requirements" className="absolute inset-x-0 bottom-6 z-20 flex justify-center px-5 md:bottom-8">
+        <ul data-steps className="flex gap-5 md:gap-10">
+          {STEPS.map((title, i) => (
+            <li key={title}>
+              <button
+                type="button"
+                data-step
+                onClick={() => jumpRef.current(i)}
+                className={cx(
+                  "relative py-2 text-sm font-medium text-paper/50 transition-colors duration-300 hover:text-paper md:text-base",
+                  "after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:origin-left after:scale-x-0 after:bg-fern after:transition-transform after:duration-500",
+                  "aria-[current=step]:text-paper aria-[current=step]:after:scale-x-100",
+                )}
+              >
+                {title}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* 4. Closing line */}
+      <div className="pointer-events-none absolute inset-0 grid place-items-center px-5 text-center md:px-10">
+        <p className="font-display max-w-[20ch] text-[clamp(2.25rem,6vw,7rem)] leading-[1]">
+          <MaskedWords text={FRAGMENTS.eeaForecast} attr="data-closing-word" />
         </p>
       </div>
     </section>

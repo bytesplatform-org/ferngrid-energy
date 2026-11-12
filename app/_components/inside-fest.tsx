@@ -3,7 +3,10 @@ import { ArcSurface } from "./motion/arc-surface";
 import { FadeUp, SplitReveal } from "./motion/reveal";
 import { FestModel } from "./fest-model";
 
-/** 04 / Inside FEST — the FEST data model, rebuilt. */
+/**
+ * Inside FEST — the FEST data model, rebuilt from the client's "Simple Model.png".
+ * Not on the homepage: reserved for the FEST page (/fest) when it's built.
+ */
 export function InsideFest() {
   return (
     <section
