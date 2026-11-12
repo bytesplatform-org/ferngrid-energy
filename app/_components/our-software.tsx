@@ -9,7 +9,18 @@ import softwareImg from "@/public/images/our-software.webp";
 import gridImg from "@/public/images/fest-1.webp";
 
 /** Scroll distance the story stays pinned for. */
-const PIN_LENGTH = "+=340%";
+/** Scroll distance (viewport heights) the story stays pinned for. */
+const PIN_VH = 3.8;
+/** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
+const APPROACH_VH = 0.8;
+/** Timeline time spent on the approach (keeps it ≈ APPROACH_VH / total of the timeline). */
+const LEAD = 0.27;
+/**
+ * Hold on the finished scene (timeline time) after the CTA lands. The next
+ * section's arc rises over the last --arc-depth of the pin, so everything must
+ * be complete well before then.
+ */
+const HOLD = 0.34;
 
 /** Phrases in the (verbatim) paragraph that light up in fern. */
 const HIGHLIGHTS = [
@@ -90,72 +101,98 @@ export function OurSoftware() {
       const offX = () => W() / 2 + cw() * 0.75 + 60;
       const offY = () => H() / 2 + ch() * 0.75 + 60;
 
+      // Explicit starting states for every staggered target. A staggered fromTo
+      // only pre-renders its *first* target (the others haven't "started" yet at
+      // time 0), which left "SOFTWARE" / "APRIL 2027." visible on the first pass.
+      gsap.set(q("[data-heading-word]"), { yPercent: 115 });
+      gsap.set(q("[data-title-word]"), { yPercent: 115 });
+      gsap.set(q("[data-spec]"), { autoAlpha: 0, y: 30, scale: 0.94 });
+      gsap.set(q("[data-word]"), { opacity: 0.14 });
+
+      // The pin on its own, with no animation attached…
+      ScrollTrigger.create({
+        trigger: section,
+        start: "top top",
+        end: () => `+=${window.innerHeight * PIN_VH}`,
+        pin: true,
+        invalidateOnRefresh: true,
+      });
+
+      // …and ONE scrubbed timeline that owns the whole sequence, from the approach
+      // ("top 80%") to the end of the pin. Every property is driven by a single
+      // timeline, so smoothed tweens can never fight and leave words stuck on screen.
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: section,
-          start: "top top",
-          end: PIN_LENGTH,
-          pin: true,
+          start: "top 80%",
+          end: () => `+=${window.innerHeight * (APPROACH_VH + PIN_VH)}`,
           scrub: 0.7,
           invalidateOnRefresh: true,
         },
       });
 
       // 1. "Our Software" rises in as the section arrives (before the pin locks)
-      gsap.from(q("[data-heading-word]"), {
-        yPercent: 115,
-        ease: "power3.out",
-        stagger: 0.12,
-        scrollTrigger: { trigger: section, start: "top 80%", end: "top 15%", scrub: 0.6 },
-      });
+      tl.fromTo(
+        q("[data-heading-word]"),
+        { yPercent: 115 },
+        { yPercent: 0, duration: 0.2, stagger: 0.04, ease: "power3.out" },
+        0.02,
+      );
 
       tl
         // 1b. "Our Software" rolls out, "Beginning April 2027." rolls in
-        .to(q("[data-heading-word]"), { yPercent: -115, duration: 0.07, stagger: 0.025, ease: "power3.in" }, 0.01)
+        .fromTo(
+          q("[data-heading-word]"),
+          { yPercent: 0 },
+          { yPercent: -115, duration: 0.07, stagger: 0.025, ease: "power3.in", immediateRender: false },
+          0.28,
+        )
         .fromTo(
           q("[data-title-word]"),
           { yPercent: 115 },
           { yPercent: 0, duration: 0.08, stagger: 0.03, ease: "power3.out" },
-          0.07,
+          0.34,
         )
         // 2. photos fly in from opposite corners, crossing the title
         .fromTo(
           cardA,
           { x: () => -offX(), y: () => offY(), rotate: -14, autoAlpha: 0 },
           { x: () => -W() * 0.14, y: () => H() * 0.1, rotate: -4, autoAlpha: 1, duration: 0.3, ease: "power2.out" },
-          0.19,
+          0.46,
         )
         .fromTo(
           cardB,
           { x: () => offX(), y: () => -offY(), rotate: 14, autoAlpha: 0 },
           { x: () => W() * 0.15, y: () => -H() * 0.12, rotate: 5, autoAlpha: 1, duration: 0.3, ease: "power2.out" },
-          0.23,
+          0.5,
         )
         // 3. converge, then the software photo fills the screen
-        .to([cardA, cardB], { x: 0, y: 0, rotate: 0, duration: 0.12, ease: "power2.inOut" }, 0.54)
-        .to(cardB, { autoAlpha: 0, scale: 0.9, duration: 0.05 }, 0.64)
-        .to(cardA, { width: W, height: H, borderRadius: 0, duration: 0.14, ease: "power2.inOut" }, 0.66)
-        .to(q("[data-on-image]"), { color: "#f8f9f7", duration: 0.08 }, 0.7)
-        .to(q("[data-shade]"), { autoAlpha: 1, duration: 0.1 }, 0.72)
+        .to([cardA, cardB], { x: 0, y: 0, rotate: 0, duration: 0.12, ease: "power2.inOut" }, 0.81)
+        .to(cardB, { autoAlpha: 0, scale: 0.9, duration: 0.05 }, 0.91)
+        .to(cardA, { width: W, height: H, borderRadius: 0, duration: 0.14, ease: "power2.inOut" }, 0.93)
+        .to(q("[data-on-image]"), { color: "#f8f9f7", duration: 0.08 }, 0.97)
+        .to(q("[data-shade]"), { autoAlpha: 1, duration: 0.1 }, 0.99)
         // 4. title leaves; paragraph brightens word by word
-        .to(q("[data-title]"), { yPercent: -35, autoAlpha: 0, filter: "blur(12px)", duration: 0.08 }, 0.78)
-        .to(q("[data-para]"), { autoAlpha: 1, duration: 0.03 }, 0.8)
+        .to(q("[data-title]"), { yPercent: -35, autoAlpha: 0, filter: "blur(12px)", duration: 0.08 }, 1.05)
+        .to(q("[data-para]"), { autoAlpha: 1, duration: 0.03 }, 1.07)
+        .fromTo(q("[data-para-heading]"), { yPercent: 110 }, { yPercent: 0, duration: 0.05, ease: "power3.out" }, 1.07)
+        .fromTo(q("[data-para-rule]"), { scaleX: 0 }, { scaleX: 1, duration: 0.05, ease: "power2.out" }, 1.1)
         .fromTo(
           q("[data-word]"),
           { opacity: 0.14 },
           { opacity: 1, duration: 0.02, stagger: 0.17 / words.length },
-          0.82,
+          1.12,
         )
         // 5. spec cards, then the CTA
         .fromTo(
           q("[data-spec]"),
           { autoAlpha: 0, y: 30, scale: 0.94 },
           { autoAlpha: 1, y: 0, scale: 1, duration: 0.05, stagger: 0.03, ease: "power3.out" },
-          1,
+          1.27,
         )
-        .fromTo(q("[data-cta]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.04 }, 1.11)
-        .to({}, { duration: 0.04 });
+        .fromTo(q("[data-cta]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.04 }, 1.38)
+        .to({}, { duration: HOLD });
 
       // This pin is created after a state change, so re-order and re-measure.
       ScrollTrigger.sort();
@@ -288,6 +325,20 @@ export function OurSoftware() {
                   "invisible absolute top-1/2 left-5 w-[min(88vw,640px)] -translate-y-1/2 opacity-0 md:left-10 lg:w-[44vw] lg:max-w-[760px]",
               )}
             >
+              {/* Visible heading for the paragraph (the section's h2 is the big title above). */}
+              {story && (
+                <div aria-hidden className="mb-5 md:mb-7">
+                  <span className="block overflow-hidden pb-[0.05em]">
+                    <span
+                      data-para-heading
+                      className="font-condensed inline-block text-[clamp(2.25rem,4.6vw,5rem)] leading-[0.9] text-paper uppercase"
+                    >
+                      {ourSoftware.title}
+                    </span>
+                  </span>
+                  <span data-para-rule className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-5" />
+                </div>
+              )}
               <p
                 className={cx(
                   story
