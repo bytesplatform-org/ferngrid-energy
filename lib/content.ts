@@ -234,3 +234,69 @@ export const NERC_FRAGMENTS = {
   dispatches: "Generation dispatches for each hour",
   emergencies: "Forecast potential Energy Emergencies",
 } as const;
+
+/* ------------------------------------------------------------------ */
+/* FEST page — verbatim from ferngrid-energy.com/fest                  */
+/* ------------------------------------------------------------------ */
+
+export type FestPackage = {
+  id: "basic" | "standard" | "premium";
+  /** Card title (as on the live page). */
+  title: string;
+  featured?: boolean;
+  items: readonly string[];
+  /** Description label and text (as on the live page). */
+  label: string;
+  body: string;
+};
+
+export const FEST_PAGE = {
+  title: "Fuel and Energy Security Tool",
+  acronym: "FEST",
+  pricingCta: "Contact Us for Details on Package Pricing",
+  modelHeading: "Fuel and Energy Security Tool (FEST) and Near Term ERAs",
+  packagesHeading: "Our Packages",
+  /** Card order as on the live page; descriptions map by retainer (0 / 1 / 12 months). */
+  packages: [
+    {
+      id: "basic",
+      title: "Standard Software License",
+      items: [
+        "One Year of FEST License",
+        "10 Free Hours of Support",
+        "Number of Retainer Months: 0",
+        "Retainer Discount: 0%",
+        "Customer Run ERAs",
+      ],
+      label: "Basic Package:",
+      body: "FernGrid Energy’s Basic Package is ideal for customers with a technically savvy Subject Matter Expert (SME) on staff. This SME will be responsible for updating key study inputs like Generator Fuel Survey Results and Forecasted Load/Temperature Shapes to maintain accurate Near Term ERA results. The customer will be responsible for running NERC BAL-007-1 Near Term ERAs using FEST.",
+    },
+    {
+      id: "standard",
+      title: "Software License + Set-Up Retainer",
+      featured: true,
+      items: [
+        "One Year of FEST License",
+        "10 Free Hours of Support",
+        "Number of Retainer Months: 1",
+        "Retainer Discount: 10%",
+        "Customer Run ERAs",
+      ],
+      label: "Standard Package:",
+      body: "The Standard Package includes dedicated monthly support hours with FernGrid Energy to help configure and automate customer-specific study inputs, such as Generator Fuel Survey Results and Forecasted Load/Temperature Shapes. This package is well suited for customers with an in-house Subject Matter Expert (SME) who can collaborate with FernGrid Energy to establish study assumptions, provide representative input data, and learn the automated workflow. The customer SME will ultimately run NERC BAL-007-1 Near Term ERAs using FEST.",
+    },
+    {
+      id: "premium",
+      title: "FernGrid Energy Run BAL-007-1 Studies",
+      items: [
+        "One Year of FEST License",
+        "10 Free Hours of Support",
+        "Number of Retainer Months: 12",
+        "Retainer Discount: 15%",
+        "FernGrid Energy Run ERAs",
+      ],
+      label: "Premium Package:",
+      body: "The Premium Package provides dedicated monthly support from FernGrid Energy for one year to manage your Near Term ERA process from start to finish. Our team will establish study assumptions with your SME, run/review FEST's Near Term ERA results, and deliver Near Term ERA results for NERC BAL-007-1 compliance. FernGrid Energy will be responsible for running NERC BAL 007-1 Near Term ERAs using FEST.",
+    },
+  ] as readonly FestPackage[],
+} as const;

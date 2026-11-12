@@ -44,8 +44,11 @@ function Tick() {
 /**
  * FEST data model, rebuilt as HTML cards + SVG connectors measured from the
  * DOM so they stay exact at any width.
+ *
+ * `scrub`: the page drives the build-up on scroll instead (the connectors draw
+ * from the `--fest-draw` CSS variable, 0–1, set on this component's root).
  */
-export function FestModel() {
+export function FestModel({ scrub = false }: { scrub?: boolean } = {}) {
   const rootRef = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [box, setBox] = useState({ w: 0, h: 0 });
@@ -54,16 +57,25 @@ export function FestModel() {
   const measure = useCallback(() => {
     const root = rootRef.current;
     if (!root) return;
-    const R = root.getBoundingClientRect();
     if (window.innerWidth < 1024) {
       setEdges([]);
       return;
     }
+    // Layout positions (offsetLeft/Top up to the root), NOT on-screen boxes:
+    // transforms — e.g. the cards' scattered start on the FEST page — must not
+    // bend the connectors.
     const rect = (sel: string) => {
       const el = root.querySelector<HTMLElement>(sel);
       if (!el) return null;
-      const r = el.getBoundingClientRect();
-      return { l: r.left - R.left, r: r.right - R.left, t: r.top - R.top, b: r.bottom - R.top, cy: r.top - R.top + r.height / 2 };
+      let x = 0;
+      let y = 0;
+      for (let n: HTMLElement | null = el; n && n !== root; n = n.offsetParent as HTMLElement | null) {
+        x += n.offsetLeft;
+        y += n.offsetTop;
+      }
+      const w = el.offsetWidth;
+      const h = el.offsetHeight;
+      return { l: x, r: x + w, t: y, b: y + h, cy: y + h / 2 };
     };
     const head = (id: FestNodeId) => rect(`[data-node="${id}"] [data-head]`);
     const item = (id: FestNodeId, idx: number) => rect(`[data-node="${id}"] [data-item="${idx}"]`);
@@ -117,7 +129,7 @@ export function FestModel() {
       to: "oilcoal",
       d: `M ${dualOil.r} ${dualOil.cy} H ${inner} V ${oilH.cy} H ${oilH.r + 2}`,
     });
-    setBox({ w: R.width, h: R.height });
+    setBox({ w: root.offsetWidth, h: root.offsetHeight });
     setEdges(next);
   }, []);
 
@@ -132,7 +144,7 @@ export function FestModel() {
   // Draw connectors + cards in on scroll.
   useGSAP(
     () => {
-      if (!edges.length) return;
+      if (!edges.length || scrub) return;
       const mm = gsap.matchMedia();
       mm.add(MQ.motion, () => {
         const tl = gsap.timeline({ scrollTrigger: { trigger: rootRef.current, start: "top 75%", once: true } });
@@ -144,13 +156,13 @@ export function FestModel() {
         );
       });
     },
-    { scope: rootRef, dependencies: [edges.length > 0] },
+    { scope: rootRef, dependencies: [edges.length > 0, scrub] },
   );
 
   const related = hover ? new Set<FestNodeId>([hover, ...CONNECTIONS[hover]]) : null;
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} data-fest-model className="relative">
       {/* Mobile rail */}
       <span aria-hidden className="absolute top-2 bottom-2 left-[5px] w-px bg-carbon/25 lg:hidden" />
 
@@ -160,7 +172,7 @@ export function FestModel() {
           "lg:grid-cols-[minmax(0,0.9fr)_minmax(80px,0.42fr)_minmax(0,1fr)_96px]",
         )}
       >
-        {MOBILE_ORDER.map((id, i) => {
+        {MOBILE_ORDER.map((id) => {
           const node = byId[id];
           const dim = related && !related.has(id);
           return (
@@ -197,9 +209,6 @@ export function FestModel() {
                   )}
                 >
                   <span>{node.title}</span>
-                  <span aria-hidden className={cx("shrink-0", hover === id ? "text-paper/60" : "text-carbon/60")}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
                 </h3>
                 <ul>
                   {node.items.map((it, k) => (
@@ -224,10 +233,7 @@ export function FestModel() {
                   hover === id ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
                 )}
               >
-                <p className="text-label text-paper/60">
-                  Node {String(i + 1).padStart(2, "0")} / {String(FEST_MODEL.length).padStart(2, "0")}
-                </p>
-                <p className="font-display mt-2 text-3xl leading-none">{node.title}</p>
+                <p className="font-display text-3xl leading-none">{node.title}</p>
                 <ul className="mt-3 space-y-1.5 border-t border-paper/15 pt-3 text-sm text-paper/80">
                   {node.items.map((it) => (
                     <li key={it} className="flex items-center gap-2">
@@ -268,6 +274,7 @@ export function FestModel() {
                 d={e.d}
                 pathLength={1}
                 strokeDasharray="1 1"
+                style={scrub ? { strokeDashoffset: "calc(1 - var(--fest-draw, 1))" } : undefined}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={on ? 1.75 : 1}

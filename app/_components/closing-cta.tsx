@@ -35,7 +35,11 @@ function headlineWords() {
  * - Buttons are magnetic; contact rules draw in; the email can be copied.
  * Static (and fully legible) without JS / under reduced motion.
  */
-export function ClosingCta({ stackOver }: { stackOver?: string } = {}) {
+/**
+ * `stackOver`: selector of a pinned previous scene this section slides over.
+ * `hideExplore`: drop the Explore FEST button (e.g. on the FEST page itself).
+ */
+export function ClosingCta({ stackOver, hideExplore = false }: { stackOver?: string; hideExplore?: boolean } = {}) {
   const { closing } = HOME;
   const ref = useRef<HTMLElement>(null);
   const [copied, setCopied] = useState(false);
@@ -331,15 +335,17 @@ export function ClosingCta({ stackOver }: { stackOver?: string } = {}) {
               {closing.body}
             </p>
             <div data-rise className="mt-10 flex flex-wrap gap-3">
-              <span data-magnet className="inline-block">
-                <PillLink
-                  href={closing.buttons.explore.href}
-                  tone="paper"
-                  size="lg"
-                >
-                  {closing.buttons.explore.label}
-                </PillLink>
-              </span>
+              {!hideExplore && (
+                <span data-magnet className="inline-block">
+                  <PillLink
+                    href={closing.buttons.explore.href}
+                    tone="paper"
+                    size="lg"
+                  >
+                    {closing.buttons.explore.label}
+                  </PillLink>
+                </span>
+              )}
               <span data-magnet className="inline-block">
                 <PillLink
                   href={closing.buttons.contact.href}
