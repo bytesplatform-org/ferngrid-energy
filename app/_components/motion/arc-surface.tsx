@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { gsap, useGSAP, MQ } from "./gsap";
+import { gsap, ScrollTrigger, useGSAP, MQ } from "./gsap";
 
 /** Full class strings so Tailwind can see them. */
 const TONES = {
@@ -32,26 +32,39 @@ export function ArcSurface({ tone, parallax }: { tone: keyof typeof TONES; paral
     () => {
       if (!parallax) return;
       const mm = gsap.matchMedia();
-      mm.add(MQ.motion, () => {
+      mm.add(MQ.motion, (context) => {
         const section = ref.current?.parentElement;
-        const prev = document.querySelector<HTMLElement>(parallax);
-        if (!section || !prev) return;
-        // Previous section moves at ~60% speed while this one covers it.
-        gsap.fromTo(
-          prev,
-          { y: 0 },
-          {
-            y: () => window.innerHeight * 0.4,
-            ease: "none",
-            scrollTrigger: {
-              trigger: section,
-              start: "top bottom",
-              end: "top top",
-              scrub: true,
-              invalidateOnRefresh: true,
-            },
-          },
-        );
+        if (!section) return;
+        // The target may not exist yet (e.g. a story section that swaps in its
+        // pinned layout after mounting), so look again after each layout refresh.
+        let started = false;
+        const start = () => {
+          if (started) return;
+          const prev = document.querySelector<HTMLElement>(parallax);
+          if (!prev) return;
+          started = true;
+          context.add(() => {
+            // Previous section moves at ~60% speed while this one covers it.
+            gsap.fromTo(
+              prev,
+              { y: 0 },
+              {
+                y: () => window.innerHeight * 0.4,
+                ease: "none",
+                scrollTrigger: {
+                  trigger: section,
+                  start: "top bottom",
+                  end: "top top",
+                  scrub: true,
+                  invalidateOnRefresh: true,
+                },
+              },
+            );
+          });
+        };
+        start();
+        if (!started) ScrollTrigger.addEventListener("refresh", start);
+        return () => ScrollTrigger.removeEventListener("refresh", start);
       });
     },
     { dependencies: [parallax] },

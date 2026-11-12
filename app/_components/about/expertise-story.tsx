@@ -330,7 +330,7 @@ export function ExpertiseStory() {
           { scale: 1, autoAlpha: 1, duration: 0.3, ease: "back.out(2)" },
           4.95,
         )
-        .to({}, { duration: 0.75 }); // hold before the next section's arc rises
+        .to({}, { duration: 0.5 }); // hold on the finished scene
 
       // Approach: heading rises and the first paragraph comes in as the section arrives.
       const approach = (pin.duration() * APPROACH_VH) / PIN_VH;
@@ -392,7 +392,17 @@ export function ExpertiseStory() {
         "surface-light arc-next relative z-10",
         !story && "arc-prev",
       )}
-      style={story ? { paddingTop: "var(--arc-depth)" } : undefined}
+      // story: the stage starts right under the arc, and the space for the next
+      // section's arc sits below the pinned stage, so the pin has ended before
+      // that arc rises (the content then slides away at parallax speed).
+      style={
+        story
+          ? {
+              paddingTop: "var(--arc-depth)",
+              paddingBottom: "var(--arc-depth)",
+            }
+          : undefined
+      }
     >
       <ArcSurface tone="paper" parallax="[data-ah-inner]" />
 
@@ -400,7 +410,11 @@ export function ExpertiseStory() {
         <StaticLayout />
       ) : (
         <div data-stage className="relative h-svh overflow-hidden">
-          <div className="absolute inset-0 flex flex-col gap-5 px-5 pt-[clamp(5rem,11svh,7.5rem)] pb-6 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10 lg:pb-10">
+          {/* Inner wrapper: the next section's parallax moves this, never the pinned stage. */}
+          <div
+            data-exp-inner
+            className="absolute inset-0 flex flex-col gap-5 px-5 pt-[clamp(5rem,11svh,7.5rem)] pb-6 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10 lg:pb-10"
+          >
             {/* ---------------- Stage (left) ---------------- */}
             <div className="relative mx-auto aspect-square w-full max-w-[min(100%,34svh)] shrink-0 lg:col-span-6 lg:max-w-[min(100%,72svh)]">
               {/* Beat 1: odometer + decade ruler */}

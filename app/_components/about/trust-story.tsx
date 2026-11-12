@@ -95,9 +95,9 @@ export function TrustStory() {
         // 1. the photo opens fully; the heading holds the screen
         .fromTo(
           q("[data-media]"),
-          { clipPath: "circle(26% at 50% 55%)" },
+          { clipPath: "circle(26% at 50% 50%)" },
           {
-            clipPath: "circle(75% at 50% 55%)",
+            clipPath: "circle(75% at 50% 50%)",
             duration: 0.6,
             ease: "power2.inOut",
             immediateRender: false,
@@ -193,9 +193,9 @@ export function TrustStory() {
         })
         .fromTo(
           q("[data-media]"),
-          { clipPath: "circle(4% at 50% 55%)" },
+          { clipPath: "circle(12% at 50% 50%)" },
           {
-            clipPath: "circle(26% at 50% 55%)",
+            clipPath: "circle(26% at 50% 50%)",
             duration: approach * 0.9,
             ease: "power2.out",
             immediateRender: true,
@@ -234,7 +234,8 @@ export function TrustStory() {
       )}
       style={story ? { paddingTop: "var(--arc-depth)" } : undefined}
     >
-      <ArcSurface tone="carbon-deep" />
+      {/* Expertise above slides away at ~60% speed as this rises over it */}
+      <ArcSurface tone="carbon-deep" parallax="[data-exp-inner]" />
 
       {!story ? (
         <div className="mx-auto grid max-w-[1400px] gap-10 lg:grid-cols-12">
