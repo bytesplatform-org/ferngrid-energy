@@ -18,7 +18,7 @@ export default function AboutPage() {
         <AboutHero />
         <ExpertiseStory />
         <TrustStory />
-        <ClosingCta />
+        <ClosingCta stackOver="[data-trust-inner]" />
       </main>
       <Footer />
     </>

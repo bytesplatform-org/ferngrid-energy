@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Fragment, useRef, useState } from "react";
 import { HOME, SITE } from "@/lib/content";
-import { gsap, useGSAP, MQ } from "./motion/gsap";
+import { gsap, ScrollTrigger, useGSAP, MQ } from "./motion/gsap";
 import { PillLink, cx } from "./ui/primitives";
 import pylon from "@/public/images/about-pylon.webp";
 
@@ -13,7 +13,11 @@ const ACCENT = "reliable engineering";
 function headlineWords() {
   const [l1, l2, l3] = HOME.closing.lines;
   const [before, after] = l3.split(ACCENT);
-  const plain = (s: string) => s.split(" ").filter(Boolean).map((w) => ({ w, accent: false, tail: "" }));
+  const plain = (s: string) =>
+    s
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => ({ w, accent: false, tail: "" }));
   const accentWords = ACCENT.split(" ").map((w, i, all) => ({
     w,
     accent: true,
@@ -31,7 +35,7 @@ function headlineWords() {
  * - Buttons are magnetic; contact rules draw in; the email can be copied.
  * Static (and fully legible) without JS / under reduced motion.
  */
-export function ClosingCta() {
+export function ClosingCta({ stackOver }: { stackOver?: string } = {}) {
   const { closing } = HOME;
   const ref = useRef<HTMLElement>(null);
   const [copied, setCopied] = useState(false);
@@ -44,7 +48,41 @@ export function ClosingCta() {
       const q = gsap.utils.selector(section);
       const mm = gsap.matchMedia();
 
-      mm.add(MQ.motion, () => {
+      mm.add(MQ.motion, (context) => {
+        // Stacked over a pinned previous scene: that scene shrinks back and dims
+        // while this section slides up over it. (Its pinned layout may mount after
+        // this, so look for it again after each layout refresh.)
+        if (stackOver) {
+          let started = false;
+          const start = () => {
+            const under = document.querySelector<HTMLElement>(stackOver);
+            if (started || !under) return;
+            started = true;
+            context.add(() => {
+              gsap.fromTo(
+                under,
+                { scale: 1, opacity: 1 },
+                {
+                  scale: 0.9,
+                  opacity: 0.25,
+                  ease: "none",
+                  scrollTrigger: {
+                    trigger: section,
+                    start: "top bottom",
+                    end: "top top",
+                    scrub: true,
+                  },
+                },
+              );
+            });
+          };
+          start();
+          if (!started) ScrollTrigger.addEventListener("refresh", start);
+          context.add(
+            () => () => ScrollTrigger.removeEventListener("refresh", start),
+          );
+        }
+
         // Photo: slow push-in + drift while the section crosses the viewport.
         gsap.fromTo(
           q("[data-bg]"),
@@ -53,22 +91,49 @@ export function ClosingCta() {
             yPercent: 6,
             scale: 1.04,
             ease: "none",
-            scrollTrigger: { trigger: section, start: "top bottom", end: "bottom top", scrub: true },
+            scrollTrigger: {
+              trigger: section,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: true,
+            },
           },
         );
 
         // Headline: words tilt up out of the fog, scrubbed to scroll (both directions).
         const words = q("[data-cword]");
         const accents = q("[data-accent]");
-        gsap.set(words, { yPercent: 70, rotateX: -75, opacity: 0, filter: "blur(14px)" });
+        gsap.set(words, {
+          yPercent: 70,
+          rotateX: -75,
+          opacity: 0,
+          filter: "blur(14px)",
+        });
         gsap.set(accents, { backgroundPosition: "100% 0%" });
         gsap
           .timeline({
             defaults: { ease: "none" },
-            scrollTrigger: { trigger: q("[data-headline]")[0], start: "top 88%", end: "top 30%", scrub: 0.6 },
+            scrollTrigger: {
+              trigger: q("[data-headline]")[0],
+              start: "top 88%",
+              end: "top 30%",
+              scrub: 0.6,
+            },
           })
-          .to(words, { yPercent: 0, rotateX: 0, opacity: 1, filter: "blur(0px)", duration: 0.5, stagger: 0.06, ease: "power2.out" })
-          .to(accents, { backgroundPosition: "0% 0%", duration: 0.35, stagger: 0.12 }, ">-0.15");
+          .to(words, {
+            yPercent: 0,
+            rotateX: 0,
+            opacity: 1,
+            filter: "blur(0px)",
+            duration: 0.5,
+            stagger: 0.06,
+            ease: "power2.out",
+          })
+          .to(
+            accents,
+            { backgroundPosition: "0% 0%", duration: 0.35, stagger: 0.12 },
+            ">-0.15",
+          );
 
         // Body, buttons and contact rows.
         gsap.from(q("[data-rise]"), {
@@ -77,7 +142,11 @@ export function ClosingCta() {
           duration: 1.1,
           stagger: 0.09,
           ease: "expo.out",
-          scrollTrigger: { trigger: q("[data-rise]")[0], start: "top 90%", once: true },
+          scrollTrigger: {
+            trigger: q("[data-rise]")[0],
+            start: "top 90%",
+            once: true,
+          },
         });
         gsap.fromTo(
           q("[data-rule]"),
@@ -86,7 +155,12 @@ export function ClosingCta() {
             scaleX: 1,
             ease: "none",
             stagger: 0.15,
-            scrollTrigger: { trigger: q("[data-contacts]")[0], start: "top 95%", end: "top 55%", scrub: 0.6 },
+            scrollTrigger: {
+              trigger: q("[data-contacts]")[0],
+              start: "top 95%",
+              end: "top 55%",
+              scrub: 0.6,
+            },
           },
         );
       });
@@ -100,7 +174,10 @@ export function ClosingCta() {
           el,
           cx: 0,
           cy: 0,
-          w: gsap.quickTo(el, "fontWeight", { duration: 0.55, ease: "power3.out" }),
+          w: gsap.quickTo(el, "fontWeight", {
+            duration: 0.55,
+            ease: "power3.out",
+          }),
         }));
         const measureChars = () => {
           const h = headline.getBoundingClientRect();
@@ -139,7 +216,9 @@ export function ClosingCta() {
             const b = m.el.getBoundingClientRect();
             const dx = e.clientX - (b.left + b.width / 2);
             const dy = e.clientY - (b.top + b.height / 2);
-            const near = Math.abs(dx) < b.width / 2 + 50 && Math.abs(dy) < b.height / 2 + 40;
+            const near =
+              Math.abs(dx) < b.width / 2 + 50 &&
+              Math.abs(dy) < b.height / 2 + 40;
             m.x(near ? dx * 0.32 : 0);
             m.y(near ? dy * 0.4 : 0);
           }
@@ -174,11 +253,20 @@ export function ClosingCta() {
       ref={ref}
       id="consultation"
       aria-labelledby="closing-title"
-      className="surface-dark arc-prev relative z-10 overflow-hidden bg-carbon px-5 pt-28 md:px-10 md:pt-40"
+      className={cx(
+        "surface-dark arc-prev relative overflow-hidden bg-carbon px-5 pt-28 md:px-10 md:pt-40",
+        stackOver
+          ? // slides up over the last (pinned) screen of the previous section, like a card
+            "z-20 motion-safe:[.js_&]:-mt-[100svh] motion-safe:[.js_&]:rounded-t-[28px] motion-safe:[.js_&]:shadow-[0_-40px_90px_-30px_rgb(0_0_0/0.75)] md:motion-safe:[.js_&]:rounded-t-[44px]"
+          : "z-10",
+      )}
     >
       {/* Photo (slow push-in on scroll) */}
       <div className="absolute inset-0 overflow-hidden">
-        <div data-bg className="absolute inset-x-0 -top-[8%] -bottom-[8%] will-change-transform">
+        <div
+          data-bg
+          className="absolute inset-x-0 -top-[8%] -bottom-[8%] will-change-transform"
+        >
           <Image
             src={pylon}
             alt="Transmission pylon fading into fog over a snowy hillside"
@@ -208,7 +296,10 @@ export function ClosingCta() {
                 {line.map(({ w, accent, tail }, i) => (
                   <Fragment key={i}>
                     {i > 0 && " "}
-                    <span data-cword className="inline-block origin-bottom whitespace-nowrap will-change-transform">
+                    <span
+                      data-cword
+                      className="inline-block origin-bottom whitespace-nowrap will-change-transform"
+                    >
                       <span
                         data-accent={accent || undefined}
                         className={cx(
@@ -233,29 +324,51 @@ export function ClosingCta() {
 
         <div className="mt-14 grid gap-12 md:mt-20 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
-            <p data-rise className="max-w-[56ch] text-lg leading-relaxed text-paper/80">
+            <p
+              data-rise
+              className="max-w-[56ch] text-lg leading-relaxed text-paper/80"
+            >
               {closing.body}
             </p>
             <div data-rise className="mt-10 flex flex-wrap gap-3">
               <span data-magnet className="inline-block">
-                <PillLink href={closing.buttons.explore.href} tone="paper" size="lg">
+                <PillLink
+                  href={closing.buttons.explore.href}
+                  tone="paper"
+                  size="lg"
+                >
                   {closing.buttons.explore.label}
                 </PillLink>
               </span>
               <span data-magnet className="inline-block">
-                <PillLink href={closing.buttons.contact.href} tone="fern" size="lg" icon="up-right">
+                <PillLink
+                  href={closing.buttons.contact.href}
+                  tone="fern"
+                  size="lg"
+                  icon="up-right"
+                >
                   {closing.buttons.contact.label}
                 </PillLink>
               </span>
             </div>
           </div>
 
-          <dl data-contacts className="text-label-md grid gap-5 lg:col-span-4 lg:col-start-9">
+          <dl
+            data-contacts
+            className="text-label-md grid gap-5 lg:col-span-4 lg:col-start-9"
+          >
             <div data-rise className="relative flex flex-col gap-1.5 pt-4">
-              <span data-rule aria-hidden className="absolute inset-x-0 top-0 h-px origin-left bg-line" />
+              <span
+                data-rule
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-px origin-left bg-line"
+              />
               <dt className="text-paper/60">Email —</dt>
               <dd className="flex items-center justify-between gap-4">
-                <a href={`mailto:${SITE.email}`} className="group relative normal-case tracking-[0.08em]">
+                <a
+                  href={`mailto:${SITE.email}`}
+                  className="group relative normal-case tracking-[0.08em]"
+                >
                   {SITE.email}
                   <span
                     aria-hidden
@@ -272,7 +385,11 @@ export function ClosingCta() {
               </dd>
             </div>
             <div data-rise className="relative flex flex-col gap-1.5 pt-4">
-              <span data-rule aria-hidden className="absolute inset-x-0 top-0 h-px origin-left bg-line" />
+              <span
+                data-rule
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-px origin-left bg-line"
+              />
               <dt className="text-paper/60">Call —</dt>
               <dd>
                 <a href={SITE.phoneHref} className="group relative">

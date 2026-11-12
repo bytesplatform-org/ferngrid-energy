@@ -10,6 +10,11 @@ import towerImg from "@/public/images/powerlines.webp";
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
 const PIN_VH = 3.8;
+/**
+ * Extra pinned distance (viewport heights) after the story ends: the closing
+ * section slides up over the finished scene like a card (see ClosingCta).
+ */
+const COVER_VH = 1;
 /** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
 const APPROACH_VH = 0.8;
 
@@ -85,7 +90,7 @@ export function TrustStory() {
       const pinST = ScrollTrigger.create({
         trigger: stage,
         start: "top top",
-        end: () => `+=${window.innerHeight * PIN_VH}`,
+        end: () => `+=${window.innerHeight * (PIN_VH + COVER_VH)}`,
         pin: true,
         invalidateOnRefresh: true,
       });
@@ -265,110 +270,116 @@ export function TrustStory() {
           data-stage
           className="relative h-svh overflow-hidden bg-carbon-deep"
         >
-          {/* Photo, opened by a growing circle */}
-          <div data-media className="absolute inset-0 overflow-hidden">
-            <div data-media-img className="absolute inset-0">
-              <Image
-                src={towerImg}
-                alt="Looking up at a transmission tower with power lines converging overhead"
-                fill
-                sizes="100vw"
-                placeholder="blur"
-                className="photo object-cover object-[50%_35%]"
+          {/* Inner wrapper: the closing section pushes this back as it slides over. */}
+          <div
+            data-trust-inner
+            className="absolute inset-0 origin-[50%_30%] will-change-transform"
+          >
+            {/* Photo, opened by a growing circle */}
+            <div data-media className="absolute inset-0 overflow-hidden">
+              <div data-media-img className="absolute inset-0">
+                <Image
+                  src={towerImg}
+                  alt="Looking up at a transmission tower with power lines converging overhead"
+                  fill
+                  sizes="100vw"
+                  placeholder="blur"
+                  className="photo object-cover object-[50%_35%]"
+                />
+              </div>
+              <div
+                data-shade
+                aria-hidden
+                className="absolute inset-0 bg-carbon-deep"
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0 [background:linear-gradient(to_right,rgb(18_22_10/0.7),transparent_60%),linear-gradient(to_top,rgb(18_22_10/0.6),transparent_45%)]"
               />
             </div>
-            <div
-              data-shade
-              aria-hidden
-              className="absolute inset-0 bg-carbon-deep"
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0 [background:linear-gradient(to_right,rgb(18_22_10/0.7),transparent_60%),linear-gradient(to_top,rgb(18_22_10/0.6),transparent_45%)]"
-            />
-          </div>
 
-          {/* 1. Heading, huge and centred */}
-          <div
-            data-big
-            aria-hidden
-            className="absolute inset-0 flex items-center justify-center px-5 text-center"
-          >
-            <p className="font-condensed text-[clamp(3.2rem,11vw,12rem)] leading-[0.86] text-paper uppercase">
-              {heading.split(" ").map((w, i) => (
-                <Fragment key={i}>
-                  {i > 0 && " "}
-                  <span className="inline-block overflow-hidden pb-[0.04em] align-bottom">
-                    <span
-                      data-big-word
-                      className={cx(
-                        "inline-block",
-                        w === "Trust" && "text-fern",
-                      )}
-                    >
-                      {w}
+            {/* 1. Heading, huge and centred */}
+            <div
+              data-big
+              aria-hidden
+              className="absolute inset-0 flex items-center justify-center px-5 text-center"
+            >
+              <p className="font-condensed text-[clamp(3.2rem,11vw,12rem)] leading-[0.86] text-paper uppercase">
+                {heading.split(" ").map((w, i) => (
+                  <Fragment key={i}>
+                    {i > 0 && " "}
+                    <span className="inline-block overflow-hidden pb-[0.04em] align-bottom">
+                      <span
+                        data-big-word
+                        className={cx(
+                          "inline-block",
+                          w === "Trust" && "text-fern",
+                        )}
+                      >
+                        {w}
+                      </span>
                     </span>
-                  </span>
-                </Fragment>
-              ))}
-            </p>
-          </div>
+                  </Fragment>
+                ))}
+              </p>
+            </div>
 
-          {/* 2. Written. Developed. Tested. */}
-          <div
-            data-verbs
-            aria-hidden
-            className="absolute inset-0 flex flex-col items-center justify-center gap-[2svh] px-5 md:flex-row md:gap-[2.4vw]"
-          >
-            {ABOUT_FRAGMENTS.verbs.map((v) => (
-              <span
-                key={v}
-                data-verb
-                className="font-condensed relative text-[clamp(3rem,5.6vw,7rem)] leading-none text-paper uppercase"
-              >
-                {v}
+            {/* 2. Written. Developed. Tested. */}
+            <div
+              data-verbs
+              aria-hidden
+              className="absolute inset-0 flex flex-col items-center justify-center gap-[2svh] px-5 md:flex-row md:gap-[2.4vw]"
+            >
+              {ABOUT_FRAGMENTS.verbs.map((v) => (
                 <span
-                  data-verb-rule
-                  className="absolute inset-x-0 -bottom-[0.08em] block h-[0.06em] origin-left bg-fern"
-                />
-              </span>
-            ))}
-          </div>
-
-          {/* 3. The paragraph */}
-          <div className="absolute inset-0 flex flex-col justify-center px-5 pt-16 md:px-10 lg:w-[62%]">
-            <h2
-              id="trust-title"
-              className="font-condensed text-[clamp(2.2rem,4.6vw,5rem)] leading-[0.9] text-paper uppercase"
-            >
-              {heading.split(" ").map((w, i) => (
-                <Fragment key={i}>
-                  {i > 0 && " "}
-                  <span className="inline-block overflow-hidden pb-[0.05em] align-bottom">
-                    <span
-                      data-small-word
-                      className={cx(
-                        "inline-block",
-                        w === "Trust" && "text-fern",
-                      )}
-                    >
-                      {w}
-                    </span>
-                  </span>
-                </Fragment>
+                  key={v}
+                  data-verb
+                  className="font-condensed relative text-[clamp(3rem,5.6vw,7rem)] leading-none text-paper uppercase"
+                >
+                  {v}
+                  <span
+                    data-verb-rule
+                    className="absolute inset-x-0 -bottom-[0.08em] block h-[0.06em] origin-left bg-fern"
+                  />
+                </span>
               ))}
-            </h2>
-            <span
-              data-small-rule
-              aria-hidden
-              className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6"
-            />
-            <p
-              data-body
-              className="mt-6 max-w-[58ch] text-[15px] leading-relaxed text-paper/85 md:mt-8 md:text-[clamp(1rem,1.3vw,1.3rem)]"
-            >
-              <Body emph />
-            </p>
+            </div>
+
+            {/* 3. The paragraph */}
+            <div className="absolute inset-0 flex flex-col justify-center px-5 pt-16 md:px-10 lg:w-[62%]">
+              <h2
+                id="trust-title"
+                className="font-condensed text-[clamp(2.2rem,4.6vw,5rem)] leading-[0.9] text-paper uppercase"
+              >
+                {heading.split(" ").map((w, i) => (
+                  <Fragment key={i}>
+                    {i > 0 && " "}
+                    <span className="inline-block overflow-hidden pb-[0.05em] align-bottom">
+                      <span
+                        data-small-word
+                        className={cx(
+                          "inline-block",
+                          w === "Trust" && "text-fern",
+                        )}
+                      >
+                        {w}
+                      </span>
+                    </span>
+                  </Fragment>
+                ))}
+              </h2>
+              <span
+                data-small-rule
+                aria-hidden
+                className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6"
+              />
+              <p
+                data-body
+                className="mt-6 max-w-[58ch] text-[15px] leading-relaxed text-paper/85 md:mt-8 md:text-[clamp(1rem,1.3vw,1.3rem)]"
+              >
+                <Body emph />
+              </p>
+            </div>
           </div>
         </div>
       )}

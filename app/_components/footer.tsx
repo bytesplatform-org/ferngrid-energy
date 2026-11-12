@@ -13,7 +13,7 @@ import lockup from "@/public/images/logo-lockup.png";
 export function Footer() {
   return (
     <footer
-      className="surface-light arc-next relative z-10 flex h-[calc(100svh+var(--arc-depth))] flex-col overflow-x-clip px-5 pb-6 md:px-10 md:pb-8"
+      className="surface-light arc-next relative z-30 flex h-[calc(100svh+var(--arc-depth))] flex-col overflow-x-clip px-5 pb-6 md:px-10 md:pb-8"
       // clear the fixed nav bar (overrides arc-next's shorter top padding)
       style={{ paddingTop: "calc(var(--arc-depth) + clamp(5.5rem, 12svh, 7.5rem))" }}
     >
