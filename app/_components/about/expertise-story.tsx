@@ -409,7 +409,7 @@ export function ExpertiseStory() {
       {!story ? (
         <StaticLayout />
       ) : (
-        <div data-stage className="relative h-svh overflow-hidden">
+        <div data-stage className="relative h-svh overflow-x-clip">
           {/* Inner wrapper: the next section's parallax moves this, never the pinned stage. */}
           <div
             data-exp-inner

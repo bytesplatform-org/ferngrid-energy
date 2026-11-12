@@ -89,6 +89,7 @@ export const HOME = {
 /* ------------------------------------------------------------------ */
 
 export const NERC = {
+  title: "NERC BAL-007-1",
   eraDifference: {
     heading: "How are Energy Reliability Assessments Different than Existing Studies?",
     body: "Unlike traditional capacity studies, which primarily assess whether sufficient generation capacity is available at a point in time, a Near-Term ERA evaluates hourly energy availability sequentially over the study’s time horizon. Evaluating generator fuel storage levels must occur sequentially through time, making Near-Term ERAs inherently different from conventional capacity assessments. Traditional capacity studies evaluate if there is enough capacity. Near-Term ERAs assess if there is enough energy for every hour throughout the study period.",
@@ -206,4 +207,30 @@ export const ABOUT_FRAGMENTS = {
   evolution: ["Custom tools to assess a system’s fuel security", "Software", "NERC BAL-007-1 compliance requirements"],
   combine: ["Operational experience", "Power systems expertise", "Software development knowledge"],
   verbs: ["Written.", "Developed.", "Tested."],
+} as const;
+
+/** Display fragments lifted from the NERC BAL-007-1 copy (labels and big type only). */
+export const NERC_FRAGMENTS = {
+  /** First clause of the requirements intro. */
+  requireLine:
+    "As of April 2027, NERC Standard BAL-007-1 will require Balancing Authorities (BAs) to conduct Near Term Energy Reliability Assessments (ERA)",
+  asOf: "As of April 2027",
+  accountFor: "That account for",
+  baseScenario: "Base Scenario",
+  expected: "Expected system conditions",
+  stress: "Stress the system",
+  eea: "level 2 and 3 Energy Emergency Alerts",
+  pointInTime: "At a point in time",
+  everyHour: "Every hour",
+  capacityLine: "Traditional capacity studies evaluate if there is enough capacity.",
+  energyLine: "Near-Term ERAs assess if there is enough energy for every hour throughout the study period.",
+  festFactors: [
+    "Interface limits",
+    "Demand response programs",
+    "Site generator fuel storage constraints",
+    "Natural gas pipeline fuel scarcity",
+    "Generators’ operating temperature limits",
+  ],
+  dispatches: "Generation dispatches for each hour",
+  emergencies: "Forecast potential Energy Emergencies",
 } as const;
