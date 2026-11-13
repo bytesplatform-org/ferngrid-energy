@@ -300,3 +300,196 @@ export const FEST_PAGE = {
     },
   ] as readonly FestPackage[],
 } as const;
+
+/* ------------------------------------------------------------------ */
+/* FAQ page — verbatim from ferngrid-energy.com/FAQ                    */
+/* (The live R6 answer ends with leftover Wix template text — "FAQs are */
+/* a great way to help site visitors…" — which is not included.)       */
+/* ------------------------------------------------------------------ */
+
+export type FaqLink = { text: string; href: string };
+/** A paragraph: plain text, or text with inline links. */
+export type FaqPara = { type: "p"; parts: readonly (string | FaqLink)[] };
+/** A bulleted list; an item can carry a nested list. */
+export type FaqList = { type: "list"; items: readonly (string | { text: string; sub: readonly string[] })[] };
+export type FaqBlock = FaqPara | FaqList;
+export type FaqItem = { id: string; q: string; a: readonly FaqBlock[]; sources: readonly FaqLink[] };
+export type FaqCategory = { id: string; label: string; items: readonly FaqItem[] };
+
+const NERC_STD: FaqLink = {
+  text: "BAL-007-1 Standard",
+  href: "https://www.nerc.com/globalassets/standards/projects/2022-03/bal-007-1.1-errata-clean.pdf",
+};
+const NERC_RATIONALE: FaqLink = {
+  text: "BAL-007-1 Technical Rationale",
+  href: "https://www.nerc.com/globalassets/standards/projects/2022-03/2022-03_technical_rationale_112524.pdf",
+};
+const p = (...parts: (string | FaqLink)[]): FaqPara => ({ type: "p", parts });
+
+export const FAQ: { title: string; categories: readonly FaqCategory[] } = {
+  title: "Frequently Asked Questions",
+  categories: [
+    {
+      id: "bal-007-1",
+      label: "NERC BAL-007-1",
+      items: [
+        {
+          id: "effective-date",
+          q: "When does the new NERC BAL-007-1 compliance standard go into effect?",
+          a: [p("The new NERC BAL-007-1 compliance requirements go into effect on April 1st, 2027.")],
+          sources: [{ text: "NERC BAL-007-1", href: "https://www.nerc.com/standards/reliability-standards/bal/bal-007-1.1" }],
+        },
+        {
+          id: "requirements",
+          q: "What are the new NERC BAL-007-1 compliance requirements for Balancing Authorities?",
+          a: [
+            p("R1. BAs must document study assumptions, duration, and frequency for running Near-Term ERAs."),
+            p("R2. BAs must document a set of Near-Term ERA Scenarios to study."),
+            p("R3. BAs must document Operating Plan(s) to implement in response to and notify RC of Near-Term ERA's forecasted EEAs."),
+            p("R4. BAs must perform Near-Term ERAs documented in R1 & R2."),
+            p("R5. BAs must implement its Operating Plan(s) Documented in R3 when Near-Term ERAs forecast EEA2 or EEA3."),
+            p(
+              "R6. BAs must review, update, and (if needed) provide its RC with their Near-Term ERA process, Scenarios, and Operating Plan(s) least once every 24 calendar months.",
+            ),
+          ],
+          sources: [NERC_STD],
+        },
+        {
+          id: "penalties",
+          q: "What are the penalties for not meeting the new NERC BAL-007-1 compliance requirements?",
+          a: [p("Noncompliance may result in fines of up to $443,038 per compliance gap.")],
+          sources: [
+            {
+              text: "NERC Compliance Penalties",
+              href: "https://www.nerc.com/globalassets/programs/enforcement/enforcement-resources/penalty-inflation-adjustment-notice_final.pdf",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "near-term-era",
+      label: "Near-Term Energy Reliability Assessments",
+      items: [
+        {
+          id: "definition",
+          q: "What is the NERC definition of a Near-Term Energy Reliability Assessment (ERA)?",
+          a: [
+            p(
+              "Near-Term Energy Reliability Assessment: An Energy Reliability Assessment with an assessment period that begins no later than two days after the operating day and has a minimum duration of five days and a maximum duration of six weeks.",
+            ),
+          ],
+          sources: [{ text: "NERC Near-Term ERA Definition", href: "https://www.nerc.com/glossary-of-terms?alpha=N" }],
+        },
+        {
+          id: "assumptions",
+          q: "What assumptions or constraints must Near-Term ERAs model?",
+          a: [
+            p(
+              "ERA “modeling includes constrained fuel supplies such as natural gas, inventoried fuels such as oil, coal, liquefied natural gas and some hydro, and just-in-time fuels like wind, solar, and run-of-river hydro. ERAs look at the production from generating resources over a period of time, which will impact their operation. Constrained fuels will deplete, limiting the operation of generation (i.e., fuel). All of these considerations go into modeling resource capabilities and operational limitations, including fuel supply.”",
+            ),
+            p("These modeling consideration include:"),
+            {
+              type: "list",
+              items: [
+                "Forecasted or assumed demand profiles",
+                "Generator limitations such as fuel supply and temperature operating limits",
+                "Energy transfers with other Balancing Authorities",
+                "Known Bulk Electric System transfer limits",
+                "Higher-than-forecasted demand",
+                {
+                  text: "Energy supply contingencies, examples include:",
+                  sub: [
+                    "Curtailed imports from neighboring systems",
+                    "Unexpected outages of large generators",
+                    "Variable forecasted resources like renewable generation",
+                  ],
+                },
+                {
+                  text: "Fuel supply contingencies examples include:",
+                  sub: [
+                    "Natural Gas pipeline derates or MWh limitation due to extreme weather",
+                    "Inability to refuel oil or coal storage",
+                  ],
+                },
+                "Other historically credible stressed conditions relevant to the BA's system",
+              ],
+            },
+          ],
+          sources: [NERC_RATIONALE, NERC_STD],
+        },
+        {
+          id: "vs-capacity",
+          q: "How are Near-Term ERA Studies different from conventional capacity assessments?",
+          a: [
+            p(
+              "“ERAs go beyond the existing scope of the capacity assessments that have traditionally been performed to look more closely at energy needs.” Instead of merely evaluating if the system has enough MWs of capacity to meet the system's peak demand over the next 24 hours, Near-Term ERA studies determine if there are enough MWhs to serve the system's hourly demand over a 5 day to 6 week time horizon.",
+            ),
+          ],
+          sources: [NERC_RATIONALE],
+        },
+        {
+          id: "vs-adequacy",
+          q: "How are Near-Term ERA Studies different from traditional resource adequacy studies?",
+          a: [
+            p(
+              "Near-Term ERAs evaluate how fuel scarcity impacts a system’s ability to meet demand. While traditional resource adequacy software may account for natural gas constraints, it generally cannot track on-site fuel inventories or consumption. FernGrid Energy’s Fuel and Energy Security Tool (FEST) not only tracks on-site fuel storage and consumption, but also models scheduled fuel refills.",
+            ),
+          ],
+          sources: [NERC_RATIONALE],
+        },
+        {
+          id: "own-software",
+          q: "Can I run my own Near-Term ERA Studies using my existing software?",
+          a: [
+            p(
+              "Yes, it is possible to conduct Near-Term Energy Reliability Assessments (ERAs) using tools such as Excel with macros or custom Python scripts. However, accurately modeling the numerous variables required for BAL-007-1 compliance can be complex and challenging.",
+            ),
+            p(
+              "Near-Term ERAs must forecast potential Emergency Energy Alerts for activation of Demand Response programs and failure to meet operating reserves. These assessments must also account for:",
+            ),
+            {
+              type: "list",
+              items: [
+                "Generator fuel procurement, consumption, and depletion",
+                "Fuel delivery schedules and availability",
+                "Generator operational constraints",
+                "Energy transfers with neighboring systems",
+                "Known BES transfer limits",
+              ],
+            },
+            p(
+              "Rather than developing and maintaining your own complex modeling solution, consider FernGrid Energy's Fuel and Energy Security Tool (FEST) which was specifically designed to model the assumptions outlined in NERC BAL-007-1. FEST streamlines the Near-Term ERA process and helps Balancing Authorities evaluate their energy and fuel security requirements.",
+            ),
+          ],
+          sources: [],
+        },
+        {
+          id: "best-software",
+          q: "What is the best software to run Near-Term ERA Studies?",
+          a: [
+            p(
+              "Fuel scarcity is a critical consideration in Near-Term ERAs, yet most traditional capacity and resource adequacy software is not designed to track inventoried fuel storage, such as oil and coal, as they deplete over time. FernGrid Energy’s Fuel and Energy Security Tool (FEST) is specifically built to fill this gap to help Balancing Authorities accurately assess fuel availability.",
+            ),
+            p(
+              "FEST tracks generators’ initial on-site fuel inventory, calculates hourly fuel consumption based on dispatch, models scheduled or disrupted fuel deliveries, and determines when the unit becomes fuel-constrained during a chronological Near-Term ERA.",
+            ),
+          ],
+          sources: [],
+        },
+        {
+          id: "start-planning",
+          q: "How do I start planning my Near-Term ERA assumptions?",
+          a: [
+            p(
+              "If you need help determining your Near-Term ERA base case and contingency scenario assumptions, feel free to ",
+              { text: "contact us", href: "/contact" },
+              " for a complimentary Near-Term ERA Assumptions Questionnaire. FernGrid Energy has developed a practical questionnaire to help BAs define the assumptions needed for Near-Term ERA scenarios and demystify BAL-007-1 compliance planning.",
+            ),
+          ],
+          sources: [],
+        },
+      ],
+    },
+  ],
+};
