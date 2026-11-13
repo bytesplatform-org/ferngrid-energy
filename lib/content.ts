@@ -493,3 +493,37 @@ export const FAQ: { title: string; categories: readonly FaqCategory[] } = {
     },
   ],
 };
+
+/* ------------------------------------------------------------------ */
+/* Contact page — verbatim from ferngrid-energy.com/contact-us         */
+/* ------------------------------------------------------------------ */
+
+export const CONTACT = {
+  title: "Contact Us",
+  intro:
+    "If you’re interested in exploring the potential of the Fuel and Energy Security Tool or FernGrid Energy’s consulting services, please provide your information, and we will contact you soon.",
+  outro: "We look forward to connecting with you.",
+  form: {
+    heading: "Contact Us",
+    fields: {
+      firstName: "First name",
+      lastName: "Last name",
+      email: "Email",
+      phone: "Phone",
+      business: "Business Name",
+      message: "Additional Message",
+    },
+    interestsLabel: "I'm interested in ...",
+    interests: [
+      "A free Near-Term ERA Assumptions Questionnaire designed to plan Near-Term ERA Study Scenarios",
+      "One year license of Fuel and Energy Security Tool (FEST)",
+      "Assistance developing initial NERC BAL 007-1 Near Term ERAs assumptions for FEST",
+      "FernGrid Energy run NERC BAL 007-1 Near Term ERAs",
+      "Fuel and Energy Security Tool (FEST) Training",
+      "General Power Systems Training",
+      "Steady State Power Systems Studies",
+      "Other",
+    ],
+    submit: "Submit",
+  },
+} as const;
