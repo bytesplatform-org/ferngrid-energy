@@ -433,8 +433,7 @@ export function ServicesTraining() {
       // story: the stage starts right under the arc
       style={story ? { paddingTop: "var(--arc-depth)" } : undefined}
     >
-      {/* No parallax: the ERA scene above is pinned. */}
-      <ArcSurface tone="carbon-deep" />
+      <ArcSurface tone="carbon-deep" parallax="[data-hr-inner]" />
 
       {!story ? (
         <StaticLayout />

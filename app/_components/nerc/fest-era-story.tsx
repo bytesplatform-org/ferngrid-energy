@@ -313,7 +313,8 @@ export function FestEraStory() {
         story ? { paddingTop: "calc(var(--arc-depth) + 2rem)" } : undefined
       }
     >
-      <ArcSurface tone="paper" parallax="[data-hr-inner]" />
+      {/* No parallax: the ERA scene above is pinned. */}
+      <ArcSurface tone="paper" />
 
       {/* Two photos, between the sections (as on the live page) */}
       <div className="mx-auto grid max-w-[1600px] gap-4 px-5 pb-14 md:grid-cols-2 md:gap-6 md:px-10 md:pb-20">

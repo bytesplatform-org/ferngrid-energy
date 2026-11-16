@@ -273,7 +273,7 @@ export function HourlyStory() {
           : undefined
       }
     >
-      <ArcSurface tone="carbon-deep" parallax="[data-req-inner]" />
+      <ArcSurface tone="carbon-deep" parallax="[data-glance-inner]" />
 
       {!story ? (
         <StaticLayout />

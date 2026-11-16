@@ -4,8 +4,7 @@ import { Hero } from "./_components/hero/hero";
 import { Statement } from "./_components/statement";
 import { OurSoftware } from "./_components/our-software";
 import { AtAGlance } from "./_components/at-a-glance";
-import { CapacityEnergy } from "./_components/capacity-energy";
-import { EraScene } from "./_components/era/era-scene";
+import { HourlyStory } from "./_components/nerc/hourly-story";
 import { ServicesTraining } from "./_components/services-training";
 import { Marquee } from "./_components/marquee";
 import { Footer } from "./_components/footer";
@@ -22,8 +21,7 @@ export default function HomePage() {
         <Statement />
         <OurSoftware />
         <AtAGlance />
-        <CapacityEnergy />
-        <EraScene />
+        <HourlyStory />
         <ServicesTraining />
         <Marquee />
       </main>

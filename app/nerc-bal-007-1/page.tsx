@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { NERC } from "@/lib/content";
 import { NercHero } from "../_components/nerc/nerc-hero";
 import { RequirementsStory } from "../_components/nerc/requirements-story";
-import { HourlyStory } from "../_components/nerc/hourly-story";
+import { CapacityEnergy } from "../_components/capacity-energy";
+import { EraScene } from "../_components/era/era-scene";
 import { FestEraStory } from "../_components/nerc/fest-era-story";
 import { Footer } from "../_components/footer";
 
@@ -17,7 +18,8 @@ export default function NercPage() {
       <main id="main" className="overflow-x-clip">
         <NercHero />
         <RequirementsStory />
-        <HourlyStory />
+        <CapacityEnergy />
+        <EraScene />
         <FestEraStory />
       </main>
       <Footer stackOver="[data-fe-inner]" />
