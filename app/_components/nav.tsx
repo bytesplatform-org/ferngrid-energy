@@ -117,7 +117,7 @@ function Wordmark({ dark }: { dark: boolean }) {
           )}
         />
       </span>
-      <span className="font-display hidden text-[15px] leading-none tracking-[0.32em] uppercase sm:block">
+      <span className="font-sans hidden text-sm leading-none font-medium tracking-[0.28em] uppercase sm:block">
         FernGrid Energy
       </span>
     </span>
