@@ -50,15 +50,6 @@ function splitWords(text: string) {
   return words;
 }
 
-/** Spec cards: structural labels with values taken from the copy. */
-const SPECS = [
-  { label: "Product", value: "Fuel and Energy Security Tool (FEST)", at: "lg:top-[16%] lg:right-[6%]" },
-  { label: "Standard", value: "NERC BAL-007-1", at: "lg:top-[38%] lg:right-[22%]" },
-  // The standard (not the software) takes effect in April 2027.
-  { label: "BAL-007-1 in effect", value: "April 2027", at: "lg:top-[52%] lg:right-[4%]" },
-  { label: "For", value: "Balancing Authorities", at: "lg:top-[72%] lg:right-[18%]" },
-];
-
 /**
  * 01 / Our Software — a pinned, scroll-scrubbed story (Trident-style):
  * 1. "OUR SOFTWARE" rises in, huge; then rolls out as its name — "FUEL AND ENERGY
@@ -66,7 +57,7 @@ const SPECS = [
  * 2. Two photos fly in from opposite corners across the title (grid → software).
  * 3. They converge; the software photo expands to fill the screen.
  * 4. The paragraph brightens word by word, key terms in fern.
- * 5. Spec cards pop in, then the CTA; the pin releases.
+ * 5. The CTA rises in; the pin releases.
  * Static editorial layout without JS / under reduced motion.
  */
 export function OurSoftware() {
@@ -109,7 +100,6 @@ export function OurSoftware() {
       // time 0), which left "SOFTWARE" / "APRIL 2027." visible on the first pass.
       gsap.set(q("[data-heading-word]"), { yPercent: 115 });
       gsap.set(q("[data-title-word]"), { yPercent: 115 });
-      gsap.set(q("[data-spec]"), { autoAlpha: 0, y: 30, scale: 0.94 });
       gsap.set(q("[data-word]"), { opacity: 0.14 });
 
       // The pin on its own, with no animation attached…
@@ -173,7 +163,10 @@ export function OurSoftware() {
         // 3. converge, then the software photo fills the screen
         .to([cardA, cardB], { x: 0, y: 0, rotate: 0, duration: 0.12, ease: "power2.inOut" }, 0.81)
         .to(cardB, { autoAlpha: 0, scale: 0.9, duration: 0.05 }, 0.91)
-        .to(cardA, { width: W, height: H, borderRadius: 0, duration: 0.14, ease: "power2.inOut" }, 0.93)
+        // Taller than the screen (clipped by the section): the next section's parallax
+        // nudges this layer down over the last --arc-depth of the pin, and the overflow
+        // keeps the photo covering the top edge instead of uncovering paper.
+        .to(cardA, { width: W, height: () => H() * 1.2, borderRadius: 0, duration: 0.14, ease: "power2.inOut" }, 0.93)
         .to(q("[data-on-image]"), { color: "#f8f9f7", duration: 0.08 }, 0.97)
         .to(q("[data-shade]"), { autoAlpha: 1, duration: 0.1 }, 0.99)
         // 4. title leaves; paragraph brightens word by word
@@ -187,14 +180,8 @@ export function OurSoftware() {
           { opacity: 1, duration: 0.02, stagger: 0.17 / words.length },
           1.12,
         )
-        // 5. spec cards, then the CTA
-        .fromTo(
-          q("[data-spec]"),
-          { autoAlpha: 0, y: 30, scale: 0.94 },
-          { autoAlpha: 1, y: 0, scale: 1, duration: 0.05, stagger: 0.03, ease: "power3.out" },
-          1.27,
-        )
-        .fromTo(q("[data-cta]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.04 }, 1.38)
+        // 5. the CTA
+        .fromTo(q("[data-cta]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.04 }, 1.3)
         .to({}, { duration: HOLD });
 
       // This pin is created after a state change, so re-order and re-measure.
@@ -231,7 +218,8 @@ export function OurSoftware() {
             className={cx(
               "overflow-hidden",
               story
-                ? "absolute top-1/2 left-1/2 z-10 rounded-[18px] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.55)]"
+                ? // surface-dark: once the photo fills the screen, the nav reads it as dark and turns white.
+                  "surface-dark absolute top-1/2 left-1/2 z-10 rounded-[18px] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.55)]"
                 : "relative aspect-[3/4] bg-paper-warm lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:mt-28",
             )}
           >
@@ -313,7 +301,7 @@ export function OurSoftware() {
             </div>
           </div>
 
-          {/* Paragraph, specs, CTA */}
+          {/* Paragraph, CTA */}
           <div
             className={cx(
               story
@@ -361,47 +349,6 @@ export function OurSoftware() {
                   : ourSoftware.body}
               </p>
             </div>
-
-            <dl
-              className={cx(
-                story
-                  ? "hidden lg:block"
-                  : "text-label mt-10 grid gap-px border-y border-line sm:grid-cols-2",
-              )}
-            >
-              {SPECS.map((s, i) =>
-                story ? (
-                  <div
-                    key={s.label}
-                    data-spec
-                    className={cx(
-                      "invisible absolute w-[min(24vw,340px)] rounded-[16px] bg-paper/95 p-5 text-carbon opacity-0 shadow-[0_24px_60px_-24px_rgb(0_0_0/0.6)] backdrop-blur-sm",
-                      s.at,
-                    )}
-                  >
-                    <span aria-hidden className="absolute -top-1.5 -left-1.5 flex size-3">
-                      <span className="absolute inline-flex size-full animate-ping rounded-full bg-fern opacity-60" />
-                      <span className="relative inline-flex size-3 rounded-full bg-fern" />
-                    </span>
-                    <dt className="text-label text-carbon/60">
-                      {String(i + 1).padStart(2, "0")} — {s.label}
-                    </dt>
-                    <dd className="font-display mt-2 text-[clamp(1.1rem,1.5vw,1.6rem)] leading-tight">{s.value}</dd>
-                  </div>
-                ) : (
-                  // Static: the original two-column meta row (Product, Standard).
-                  i < 2 && (
-                    <div
-                      key={s.label}
-                      className={cx("flex flex-col gap-2 py-4", i === 0 ? "sm:pr-6" : "border-line sm:border-l sm:pl-6")}
-                    >
-                      <dt className="text-muted">{s.label}</dt>
-                      <dd className="text-fg">{s.value}</dd>
-                    </div>
-                  )
-                ),
-              )}
-            </dl>
 
             {story ? (
               <div data-cta className="pointer-events-auto invisible absolute right-5 bottom-[8%] opacity-0 md:right-10">
