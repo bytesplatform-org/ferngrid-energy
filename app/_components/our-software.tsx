@@ -54,13 +54,15 @@ function splitWords(text: string) {
 const SPECS = [
   { label: "Product", value: "Fuel and Energy Security Tool (FEST)", at: "lg:top-[16%] lg:right-[6%]" },
   { label: "Standard", value: "NERC BAL-007-1", at: "lg:top-[38%] lg:right-[22%]" },
-  { label: "Timeline", value: FRAGMENTS.beginningApril.replace(/\.$/, ""), at: "lg:top-[52%] lg:right-[4%]" },
+  // The standard (not the software) takes effect in April 2027.
+  { label: "BAL-007-1 in effect", value: "April 2027", at: "lg:top-[52%] lg:right-[4%]" },
   { label: "For", value: "Balancing Authorities", at: "lg:top-[72%] lg:right-[18%]" },
 ];
 
 /**
  * 01 / Our Software — a pinned, scroll-scrubbed story (Trident-style):
- * 1. "OUR SOFTWARE" rises in, huge; then rolls out as "BEGINNING APRIL 2027." rolls in.
+ * 1. "OUR SOFTWARE" rises in, huge; then rolls out as its name — "FUEL AND ENERGY
+ *    SECURITY TOOL" — rolls in.
  * 2. Two photos fly in from opposite corners across the title (grid → software).
  * 3. They converge; the software photo expands to fill the screen.
  * 4. The paragraph brightens word by word, key terms in fern.
@@ -72,8 +74,9 @@ export function OurSoftware() {
   const ref = useRef<HTMLElement>(null);
   const [story, setStory] = useState(false);
   const words = splitWords(ourSoftware.body);
-  const [line1, ...rest] = FRAGMENTS.beginningApril.split(" ");
-  const titleLines = [[line1], rest];
+  // The software's name (verbatim from the paragraph), on two lines.
+  const nameWords = FRAGMENTS.festName.split(" ");
+  const titleLines = [nameWords.slice(0, 3), nameWords.slice(3)];
 
   // Story layout whenever motion is allowed.
   useGSAP(() => {
@@ -288,8 +291,8 @@ export function OurSoftware() {
                 className={cx(
                   "font-condensed uppercase",
                   story
-                    ? "col-start-1 row-start-1 text-[clamp(3.5rem,13vw,15rem)] leading-[0.86] text-carbon"
-                    : "text-condensed-xl mt-6 max-w-[10ch] lg:text-[clamp(4rem,9.5vw,10rem)]",
+                    ? "col-start-1 row-start-1 text-[clamp(2.4rem,8.6vw,10rem)] leading-[0.88] text-carbon"
+                    : "text-condensed-xl mt-6 lg:text-[clamp(3rem,6vw,7rem)]",
                 )}
               >
                 {titleLines.map((line, l) => (

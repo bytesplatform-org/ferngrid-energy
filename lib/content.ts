@@ -128,8 +128,6 @@ export const NERC = {
 export const FRAGMENTS = {
   /** From the hero tagline. */
   statement: "Reliable Software Starts with Reliable Engineering.",
-  /** From the Our Software paragraph. */
-  beginningApril: "Beginning April 2027.",
   /** From the ERA-difference paragraph. */
   enoughEnergy: "Enough energy for every hour.",
   /** From the BAL-007-1 requirements paragraph. */
