@@ -1,12 +1,12 @@
 "use client";
 
 import { Fragment, useRef, useState } from "react";
-import { FRAGMENTS, NERC, NERC_FRAGMENTS } from "@/lib/content";
+import { FRAGMENTS, HOURLY_CTA, NERC, NERC_FRAGMENTS } from "@/lib/content";
 import { ArcSurface } from "../motion/arc-surface";
 import { gsap, ScrollTrigger, SplitText, useGSAP, MQ } from "../motion/gsap";
-import { cx } from "../ui/primitives";
+import { PillLink, cx } from "../ui/primitives";
 
-const PIN_VH = 5;
+const PIN_VH = 6.6;
 const APPROACH_VH = 0.8;
 const { heading, body } = NERC.eraDifference;
 
@@ -20,6 +20,23 @@ const LEVELS = Array.from({ length: HOURS }, (_, i) => {
   );
 });
 
+/** The CTA paragraph as words, flagging the ones inside a highlighted phrase. */
+function ctaWords() {
+  const { body, highlights } = HOURLY_CTA;
+  const marks = new Array<boolean>(body.length).fill(false);
+  for (const h of highlights) {
+    const at = body.indexOf(h);
+    if (at >= 0) marks.fill(true, at, at + h.length);
+  }
+  let pos = 0;
+  return body.split(" ").map((w) => {
+    const hi = marks[pos];
+    pos += w.length + 1;
+    return { w, hi };
+  });
+}
+const CTA_WORDS = ctaWords();
+
 function StaticLayout() {
   return (
     <div className="mx-auto max-w-[1100px] px-5 pb-28 md:px-10">
@@ -32,6 +49,12 @@ function StaticLayout() {
       <p className="mt-8 text-base leading-relaxed text-paper/80 md:text-lg">
         {body}
       </p>
+      <p className="font-display mt-16 text-[clamp(1.25rem,2vw,1.75rem)] leading-snug text-paper">
+        {HOURLY_CTA.body}
+      </p>
+      <PillLink href={HOURLY_CTA.button.href} tone="paper" size="lg" icon="right" className="mt-8">
+        {HOURLY_CTA.button.label}
+      </PillLink>
     </div>
   );
 }
@@ -44,6 +67,8 @@ function StaticLayout() {
  * 2. Energy: the frame multiplies into an hour-by-hour strip that slides past;
  *    a playhead checks every hour while the stored-fuel bars step down in turn —
  *    "enough energy for every hour".
+ * 3. The strip dims back; the FEST call to action brightens word by word and
+ *    the Explore FEST button lands.
  * (Illustrative only: no values, no axes.)
  */
 export function HourlyStory() {
@@ -84,6 +109,9 @@ export function HourlyStory() {
       gsap.set(q("[data-cell]"), { autoAlpha: 0, y: 30 });
       gsap.set(q("[data-cell-check]"), { scale: 0, opacity: 0 });
       gsap.set(q("[data-line-word]"), { yPercent: 110 });
+      gsap.set(q("[data-cta]"), { autoAlpha: 0, y: 40 });
+      gsap.set(q("[data-cta-word]"), { opacity: 0.14 });
+      gsap.set(q("[data-cta-button]"), { autoAlpha: 0, y: 16 });
 
       const track = q("[data-track]")[0] as HTMLElement;
       const window_ = q("[data-window]")[0] as HTMLElement;
@@ -203,7 +231,22 @@ export function HourlyStory() {
         .to(playhead, { autoAlpha: 0, duration: 0.1 }, 3.9);
       lineOut(1, 4.0);
       lineIn(2, 4.15);
-      pin.to({}, { duration: 0.6 }, 4.4);
+      // 3. call to action: the strip dims back, the CTA brightens, the button lands
+      lineOut(2, 4.85);
+      pin
+        .to(
+          q("[data-beat='2']"),
+          { autoAlpha: 0.12, y: 50, scale: 0.97, duration: 0.4, ease: "power2.inOut" },
+          4.85,
+        )
+        .to(q("[data-cta]"), { autoAlpha: 1, y: 0, duration: 0.35, ease: "power3.out" }, 5.0)
+        .to(
+          q("[data-cta-word]"),
+          { opacity: 1, duration: 0.05, stagger: 0.85 / CTA_WORDS.length },
+          5.15,
+        )
+        .to(q("[data-cta-button]"), { autoAlpha: 1, y: 0, duration: 0.2, ease: "power3.out" }, 6.0)
+        .to({}, { duration: 0.6 }, 6.2);
 
       const approach = (pin.duration() * APPROACH_VH) / PIN_VH;
       gsap
@@ -405,6 +448,27 @@ export function HourlyStory() {
                   aria-hidden
                   className="pointer-events-none absolute top-0 -bottom-3 w-px -translate-x-1/2 bg-paper/80 shadow-[0_0_14px_2px_rgb(248_249_247/0.5)]"
                 />
+              </div>
+            </div>
+
+            {/* 3. Call to action → FEST */}
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 pt-16 md:px-10">
+              <div data-cta className="max-w-[min(100%,62rem)]">
+                <p className="font-display text-[clamp(1.2rem,2.2vw,2.4rem)] leading-[1.22] text-paper">
+                  {CTA_WORDS.map(({ w, hi }, i) => (
+                    <Fragment key={i}>
+                      {i > 0 && " "}
+                      <span data-cta-word className={cx(hi && "text-fern")}>
+                        {w}
+                      </span>
+                    </Fragment>
+                  ))}
+                </p>
+                <div data-cta-button className="pointer-events-auto mt-8 md:mt-10">
+                  <PillLink href={HOURLY_CTA.button.href} tone="paper" size="lg" icon="right">
+                    {HOURLY_CTA.button.label}
+                  </PillLink>
+                </div>
               </div>
             </div>
           </div>

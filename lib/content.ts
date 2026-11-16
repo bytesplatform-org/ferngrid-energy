@@ -129,6 +129,14 @@ export const NERC = {
  * Home: the four facts beside Our Software, as the client laid them out
  * (Standard → Timeline → Applies to → Solution).
  */
+/** Home, end of the hourly story: call to action to the FEST page (client copy, verbatim). */
+export const HOURLY_CTA = {
+  body: "FernGrid Energy’s Fuel and Energy Security Tool (FEST) conducts Near-Term ERAs for Balancing Authorities by developing hourly generation dispatches to meet demand and maintain operating reserves while accounting for transmission limits, demand response, fuel availability, natural gas constraints, and generator temperature limits. The resulting dispatches are assessed for potential Energy Emergencies in accordance with BAL-007-1.",
+  /** Phrases that light up in fern. */
+  highlights: ["Fuel and Energy Security Tool (FEST)", "Near-Term ERAs", "Energy Emergencies", "BAL-007-1."],
+  button: { label: "Explore FEST", href: ROUTES.fest },
+} as const;
+
 export const AT_A_GLANCE = {
   label: "At a glance",
   items: [
