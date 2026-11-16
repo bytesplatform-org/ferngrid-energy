@@ -675,7 +675,7 @@ export function ExpertiseStory() {
                 })}
                 <div
                   data-venn-core
-                  className="absolute top-[52%] left-1/2 w-[15%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper p-[2.5%] shadow-[0_0_0_6px_rgb(135_169_107/0.35),0_18px_40px_-16px_rgb(29_34_15/0.5)]"
+                  className="absolute top-[52%] left-1/2 w-[15%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper p-[2.5%] shadow-[0_0_0_6px_rgb(135_169_107/0.35),0_18px_40px_-16px_rgb(18_22_10/0.5)]"
                 >
                   <Image
                     src={logoMark}

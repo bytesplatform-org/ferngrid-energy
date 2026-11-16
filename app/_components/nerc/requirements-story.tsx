@@ -396,7 +396,7 @@ export function RequirementsStory() {
                   <div
                     key={item}
                     data-card
-                    className="absolute w-[min(92%,30rem)] rounded-[20px] border border-carbon/10 bg-white p-4 shadow-[0_30px_60px_-30px_rgb(29_34_15/0.45)] md:p-7 lg:w-[min(48%,26rem)]"
+                    className="absolute w-[min(92%,30rem)] rounded-[20px] border border-carbon/10 bg-white p-4 shadow-[0_30px_60px_-30px_rgb(18_22_10/0.45)] md:p-7 lg:w-[min(48%,26rem)]"
                   >
                     <p className="text-label text-muted">
                       {NERC_FRAGMENTS.accountFor}
@@ -452,7 +452,7 @@ export function RequirementsStory() {
                     <div
                       key={s}
                       data-stress
-                      className="absolute w-[min(44%,14rem)] -translate-x-1/2 -translate-y-1/2 rounded-[16px] border border-carbon/15 bg-paper p-3 shadow-[0_20px_40px_-24px_rgb(29_34_15/0.5)] md:p-4"
+                      className="absolute w-[min(44%,14rem)] -translate-x-1/2 -translate-y-1/2 rounded-[16px] border border-carbon/15 bg-paper p-3 shadow-[0_20px_40px_-24px_rgb(18_22_10/0.5)] md:p-4"
                       style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
                     >
                       <p className="font-display text-[clamp(0.85rem,1.2vw,1.15rem)] leading-tight">

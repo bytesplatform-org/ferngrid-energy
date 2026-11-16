@@ -193,7 +193,7 @@ export function ModelSection() {
           <div
             data-ms-grid
             aria-hidden
-            className="pointer-events-none absolute -inset-x-6 -inset-y-8 rounded-[24px] opacity-100 [background-image:linear-gradient(to_right,rgb(29_34_15/0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgb(29_34_15/0.06)_1px,transparent_1px)] [background-size:32px_32px]"
+            className="pointer-events-none absolute -inset-x-6 -inset-y-8 rounded-[24px] opacity-100 [background-image:linear-gradient(to_right,rgb(18_22_10/0.06)_1px,transparent_1px),linear-gradient(to_bottom,rgb(18_22_10/0.06)_1px,transparent_1px)] [background-size:32px_32px]"
           />
           <div className="relative">
             <FestModel scrub />

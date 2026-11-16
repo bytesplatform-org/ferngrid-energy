@@ -13,7 +13,7 @@ import { SHAPES } from "./shapes";
 const STEPS = ["Load", "Generation", "Transfers", "Transmission"] as const;
 
 /** carbon → warmer carbon → olive-tinted carbon, blended continuously with scroll */
-const TONES = ["#1d220f", "#21230f", "#222711", "#252c14"];
+const TONES = ["#12160a", "#16170a", "#171b0c", "#1a200f"];
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
 const PIN_VH = 4.6;

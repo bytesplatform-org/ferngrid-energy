@@ -197,7 +197,7 @@ export function FestModel({ scrub = false }: { scrub?: boolean } = {}) {
                 aria-describedby={`fest-links-${id}`}
                 className={cx(
                   "overflow-hidden rounded-[10px] border bg-paper transition-[border-color,box-shadow] duration-300 outline-offset-4",
-                  hover === id ? "border-carbon shadow-[0_18px_40px_-24px_rgb(29_34_15/0.6)]" : "border-carbon/20",
+                  hover === id ? "border-carbon shadow-[0_18px_40px_-24px_rgb(18_22_10/0.6)]" : "border-carbon/20",
                 )}
               >
                 <h3

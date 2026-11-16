@@ -420,7 +420,7 @@ export function FestEraStory() {
                       >
                         <span
                           data-chip
-                          className="font-display block w-max max-w-[11rem] rounded-[14px] border border-carbon/15 bg-white px-3.5 py-2 text-center text-[clamp(0.78rem,1vw,0.95rem)] leading-tight text-balance text-carbon shadow-[0_12px_30px_-16px_rgb(29_34_15/0.5)] md:max-w-[13rem]"
+                          className="font-display block w-max max-w-[11rem] rounded-[14px] border border-carbon/15 bg-white px-3.5 py-2 text-center text-[clamp(0.78rem,1vw,0.95rem)] leading-tight text-balance text-carbon shadow-[0_12px_30px_-16px_rgb(18_22_10/0.5)] md:max-w-[13rem]"
                         >
                           {f}
                         </span>
@@ -431,7 +431,7 @@ export function FestEraStory() {
                 {/* FEST core */}
                 <div
                   data-core
-                  className="absolute top-1/2 left-1/2 flex w-[26%] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-full bg-carbon p-[5%] text-paper shadow-[0_0_0_10px_rgb(135_169_107/0.25),0_30px_60px_-24px_rgb(29_34_15/0.6)]"
+                  className="absolute top-1/2 left-1/2 flex w-[26%] -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-full bg-carbon p-[5%] text-paper shadow-[0_0_0_10px_rgb(135_169_107/0.25),0_30px_60px_-24px_rgb(18_22_10/0.6)]"
                 >
                   <Image
                     src={logoMark}

@@ -2,12 +2,12 @@
 
 /* ------------------------------------------------------------------ */
 /* Brand tokens                                                        */
-/* Client palette: carbon #1D220F, fern #87A96B, paper #F8F9F7.        */
+/* Client palette: carbon #12160A, fern #87A96B, paper #F8F9F7.        */
 /* ------------------------------------------------------------------ */
 @theme {
-  --color-carbon: #1d220f;
+  --color-carbon: #12160a;
   --color-carbon-deep: #12160a;
-  --color-ink: #2a3020;
+  --color-ink: #1f241b;
   --color-fern: #87a96b;
   --color-paper: #f8f9f7;
   --color-paper-warm: #eef0ea;
@@ -35,9 +35,9 @@
   --arc-depth: 10vh;
   /* light surface defaults */
   --fg: var(--color-carbon);
-  --line: rgb(29 34 15 / 0.12);
+  --line: rgb(18 22 10 / 0.12);
   /* 70% (not 60%) so muted body copy clears WCAG AA on paper */
-  --muted: rgb(29 34 15 / 0.7);
+  --muted: rgb(18 22 10 / 0.7);
   color-scheme: light;
 }
 
@@ -56,8 +56,8 @@
 
 .surface-light {
   --fg: var(--color-carbon);
-  --line: rgb(29 34 15 / 0.12);
-  --muted: rgb(29 34 15 / 0.7);
+  --line: rgb(18 22 10 / 0.12);
+  --muted: rgb(18 22 10 / 0.7);
   color: var(--color-carbon);
 }
 

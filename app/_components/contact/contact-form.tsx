@@ -339,7 +339,7 @@ export function ContactForm() {
               data-cf-form
               noValidate
               onSubmit={submit}
-              className="rounded-[24px] bg-white p-6 shadow-[0_40px_90px_-50px_rgb(29_34_15/0.55)] md:p-10"
+              className="rounded-[24px] bg-white p-6 shadow-[0_40px_90px_-50px_rgb(18_22_10/0.55)] md:p-10"
             >
               <div className="grid gap-x-8 gap-y-6 md:grid-cols-2">
                 <Field
