@@ -125,6 +125,20 @@ export const NERC = {
 /* Display fragments lifted verbatim from the copy above               */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Home: the four facts beside Our Software, as the client laid them out
+ * (Standard → Timeline → Applies to → Solution).
+ */
+export const AT_A_GLANCE = {
+  label: "At a glance",
+  items: [
+    { label: "Standard", value: "NERC BAL-007-1" },
+    { label: "Timeline", value: "Beginning April 2027" },
+    { label: "Applies to", value: "Balancing Authorities" },
+    { label: "Solution", value: "FEST" },
+  ],
+} as const;
+
 export const FRAGMENTS = {
   /** From the hero tagline. */
   statement: "Reliable Software Starts with Reliable Engineering.",

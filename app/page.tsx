@@ -3,6 +3,7 @@ import { SITE } from "@/lib/content";
 import { Hero } from "./_components/hero/hero";
 import { Statement } from "./_components/statement";
 import { OurSoftware } from "./_components/our-software";
+import { AtAGlance } from "./_components/at-a-glance";
 import { CapacityEnergy } from "./_components/capacity-energy";
 import { EraScene } from "./_components/era/era-scene";
 import { ServicesTraining } from "./_components/services-training";
@@ -20,6 +21,7 @@ export default function HomePage() {
         <Hero />
         <Statement />
         <OurSoftware />
+        <AtAGlance />
         <CapacityEnergy />
         <EraScene />
         <ServicesTraining />
