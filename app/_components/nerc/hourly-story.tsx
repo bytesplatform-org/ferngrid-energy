@@ -11,7 +11,7 @@ const APPROACH_VH = 0.8;
 const { heading, body } = NERC.eraDifference;
 
 /** Hour cells in the strip, and each hour's stored-fuel level (a slow, uneven drawdown; illustrative, no values). */
-const HOURS = 36;
+const HOURS = 24;
 const LEVELS = Array.from({ length: HOURS }, (_, i) => {
   const t = i / (HOURS - 1);
   return Math.max(
