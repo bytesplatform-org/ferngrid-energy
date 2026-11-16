@@ -2,7 +2,14 @@
 
 import Image from "next/image";
 import { TransitionLink as Link } from "./ui/transition-link";
-import { Suspense, useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 import { usePathname } from "next/navigation";
 import { HOME, ROUTES, SITE } from "@/lib/content";
 import { BigMenu, isActivePath } from "./big-menu";
@@ -62,8 +69,28 @@ function ActiveBigMenu({ onNavigate }: { onNavigate: () => void }) {
   return <BigMenu onNavigate={onNavigate} pathname={usePathname()} />;
 }
 
-/** Scroll distance after which the bar turns solid. */
-const SOLID_AFTER = 24;
+/**
+ * Is the page directly under the nav a light surface? Looks through the
+ * elements at a few points along the nav's middle line (skipping the nav
+ * itself) for the nearest `.surface-light` / `.surface-dark` section.
+ */
+function lightUnder(header: HTMLElement) {
+  const y = header.offsetHeight / 2;
+  let light = 0;
+  let dark = 0;
+  for (const fx of [0.2, 0.5, 0.8]) {
+    const hit = document
+      .elementsFromPoint(window.innerWidth * fx, y)
+      .find(
+        (el) =>
+          !header.contains(el) && el.closest(".surface-light, .surface-dark"),
+      );
+    const surface = hit?.closest(".surface-light, .surface-dark");
+    if (surface?.classList.contains("surface-light")) light++;
+    else if (surface) dark++;
+  }
+  return light > dark;
+}
 
 function Wordmark({ dark }: { dark: boolean }) {
   return (
@@ -74,14 +101,20 @@ function Wordmark({ dark }: { dark: boolean }) {
           alt=""
           width={36}
           height={36}
-          className={cx("absolute inset-0 size-9 transition-opacity duration-300", !dark && "opacity-0")}
+          className={cx(
+            "absolute inset-0 size-9 transition-opacity duration-300",
+            !dark && "opacity-0",
+          )}
         />
         <Image
           src={logoMark}
           alt=""
           width={36}
           height={36}
-          className={cx("absolute inset-0 size-9 transition-opacity duration-300", dark && "opacity-0")}
+          className={cx(
+            "absolute inset-0 size-9 transition-opacity duration-300",
+            dark && "opacity-0",
+          )}
         />
       </span>
       <span className="font-display hidden text-[15px] leading-none tracking-[0.32em] uppercase sm:block">
@@ -113,13 +146,14 @@ function MenuIcon({ open }: { open: boolean }) {
 /**
  * Classic full-width navigation bar.
  * - Logo on the left; text links + Contact Us on the right (≥1024px).
- * - Transparent with light text over the top of the hero; once the page is
- *   scrolled it becomes a solid paper bar with dark text and a bottom rule.
+ * - Always transparent (no bar). Its colours follow the section underneath:
+ *   light text over dark sections, dark text over light ones. It doesn't change
+ *   size or shape on scroll.
  * - Below 1024px the links move into a full-screen menu overlay.
  */
 export function Nav() {
   const [open, setOpen] = useState(false);
-  const [solid, setSolid] = useState(false);
+  const [onLight, setOnLight] = useState(false);
   const menuId = useId();
   const overlayRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -133,7 +167,12 @@ export function Nav() {
         tl.fromTo(
           headerRef.current,
           { yPercent: -120 },
-          { yPercent: 0, duration: 1.1, ease: "expo.out", clearProps: "transform" },
+          {
+            yPercent: 0,
+            duration: 1.1,
+            ease: "expo.out",
+            clearProps: "transform",
+          },
           1.05,
         );
       }),
@@ -146,16 +185,21 @@ export function Nav() {
     let raf = 0;
     const check = () => {
       raf = 0;
-      setSolid(window.scrollY > SOLID_AFTER);
+      if (headerRef.current) setOnLight(lightUnder(headerRef.current));
     };
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(check);
     };
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    // page transitions swap the content under the nav without a scroll
+    const poll = window.setInterval(schedule, 400);
     return () => {
       cancelAnimationFrame(raf);
+      window.clearInterval(poll);
       window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
     };
   }, []);
 
@@ -172,7 +216,8 @@ export function Nav() {
         return;
       }
       if (e.key === "Tab" && overlay) {
-        const focusables = overlay.querySelectorAll<HTMLElement>("a[href],button");
+        const focusables =
+          overlay.querySelectorAll<HTMLElement>("a[href],button");
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
         if (e.shiftKey && document.activeElement === first) {
@@ -206,21 +251,18 @@ export function Nav() {
       <header
         ref={headerRef}
         className={cx(
-          "fixed inset-x-0 top-0 z-50 rounded-b-[28px] transition-[background-color,box-shadow,color,backdrop-filter] duration-300 md:rounded-b-[36px]",
-          solid
-            ? "bg-paper/90 text-carbon shadow-[0_10px_30px_-18px_rgb(29_34_15/0.45)] backdrop-blur-md"
-            : "bg-transparent text-paper",
+          "fixed inset-x-0 top-0 z-50 bg-transparent transition-colors duration-300",
+          onLight ? "text-carbon" : "text-paper",
         )}
       >
         <nav
           aria-label="Primary"
           className={cx(
-            "flex items-center justify-between px-5 transition-[height] duration-300 md:px-10",
-            solid ? "h-16" : "h-20 md:h-24",
+            "flex h-20 items-center justify-between px-5 md:h-24 md:px-10",
           )}
         >
           <Link href={ROUTES.home} aria-label={`${SITE.shortName} home`}>
-            <Wordmark dark={!solid} />
+            <Wordmark dark={!onLight} />
           </Link>
 
           <div className="flex items-center gap-2 lg:gap-8">
@@ -228,7 +270,13 @@ export function Nav() {
               <ActiveLinkList />
             </Suspense>
 
-            <PillLink href={HOME.hero.buttons.contact.href} tone="fern" size="sm" icon="up-right" className="h-10 px-4">
+            <PillLink
+              href={HOME.hero.buttons.contact.href}
+              tone="fern"
+              size="sm"
+              icon="up-right"
+              className="h-10 px-4"
+            >
               {HOME.hero.buttons.contact.label}
             </PillLink>
 
@@ -240,7 +288,9 @@ export function Nav() {
               onClick={() => setOpen(true)}
               className={cx(
                 "inline-flex h-10 items-center gap-2.5 rounded-full px-4 text-[13px] font-medium transition-colors duration-300 lg:hidden",
-                solid ? "bg-carbon text-paper hover:bg-ink" : "bg-paper text-carbon hover:bg-white",
+                onLight
+                  ? "bg-carbon text-paper hover:bg-ink"
+                  : "bg-paper text-carbon hover:bg-white",
               )}
             >
               <MenuIcon open={false} />
@@ -262,7 +312,11 @@ export function Nav() {
         data-lenis-prevent
       >
         <div className="flex h-20 items-center justify-between px-5 md:h-24 md:px-10">
-          <Link href={ROUTES.home} onClick={close} aria-label={`${SITE.shortName} home`}>
+          <Link
+            href={ROUTES.home}
+            onClick={close}
+            aria-label={`${SITE.shortName} home`}
+          >
             <Wordmark dark />
           </Link>
           <button
