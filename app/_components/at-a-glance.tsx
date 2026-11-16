@@ -131,7 +131,6 @@ export function AtAGlance() {
 
         // Explicit starting states.
         gsap.set(q("[data-seg]"), { strokeDashoffset: 1 });
-        gsap.set(q("[data-eyebrow]"), { autoAlpha: 0, y: 16 });
         gsap.set(q("[data-route]"), { opacity: 0 });
         gsap.set(q("[data-marker]"), { scale: 0 });
         gsap.set(q("[data-ripple]"), { scale: 1, autoAlpha: 0 });
@@ -170,12 +169,8 @@ export function AtAGlance() {
           },
         });
 
-        // Arrival: label and faint route.
-        tl.to(q("[data-eyebrow]"), { autoAlpha: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.05).to(
-          q(`[data-line='${wide ? "wide" : "narrow"}'] [data-route]`),
-          { opacity: 1, duration: 0.3 },
-          0.1,
-        );
+        // Arrival: the faint route.
+        tl.to(q(`[data-line='${wide ? "wide" : "narrow"}'] [data-route]`), { opacity: 1, duration: 0.3 }, 0.1);
 
         // The head appears at the start, then rides each segment in turn.
         const START = 0.45;
@@ -235,12 +230,8 @@ export function AtAGlance() {
       <div data-stage className={cx("relative overflow-x-clip", story ? "h-svh" : "h-[max(600px,82svh)]")}>
         {/* Inner wrapper: the next section's parallax moves this, never the pinned stage. */}
         <div ref={innerRef} data-glance-inner className="absolute inset-0">
-          <h2
-            id="glance-title"
-            data-eyebrow
-            className="text-label absolute top-[clamp(5.5rem,13svh,8.5rem)] left-5 flex items-center gap-3 text-muted md:left-10"
-          >
-            <span aria-hidden className="block size-1.5 rounded-full bg-fern" />
+          {/* Heading for screen readers only; the line speaks for itself. */}
+          <h2 id="glance-title" className="sr-only">
             {label}
           </h2>
 
