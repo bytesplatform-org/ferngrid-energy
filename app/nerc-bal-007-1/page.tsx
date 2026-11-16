@@ -4,7 +4,6 @@ import { NercHero } from "../_components/nerc/nerc-hero";
 import { RequirementsStory } from "../_components/nerc/requirements-story";
 import { HourlyStory } from "../_components/nerc/hourly-story";
 import { FestEraStory } from "../_components/nerc/fest-era-story";
-import { ClosingCta } from "../_components/closing-cta";
 import { Footer } from "../_components/footer";
 
 export const metadata: Metadata = {
@@ -20,9 +19,8 @@ export default function NercPage() {
         <RequirementsStory />
         <HourlyStory />
         <FestEraStory />
-        <ClosingCta stackOver="[data-fe-inner]" />
       </main>
-      <Footer />
+      <Footer stackOver="[data-fe-inner]" />
     </>
   );
 }

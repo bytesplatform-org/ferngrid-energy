@@ -328,7 +328,7 @@ export function FaqList() {
       ref={ref}
       id="questions"
       aria-label="Questions and answers"
-      className="surface-light arc-next arc-prev relative z-10 px-5 md:px-10"
+      className="surface-light arc-next relative z-10 px-5 pb-24 md:px-10 md:pb-32"
     >
       <ArcSurface tone="paper" parallax="[data-fqh-inner]" />
 

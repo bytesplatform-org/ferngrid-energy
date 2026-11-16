@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   description: CONTACT.intro,
 };
 
-/** As on the live page: hero, the form, then the footer (no closing section). */
+/** Hero, the form, then the site footer. */
 export default function ContactPage() {
   return (
     <>

@@ -7,7 +7,6 @@ import { CapacityEnergy } from "./_components/capacity-energy";
 import { EraScene } from "./_components/era/era-scene";
 import { ServicesTraining } from "./_components/services-training";
 import { Marquee } from "./_components/marquee";
-import { ClosingCta } from "./_components/closing-cta";
 import { Footer } from "./_components/footer";
 
 export const metadata: Metadata = {
@@ -25,7 +24,6 @@ export default function HomePage() {
         <EraScene />
         <ServicesTraining />
         <Marquee />
-        <ClosingCta />
       </main>
       <Footer />
     </>

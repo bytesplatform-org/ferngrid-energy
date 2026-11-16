@@ -3,7 +3,6 @@ import { FEST_PAGE, NERC } from "@/lib/content";
 import { FestHero } from "../_components/fest/fest-hero";
 import { ModelSection } from "../_components/fest/model-section";
 import { PackagesStory } from "../_components/fest/packages-story";
-import { ClosingCta } from "../_components/closing-cta";
 import { Footer } from "../_components/footer";
 
 export const metadata: Metadata = {
@@ -18,10 +17,8 @@ export default function FestPage() {
         <FestHero />
         <ModelSection />
         <PackagesStory />
-        {/* As on the live FEST page: Contact Us only (no Explore FEST on FEST itself). */}
-        <ClosingCta stackOver="[data-pk-inner]" hideExplore />
       </main>
-      <Footer />
+      <Footer stackOver="[data-pk-inner]" hideExplore />
     </>
   );
 }

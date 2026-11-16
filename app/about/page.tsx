@@ -3,7 +3,6 @@ import { ABOUT } from "@/lib/content";
 import { AboutHero } from "../_components/about/about-hero";
 import { ExpertiseStory } from "../_components/about/expertise-story";
 import { TrustStory } from "../_components/about/trust-story";
-import { ClosingCta } from "../_components/closing-cta";
 import { Footer } from "../_components/footer";
 
 export const metadata: Metadata = {
@@ -18,9 +17,8 @@ export default function AboutPage() {
         <AboutHero />
         <ExpertiseStory />
         <TrustStory />
-        <ClosingCta stackOver="[data-trust-inner]" />
       </main>
-      <Footer />
+      <Footer stackOver="[data-trust-inner]" />
     </>
   );
 }

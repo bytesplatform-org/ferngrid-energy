@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Fragment, useRef, useState } from "react";
 import { HOME, SITE } from "@/lib/content";
 import { gsap, ScrollTrigger, useGSAP, MQ } from "./motion/gsap";
-import { PillLink, cx } from "./ui/primitives";
+import { ArrowUpRight, PillLink, cx } from "./ui/primitives";
 import pylon from "@/public/images/about-pylon.webp";
 
 const ACCENT = "reliable engineering";
@@ -39,7 +39,17 @@ function headlineWords() {
  * `stackOver`: selector of a pinned previous scene this section slides over.
  * `hideExplore`: drop the Explore FEST button (e.g. on the FEST page itself).
  */
-export function ClosingCta({ stackOver, hideExplore = false }: { stackOver?: string; hideExplore?: boolean } = {}) {
+export function ClosingCta({
+  stackOver,
+  hideExplore = false,
+  footer = false,
+}: {
+  stackOver?: string;
+  hideExplore?: boolean;
+  /** Render as the site footer (a <footer> with the email / phone / copyright line). */
+  footer?: boolean;
+} = {}) {
+  const Root = footer ? "footer" : "section";
   const { closing } = HOME;
   const ref = useRef<HTMLElement>(null);
   const [copied, setCopied] = useState(false);
@@ -253,12 +263,13 @@ export function ClosingCta({ stackOver, hideExplore = false }: { stackOver?: str
   };
 
   return (
-    <section
+    <Root
       ref={ref}
       id="consultation"
       aria-labelledby="closing-title"
       className={cx(
-        "surface-dark arc-prev relative overflow-hidden bg-carbon px-5 pt-28 md:px-10 md:pt-40",
+        "surface-dark relative overflow-hidden bg-carbon px-5 pt-28 md:px-10 md:pt-40",
+        footer ? "pb-6 md:pb-8" : "arc-prev",
         stackOver
           ? // slides up over the last (pinned) screen of the previous section, like a card
             "z-20 motion-safe:[.js_&]:-mt-[100svh] motion-safe:[.js_&]:rounded-t-[28px] motion-safe:[.js_&]:shadow-[0_-40px_90px_-30px_rgb(0_0_0/0.75)] md:motion-safe:[.js_&]:rounded-t-[44px]"
@@ -410,6 +421,21 @@ export function ClosingCta({ stackOver, hideExplore = false }: { stackOver?: str
           </dl>
         </div>
       </div>
-    </section>
+
+      {footer && (
+        <div className="text-label relative mx-auto mt-20 flex max-w-[1600px] flex-col gap-3 border-t border-paper/15 pt-6 text-paper/60 md:mt-28 md:flex-row md:items-center md:gap-8">
+          <a
+            href="https://bytesplatform.com"
+            target="_blank"
+            rel="noopener"
+            className="group inline-flex items-center gap-2 hover:text-paper"
+          >
+            Made by <span className="text-paper/80 transition-colors group-hover:text-fern">BytesPlatform</span>
+            <ArrowUpRight className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </a>
+          <p className="md:ml-auto">{HOME.footer.copyright}</p>
+        </div>
+      )}
+    </Root>
   );
 }
