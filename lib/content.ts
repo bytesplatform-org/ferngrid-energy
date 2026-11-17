@@ -239,6 +239,10 @@ export const NERC_FRAGMENTS = {
   expected: "Expected system conditions",
   stress: "Stress the system",
   eea: "level 2 and 3 Energy Emergency Alerts",
+  /** NERC page scenarios paragraph: the client trimmed the phrase to this. */
+  eeaShort: "Energy Emergency Alerts",
+  /** Label for the four stress scenarios around the base (client request). */
+  contingencies: "Contingency scenarios",
   pointInTime: "At a point in time",
   everyHour: "Every hour",
   capacityLine: "Traditional capacity studies evaluate if there is enough capacity.",
