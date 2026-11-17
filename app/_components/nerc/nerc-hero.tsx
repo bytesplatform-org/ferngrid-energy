@@ -133,8 +133,8 @@ export function NercHero() {
           .to("[data-nh-rule]", { scaleX: 0, duration: 0.2 }, 0.05)
           .fromTo(
             "[data-nh-asof]",
-            { backgroundSize: "0% 100%" },
-            { backgroundSize: "100% 100%", duration: 0.15 },
+            { backgroundSize: "0% 2px" },
+            { backgroundSize: "100% 2px", duration: 0.15 },
             0.8,
           )
           .to({}, { duration: 0.12 });
@@ -243,7 +243,7 @@ export function NercHero() {
             <p className="font-display max-w-[24ch] text-center text-[clamp(1.8rem,4.2vw,4.4rem)] leading-[1.08] text-balance text-paper">
               <span
                 data-nh-asof
-                className="bg-[linear-gradient(rgb(135_169_107/0.35),rgb(135_169_107/0.35))] bg-[length:0%_100%] bg-no-repeat px-[0.12em] text-fern"
+                className="bg-[linear-gradient(var(--color-fern),var(--color-fern))] bg-[length:0%_2px] bg-[position:0_93%] bg-no-repeat text-fern"
               >
                 {asOf}
               </span>
