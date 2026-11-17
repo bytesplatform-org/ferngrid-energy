@@ -332,7 +332,8 @@ export function RequirementsStory() {
           : undefined
       }
     >
-      <ArcSurface tone="paper" parallax="[data-nh-inner]" />
+      {/* No parallax: the ERA scene above is pinned. */}
+      <ArcSurface tone="paper" />
 
       {!story ? (
         <StaticLayout />

@@ -134,7 +134,7 @@ export function CapacityEnergy() {
       aria-labelledby="capacity-title"
       className="surface-dark arc-next relative z-10 px-5 pb-24 md:px-10 md:pb-32"
     >
-      <ArcSurface tone="carbon-deep" parallax="[data-req-inner]" />
+      <ArcSurface tone="carbon-deep" parallax="[data-nh-inner]" />
 
       <div className="mx-auto max-w-[1600px]">
         <h2

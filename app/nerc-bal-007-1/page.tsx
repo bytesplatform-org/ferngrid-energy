@@ -17,9 +17,9 @@ export default function NercPage() {
     <>
       <main id="main" className="overflow-x-clip">
         <NercHero />
-        <RequirementsStory />
         <CapacityEnergy />
         <EraScene />
+        <RequirementsStory />
         <FestEraStory />
       </main>
       <Footer stackOver="[data-fe-inner]" />
