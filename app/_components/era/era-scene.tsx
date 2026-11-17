@@ -10,7 +10,7 @@ import { PointCloud, type PointCloudHandle } from "./point-cloud";
 import { SHAPES } from "./shapes";
 
 /** Short titles for the four BAL-007-1 requirements (structural labels). */
-const STEPS = ["Load", "Generation", "Energy Transfers", "Transmission"] as const;
+const STEPS = ["Load", "Generation", "Energy Transfers", "Transmission Limitations"] as const;
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
 const PIN_VH = 4.6;

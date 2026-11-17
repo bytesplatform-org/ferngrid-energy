@@ -10,6 +10,7 @@ export function Callouts({ items, className }: { items: readonly Callout[]; clas
     <div aria-hidden className={cx("pointer-events-none absolute inset-0", className)}>
       <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible">
         {items.map((c, i) => {
+          if (c.plain) return null;
           const elbowY = c.ly * 100 + 2.2;
           return (
             <g key={i} stroke="currentColor" fill="none" className="text-paper/55">
@@ -24,14 +25,17 @@ export function Callouts({ items, className }: { items: readonly Callout[]; clas
       </svg>
       {items.map((c, i) => (
         <span key={`d${i}`}>
-          <span
-            className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fern ring-4 ring-fern/20"
-            style={{ left: `${c.ax * 100}%`, top: `${c.ay * 100}%` }}
-          />
+          {!c.plain && (
+            <span
+              className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fern ring-4 ring-fern/20"
+              style={{ left: `${c.ax * 100}%`, top: `${c.ay * 100}%` }}
+            />
+          )}
           <span
             className={cx(
               "text-label absolute -translate-y-full rounded-sm bg-carbon/80 px-1.5 py-0.5 whitespace-nowrap text-paper max-md:px-1 max-md:text-[8px] max-md:tracking-[0.1em]",
               c.align === "right" && "-translate-x-full",
+              c.plain && "whitespace-pre-line",
             )}
             style={{ left: `${c.lx * 100}%`, top: `${c.ly * 100 + 2.2}%` }}
           >

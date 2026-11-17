@@ -16,6 +16,8 @@ export type Callout = {
   lx: number;
   ly: number;
   align?: "left" | "right";
+  /** Label only: no leader line or anchor dot (ax/ay unused); "\n" breaks lines. */
+  plain?: boolean;
 };
 
 export type ShapeDef = {
@@ -321,8 +323,9 @@ const transmission: ShapeDef = {
   },
   callouts: [
     { label: "BES transmission", ax: 0.5, ay: 0.55, lx: 0.94, ly: 0.62, align: "right" },
-    { label: "Span", ax: 50 / BOX, ay: 146 / BOX, lx: 0.06, ly: 0.08, align: "left" },
-    { label: "Transfer limit", ax: 350 / BOX, ay: 192 / BOX, lx: 0.94, ly: 0.3, align: "right" },
+    // above the left-hand lines, on two lines so it clears the tower at every
+    // width; no pointer (client request)
+    { label: "Internal transfer\nlimits", ax: 0, ay: 0, lx: 0.03, ly: 0.2, align: "left", plain: true },
   ],
 };
 
