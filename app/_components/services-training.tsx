@@ -270,7 +270,8 @@ export function ServicesTraining() {
         .fromTo(
           q("[data-rail-fill]"),
           { scaleY: 0 },
-          { scaleY: 1, duration: 1.1 },
+          // reaches the last step as it lights up (0.3 between steps)
+          { scaleY: 1, duration: (FRAGMENTS.serviceSteps.length - 1) * 0.3 + 0.2 },
           2.15,
         );
       q("[data-step]").forEach((step, i) => {

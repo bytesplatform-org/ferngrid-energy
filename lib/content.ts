@@ -161,7 +161,6 @@ export const FRAGMENTS = {
     "Developing study assumptions",
     "Executing FEST studies",
     "Analyzing ERA results",
-    "Validating ERA results",
   ],
   /** Offerings lifted from the Training Services paragraph. */
   trainingOfferings: ["FEST documentation", "On-demand demonstration videos", "General Power Systems Training"],
