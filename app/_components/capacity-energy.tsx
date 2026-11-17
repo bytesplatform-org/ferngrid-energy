@@ -16,7 +16,6 @@ const N = 84;
 const STEP = (X1 - X0) / N;
 const BAR_W = 5;
 const CAP = { x: 40, w: 46, startX: 577, startW: 46 };
-const DEMAND_Y = BASE - FULL * 0.5;
 
 /** Deterministic hourly pattern: a daily rhythm plus gentle variation. */
 const BARS = Array.from({ length: N }, (_, i) => {
@@ -67,7 +66,6 @@ export function CapacityEnergy() {
           .to("[data-cap]", { opacity: 0.3, duration: 0.2, ease: "none" }, 0.2)
           .from("[data-axis]", { scaleX: 0, transformOrigin: "0 0", duration: 0.3, ease: "power2.out" }, 0.22)
           .from("[data-b-label]", { autoAlpha: 0, y: 8, duration: 0.12, stagger: 0.04 }, 0.4)
-          .from("[data-demand]", { scaleX: 0, transformOrigin: "0% 50%", duration: 0.22, ease: "power2.inOut" }, 0.5)
           .fromTo("[data-fuel]", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.42, ease: "none" }, 0.58)
           .set("[data-playhead]", { opacity: 1 }, 0.58)
           .fromTo(
@@ -178,19 +176,6 @@ export function CapacityEnergy() {
                   ))}
                 </g>
 
-                {/* demand + operating reserves */}
-                <line
-                  data-demand
-                  x1={X0}
-                  x2={X1}
-                  y1={DEMAND_Y}
-                  y2={DEMAND_Y}
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeDasharray="7 7"
-                  vectorEffect="non-scaling-stroke"
-                />
-
                 {/* fuel storage depleting in steps (progress stroke: fern) */}
                 <path
                   data-fuel
@@ -226,13 +211,6 @@ export function CapacityEnergy() {
               </span>
               <span
                 data-b-label
-                className="text-label absolute bg-carbon-deep py-0.5 pl-1.5 text-right whitespace-nowrap text-paper/80"
-                style={{ right: pct(VB.w - X1, VB.w), top: pct(DEMAND_Y - 40, VB.h) }}
-              >
-                Demand + operating reserves
-              </span>
-              <span
-                data-b-label
                 className="text-label absolute flex items-center gap-3 text-paper/80"
                 style={{ left: pct(X0, VB.w), right: pct(VB.w - X1, VB.w), top: pct(BASE + 22, VB.h) }}
               >
@@ -244,7 +222,7 @@ export function CapacityEnergy() {
             <p className="sr-only">
               Diagram: a single tall bar labelled capacity, a point in time, splits into a long row of thin hourly bars
               along a timeline labelled hour by hour, through the study period. A stepped line labelled fuel storage
-              depletes across it, and a dashed line marks demand plus operating reserves.
+              depletes across it.
             </p>
           </figure>
         </div>
