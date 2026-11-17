@@ -92,7 +92,8 @@ function StaticLayout() {
  * 2. The camera dives through the "I" into the photo (Our Services).
  * 3. The copy rises line by line; the four service steps light up along a fern rail.
  * 4. The scene recedes like a card; the training photo wipes up over it, a giant
- *    TRAINING rises letter by letter, the copy follows and the offerings are dealt in.
+ *    TRAINING rises letter by letter, the copy follows and the offerings light up
+ *    along a fern rail.
  * Static two-column layout without JS / under reduced motion.
  */
 export function ServicesTraining() {
@@ -196,11 +197,7 @@ export function ServicesTraining() {
       gsap.set(q("[data-step]"), { autoAlpha: 0.18, x: -16 });
       gsap.set(q("[data-node]"), { scale: 0 });
       gsap.set(q("[data-tchar]"), { yPercent: 105 });
-      gsap.set(q("[data-offer]"), {
-        autoAlpha: 0,
-        y: () => window.innerHeight * 0.6,
-        rotate: (i) => [-14, 6, 18][i % 3],
-      });
+      gsap.set(q("[data-trn-step]"), { autoAlpha: 0.18, x: -16 });
 
       // The pin on its own…
       const pinST = ScrollTrigger.create({
@@ -350,18 +347,20 @@ export function ServicesTraining() {
           { yPercent: 0, duration: 0.3, stagger: 0.06, ease: "power3.out" },
           4.95,
         )
-        .to(
-          q("[data-offer]"),
-          {
-            autoAlpha: 1,
-            y: 0,
-            rotate: 0,
-            duration: 0.5,
-            stagger: 0.18,
-            ease: "power3.out",
-          },
+        // the offerings light up along a fern rail, like the service steps
+        .fromTo(
+          q("[data-trn-rail-fill]"),
+          { scaleY: 0 },
+          { scaleY: 1, duration: (FRAGMENTS.trainingOfferings.length - 1) * 0.3 + 0.2 },
           5.5,
-        )
+        );
+      q("[data-trn-step]").forEach((step, i) => {
+        const at = 5.5 + i * 0.3;
+        pin
+          .to(step, { autoAlpha: 1, x: 0, duration: 0.18, ease: "power3.out" }, at)
+          .to(step.querySelector("[data-node]"), { scale: 1, duration: 0.14, ease: "back.out(3)" }, at);
+      });
+      pin
         .addLabel("training", 6.4)
         .to({}, { duration: 0.6 }); // hold on the finished scene
 
@@ -676,21 +675,20 @@ export function ServicesTraining() {
                   </p>
                 </div>
 
-                <ul className="flex flex-col gap-2 lg:col-span-5 lg:col-start-8 lg:gap-4">
-                  {FRAGMENTS.trainingOfferings.map((o, i) => (
-                    <li
-                      key={o}
-                      data-offer
-                      className={cx(
-                        "invisible flex items-center gap-4 rounded-[14px] bg-paper px-4 py-3 text-carbon opacity-0 shadow-[0_24px_60px_-24px_rgb(0_0_0/0.7)] lg:rounded-[18px] lg:px-6 lg:py-6",
-                        ["lg:mr-16", "lg:ml-8 lg:mr-8", "lg:ml-16"][i],
-                      )}
-                    >
+                <ul className="relative lg:col-span-5 lg:col-start-8">
+                  {/* rail (same as the service steps) */}
+                  <span aria-hidden className="absolute top-2 bottom-2 left-[7px] w-px bg-paper/15">
+                    <span data-trn-rail-fill className="absolute inset-0 origin-top bg-fern" />
+                  </span>
+                  {FRAGMENTS.trainingOfferings.map((o) => (
+                    <li key={o} data-trn-step className="relative py-2 pl-10 md:py-[min(1.1rem,2svh)]">
                       <span
                         aria-hidden
-                        className="size-2.5 shrink-0 rounded-full bg-fern"
-                      />
-                      <span className="font-display text-[clamp(1.05rem,1.8vw,1.85rem)] leading-tight">
+                        className="absolute top-1/2 left-0 size-[15px] -translate-y-1/2 rounded-full bg-carbon-deep ring-1 ring-paper/30"
+                      >
+                        <span data-node className="absolute inset-[3px] rounded-full bg-fern" />
+                      </span>
+                      <span className="font-display block text-[clamp(1.2rem,2.2vw,2.25rem)] leading-tight text-paper">
                         {o}
                       </span>
                     </li>
