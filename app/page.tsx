@@ -23,7 +23,7 @@ export default function HomePage() {
         <HourlyStory />
         <ServicesTraining />
       </main>
-      <Footer />
+      <Footer stackOver="[data-svc-inner]" />
     </>
   );
 }

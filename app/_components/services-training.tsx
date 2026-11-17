@@ -11,6 +11,11 @@ import trainingImg from "@/public/images/training-services.webp";
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
 const PIN_VH = 5.2;
+/**
+ * Extra pinned distance (viewport heights) after the story ends: the footer
+ * slides up over the finished scene like a card (see ClosingCta `stackOver`).
+ */
+const COVER_VH = 1;
 /** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
 const APPROACH_VH = 0.8;
 /** The word the camera dives through, and the letter it dives into. */
@@ -203,7 +208,7 @@ export function ServicesTraining() {
       const pinST = ScrollTrigger.create({
         trigger: stage,
         start: "top top",
-        end: () => `+=${window.innerHeight * PIN_VH}`,
+        end: () => `+=${window.innerHeight * (PIN_VH + COVER_VH)}`,
         pin: true,
         invalidateOnRefresh: true,
       });
@@ -457,6 +462,11 @@ export function ServicesTraining() {
             data-stage
             className="relative h-svh overflow-hidden bg-carbon-deep"
           >
+            {/* Inner wrapper: the footer pushes this back as it slides over. */}
+            <div
+              data-svc-inner
+              className="absolute inset-0 origin-[50%_30%] will-change-transform"
+            >
             <h2 id="services-title" className="sr-only">
               Software. Services. Training.
             </h2>
@@ -695,6 +705,7 @@ export function ServicesTraining() {
                   ))}
                 </ul>
               </div>
+            </div>
             </div>
           </div>
         </>
