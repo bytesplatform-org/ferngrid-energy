@@ -151,84 +151,104 @@ const generation: ShapeDef = {
   ],
 };
 
-/* 3 — Transfers: two balancing areas side by side, the interface between them,
-   and tie lines carrying energy across it in both directions */
-const AREAS = [
-  { x: 28, cx: 98 },
-  { x: 232, cx: 302 },
-] as const;
-const AREA_W = 140;
-const AREA_TOP = 92;
-const AREA_H = 216;
-const TIE_Y = [146, 200, 254] as const;
-/** Flow direction per tie line: 1 = left → right. */
-const TIE_DIR = [1, -1, 1] as const;
+/* 3 — Energy transfers (after the client's diagram): a Balancing Authority with
+   four nodes and internal transfers between them, a neighbouring BA with two,
+   a dashed interface between the areas, and two energy transfers across it
+   (one in, one out). */
+const BA_BOX = { x: 22, y: 104, w: 166, h: 196 };
+const NB_BOX = { x: 236, y: 104, w: 142, h: 196 };
+const IFACE_X = 212;
+const N_A = [64, 150] as const; // BA: top left
+const N_B = [148, 150] as const; // BA: top right (receives the inbound transfer)
+const N_C = [148, 214] as const; // BA: middle right (sends the outbound transfer)
+const N_D = [64, 262] as const; // BA: bottom left
+const N_E = [278, 150] as const; // neighbour: sends to B
+const N_F = [338, 214] as const; // neighbour: receives from C
+const NODE_R = 12;
+
+/** A line from node to node (trimmed at both ends) with a filled arrowhead at the end. */
+const arrow = (
+  ctx: CanvasRenderingContext2D,
+  from: readonly [number, number],
+  to: readonly [number, number],
+  { alpha, width, head }: { alpha: number; width: number; head: number },
+) => {
+  const dx = to[0] - from[0];
+  const dy = to[1] - from[1];
+  const len = Math.hypot(dx, dy);
+  const ux = dx / len;
+  const uy = dy / len;
+  const gap = NODE_R + 6;
+  const sx = from[0] + ux * gap;
+  const sy = from[1] + uy * gap;
+  const tx = to[0] - ux * gap;
+  const ty = to[1] - uy * gap;
+  ctx.beginPath();
+  ctx.moveTo(sx, sy);
+  ctx.lineTo(tx - ux * head * 0.8, ty - uy * head * 0.8);
+  stroke(ctx, alpha, width);
+  ctx.beginPath();
+  ctx.moveTo(tx, ty);
+  ctx.lineTo(tx - ux * head - uy * head * 0.55, ty - uy * head + ux * head * 0.55);
+  ctx.lineTo(tx - ux * head + uy * head * 0.55, ty - uy * head - ux * head * 0.55);
+  ctx.closePath();
+  fill(ctx, alpha);
+};
 
 const transfers: ShapeDef = {
   key: "transfers",
   draw(ctx) {
-    for (const { x, cx } of AREAS) {
-      // area outline (very light fill so the points gather on the structure)
+    // the two areas (very light fill so the points gather on the structure)
+    for (const b of [BA_BOX, NB_BOX]) {
       ctx.beginPath();
-      ctx.roundRect(x, AREA_TOP, AREA_W, AREA_H, 26);
-      fill(ctx, 0.04);
+      ctx.roundRect(b.x, b.y, b.w, b.h, 26);
+      fill(ctx, 0.03);
       stroke(ctx, 1, 4.5);
-      // internal network: two columns of nodes, laced together
-      const cols = [cx - 34, cx + 34];
-      const nodes = TIE_Y.flatMap((y) => cols.map((c) => [c, y] as const));
-      ctx.beginPath();
-      for (const [a, b] of [
-        [0, 1],
-        [2, 3],
-        [4, 5],
-        [0, 2],
-        [2, 4],
-        [1, 3],
-        [3, 5],
-        [0, 3],
-        [3, 4],
-      ]) {
-        ctx.moveTo(...nodes[a]);
-        ctx.lineTo(...nodes[b]);
-      }
-      stroke(ctx, 0.5, 2.5);
-      for (const [nx, ny] of nodes) {
-        ctx.beginPath();
-        ctx.arc(nx, ny, 9, 0, Math.PI * 2);
-        fill(ctx, 1);
-      }
     }
-    // the interface: a dashed line down the channel between the areas
+    // internal transfers inside the Balancing Authority
+    for (const [f, t] of [
+      [N_A, N_B],
+      [N_A, N_D],
+      [N_B, N_C],
+      [N_B, N_D],
+      [N_D, N_C],
+    ] as const) {
+      arrow(ctx, f, t, { alpha: 0.6, width: 2.5, head: 11 });
+    }
+    // the interface: a dashed line between the areas, running past both
     ctx.setLineDash([10, 9]);
     ctx.beginPath();
-    ctx.moveTo(200, 56);
-    ctx.lineTo(200, 344);
+    ctx.moveTo(IFACE_X, 64);
+    ctx.lineTo(IFACE_X, 340);
     stroke(ctx, 0.9, 3);
     ctx.setLineDash([]);
-    // tie lines across the interface, each with a direction chevron in the channel
-    const innerA = AREAS[0].cx + 34;
-    const innerB = AREAS[1].cx - 34;
-    TIE_Y.forEach((y, i) => {
+    // energy transfers across the interface: in (neighbour → B), out (C → neighbour)
+    arrow(ctx, N_E, N_B, { alpha: 1, width: 6, head: 18 });
+    arrow(ctx, N_C, N_F, { alpha: 1, width: 6, head: 18 });
+    // nodes
+    for (const [nx, ny] of [N_A, N_B, N_C, N_D, N_E, N_F]) {
       ctx.beginPath();
-      ctx.moveTo(innerA, y);
-      ctx.lineTo(innerB, y);
-      stroke(ctx, 1, 5.5);
-      const d = TIE_DIR[i];
-      for (const off of [-10, 8]) {
-        const tip = 200 + d * (off + 6);
-        ctx.beginPath();
-        ctx.moveTo(tip - d * 13, y - 13);
-        ctx.lineTo(tip, y);
-        ctx.lineTo(tip - d * 13, y + 13);
-        stroke(ctx, 1, 5);
-      }
-    });
+      ctx.arc(nx, ny, NODE_R, 0, Math.PI * 2);
+      fill(ctx, 1);
+    }
   },
+  // Leaders never cross another label: two labels top left (each leader drops
+  // past the other), one top right, two staggered at the bottom.
   callouts: [
-    { label: "Interface", ax: 0.5, ay: 64 / BOX, lx: 0.08, ly: 0.06, align: "left" },
-    { label: "Energy transfer", ax: 214 / BOX, ay: 146 / BOX, lx: 0.94, ly: 0.06, align: "right" },
-    { label: "Balancing Authority", ax: 98 / BOX, ay: 308 / BOX, lx: 0.04, ly: 0.92, align: "left" },
-    { label: "Other BA", ax: 302 / BOX, ay: 308 / BOX, lx: 0.96, ly: 0.92, align: "right" },
+    // on the A → B internal transfer
+    { label: "Internal transfer limits", ax: 106 / BOX, ay: N_A[1] / BOX, lx: 0.03, ly: 0.06, align: "left" },
+    { label: "Interface", ax: IFACE_X / BOX, ay: 68 / BOX, lx: 0.03, ly: 0.14, align: "left" },
+    { label: "Energy transfers", ax: 244 / BOX, ay: N_B[1] / BOX, lx: 0.95, ly: 0.06, align: "right" },
+    // the two area labels sit on staggered rows so the long names never meet
+    { label: "Balancing Authority", ax: 128 / BOX, ay: (BA_BOX.y + BA_BOX.h) / BOX, lx: 0.03, ly: 0.86, align: "left" },
+    {
+      label: "Neighboring Balancing Authority",
+      ax: (NB_BOX.x + NB_BOX.w / 2) / BOX,
+      ay: (NB_BOX.y + NB_BOX.h) / BOX,
+      lx: 0.97,
+      ly: 0.93,
+      align: "right",
+    },
   ],
 };
 

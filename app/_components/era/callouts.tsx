@@ -30,7 +30,7 @@ export function Callouts({ items, className }: { items: readonly Callout[]; clas
           />
           <span
             className={cx(
-              "text-label absolute -translate-y-full rounded-sm bg-carbon/80 px-1.5 py-0.5 whitespace-nowrap text-paper",
+              "text-label absolute -translate-y-full rounded-sm bg-carbon/80 px-1.5 py-0.5 whitespace-nowrap text-paper max-md:px-1 max-md:text-[8px] max-md:tracking-[0.1em]",
               c.align === "right" && "-translate-x-full",
             )}
             style={{ left: `${c.lx * 100}%`, top: `${c.ly * 100 + 2.2}%` }}
