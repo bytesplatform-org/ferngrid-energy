@@ -246,6 +246,12 @@ export function Loader() {
       waitForRoute(url.pathname, NAV_MAX_TIME * 1000).then(
         () => (ready = true),
       );
+      // Back to the top *before* the new page mounts (the cover hides the jump):
+      // its scroll-driven scenes are built at mount, and built at the old page's
+      // scroll position they'd render as already scrolled through (e.g. the NERC
+      // hero showing its end state at the top of the page).
+      window.scrollTo(0, 0);
+      getLenis()?.scrollTo(0, { immediate: true, force: true });
       persist = true;
       routerRef.current.push(href, { scroll: false });
       await charge(NAV_MIN_TIME, NAV_MAX_TIME, () => (ready ? 1 : 0.35), 0.14);
