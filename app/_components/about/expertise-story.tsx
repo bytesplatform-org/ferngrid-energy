@@ -9,13 +9,11 @@ import { cx } from "../ui/primitives";
 import logoMark from "@/public/images/logo-mark.png";
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
-const PIN_VH = 6;
+const PIN_VH = 4.5;
 /** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
 const APPROACH_VH = 0.8;
 
 const { heading, paragraphs } = ABOUT.expertise;
-/** Paragraph 2, in its three sentences (highlighted in turn). */
-const P2 = paragraphs[1].split(/(?<=\.) /);
 
 /* Network (beat 2): FernGrid in the middle, the three sectors around it (0–100 box). */
 const HUB = { x: 50, y: 52 };
@@ -25,15 +23,11 @@ const SECTORS = [
   { x: 87, y: 80, align: "right" },
 ] as const;
 
-/* Evolution path (beat 3), 0–100 box. */
-const PATH = "M 8 78 C 26 78, 26 50, 44 50 S 66 22, 92 22";
-const STOPS = [
-  { x: 8, y: 78 },
-  { x: 44, y: 50 },
-  { x: 92, y: 22 },
-] as const;
+/** Sector node radius, and the gap between a node and its label (0–100 box). */
+const NODE_R = 3.2;
+const LABEL_GAP = 3;
 
-/* Venn (beat 4): final centres, 0–100 box, and where each flies in from. */
+/* Venn (beat 3): final centres, 0–100 box, and where each flies in from. */
 const VENN = [
   { x: 50, y: 34, from: { x: 0, y: -60 } },
   { x: 35, y: 61, from: { x: -60, y: 40 } },
@@ -60,12 +54,11 @@ function StaticLayout() {
 }
 
 /**
- * "Built on Power Systems Expertise" — a pinned story in four beats. The
+ * "Built on Power Systems Expertise" — a pinned story in three beats. The
  * paragraphs (verbatim) change on the right; the left stage illustrates each:
- * 1. Founded in 2026: the year rolls in like an odometer over a decade ruler.
+ * 1. Founded in 2026: the year's digits rise in over a decade ruler that draws itself in.
  * 2. The sectors (Utilities, ISOs, software companies) wire up to FernGrid.
- * 3. Custom tools → software → NERC BAL-007-1: a path draws itself.
- * 4. Operational experience, power systems expertise and software development
+ * 3. Operational experience, power systems expertise and software development
  *    knowledge fly in as three circles and overlap on the FernGrid mark.
  */
 export function ExpertiseStory() {
@@ -103,17 +96,14 @@ export function ExpertiseStory() {
 
       // Explicit starting states for every staggered target.
       gsap.set(q("[data-head-word]"), { yPercent: 110 });
+      gsap.set(q("[data-year-digit]"), { yPercent: 110 });
       gsap.set([...l1, ...l2, ...l3], { yPercent: 110 });
-      gsap.set(q("[data-sentence]"), { opacity: 0.32 });
-      // beat 1 is on stage from the start (the year waits at 0000); the rest come in later
+      // beat 1 is on stage from the start; the rest come in later
       gsap.set(q("[data-beat]:not([data-beat='0'])"), { autoAlpha: 0 });
       gsap.set(q("[data-tick]"), { scaleY: 0 });
       gsap.set(q("[data-link]"), { strokeDashoffset: 1 });
       gsap.set(q("[data-node]"), { scale: 0, transformOrigin: "50% 50%" });
       gsap.set(q("[data-node-label]"), { autoAlpha: 0, y: 10 });
-      gsap.set(q("[data-path]"), { strokeDashoffset: 1 });
-      gsap.set(q("[data-stop]"), { scale: 0, transformOrigin: "50% 50%" });
-      gsap.set(q("[data-stop-label]"), { autoAlpha: 0, y: 10 });
       gsap.set(q("[data-dot]"), { scale: 0.6, opacity: 0.35 });
       VENN.forEach((v, i) => {
         gsap.set(q(`[data-venn='${i}']`), {
@@ -126,21 +116,6 @@ export function ExpertiseStory() {
       gsap.set(q("[data-venn-label]"), { autoAlpha: 0 });
       gsap.set(q("[data-venn-core]"), { scale: 0, autoAlpha: 0 });
 
-      // Odometer: each column rolls to its digit (two full turns first).
-      const year = ABOUT_FRAGMENTS.year.split("").map(Number);
-      const reels = q("[data-reel]");
-
-      // Path dot follows the evolution path.
-      const pathEl = q("[data-path]")[0] as unknown as SVGPathElement;
-      const traveller = q("[data-traveller]")[0] as HTMLElement;
-      const along = { t: 0 };
-      const placeTraveller = () => {
-        const len = pathEl.getTotalLength();
-        const pt = pathEl.getPointAtLength(len * along.t);
-        traveller.style.left = `${pt.x}%`;
-        traveller.style.top = `${pt.y}%`;
-      };
-      placeTraveller();
 
       const pinST = ScrollTrigger.create({
         trigger: stage,
@@ -157,20 +132,7 @@ export function ExpertiseStory() {
       const pin = gsap.timeline({ defaults: { ease: "none" } });
       pin
         // ---- beat 1: founded in 2026, a decade of experience
-        .to(dot(0), on, 0);
-      reels.forEach((reel, i) => {
-        pin.fromTo(
-          reel,
-          { yPercent: 0 },
-          {
-            yPercent: -((20 + year[i]) / 30) * 100,
-            duration: 0.7,
-            ease: "power3.out",
-          },
-          0.05 + i * 0.06,
-        );
-      });
-      pin
+        .to(dot(0), on, 0)
         .to(
           q("[data-tick]"),
           { scaleY: 1, duration: 0.08, stagger: 0.045, ease: "power2.out" },
@@ -197,11 +159,6 @@ export function ExpertiseStory() {
           l2,
           { yPercent: 0, duration: 0.3, stagger: 0.04, ease: "power3.out" },
           1.45,
-        )
-        .to(
-          q("[data-sentence='0'], [data-sentence='1']"),
-          { opacity: 1, duration: 0.25 },
-          1.6,
         )
         .to(dot(0), off, 1.3)
         .to(dot(1), on, 1.3)
@@ -235,77 +192,31 @@ export function ExpertiseStory() {
           q("[data-node-label]"),
           { autoAlpha: 1, y: 0, duration: 0.2, stagger: 0.1 },
           1.9,
-        )
-        // ---- beat 3: custom tools → software → NERC BAL-007-1
+        );
+      pin
+        // ---- beat 3: three strands combine into FernGrid
         .to(
           q("[data-beat='1']"),
           { autoAlpha: 0, scale: 0.92, duration: 0.25, ease: "power2.in" },
           2.6,
         )
         .to(
-          q("[data-sentence='0'], [data-sentence='1']"),
-          { opacity: 0.32, duration: 0.2 },
+          l2,
+          { yPercent: -110, duration: 0.25, stagger: 0.02, ease: "power2.in" },
           2.6,
         )
-        .to(q("[data-sentence='2']"), { opacity: 1, duration: 0.25 }, 2.7)
+        .to(
+          l3,
+          { yPercent: 0, duration: 0.3, stagger: 0.04, ease: "power3.out" },
+          2.8,
+        )
         .to(dot(1), off, 2.6)
         .to(dot(2), on, 2.6)
         .fromTo(
           q("[data-beat='2']"),
           { autoAlpha: 0 },
           { autoAlpha: 1, duration: 0.1 },
-          2.8,
-        )
-        .to(
-          q("[data-path]"),
-          { strokeDashoffset: 0, duration: 0.8, ease: "power1.inOut" },
-          2.85,
-        )
-        .fromTo(
-          along,
-          { t: 0 },
-          {
-            t: 1,
-            duration: 0.8,
-            ease: "power1.inOut",
-            onUpdate: placeTraveller,
-          },
-          2.85,
-        );
-      q("[data-stop]").forEach((stop, i) => {
-        const at = 2.85 + i * 0.37;
-        pin
-          .to(stop, { scale: 1, duration: 0.15, ease: "back.out(3)" }, at)
-          .to(
-            q(`[data-stop-label='${i}']`),
-            { autoAlpha: 1, y: 0, duration: 0.2 },
-            at + 0.03,
-          );
-      });
-      pin
-        // ---- beat 4: three strands combine into FernGrid
-        .to(
-          q("[data-beat='2']"),
-          { autoAlpha: 0, y: -40, duration: 0.25, ease: "power2.in" },
-          4.1,
-        )
-        .to(
-          l2,
-          { yPercent: -110, duration: 0.25, stagger: 0.02, ease: "power2.in" },
-          4.1,
-        )
-        .to(
-          l3,
-          { yPercent: 0, duration: 0.3, stagger: 0.04, ease: "power3.out" },
-          4.3,
-        )
-        .to(dot(2), off, 4.1)
-        .to(dot(3), on, 4.1)
-        .fromTo(
-          q("[data-beat='3']"),
-          { autoAlpha: 0 },
-          { autoAlpha: 1, duration: 0.1 },
-          4.25,
+          2.75,
         )
         .to(
           q("[data-venn]"),
@@ -318,17 +229,17 @@ export function ExpertiseStory() {
             stagger: 0.08,
             ease: "power3.out",
           },
-          4.3,
+          2.8,
         )
         .to(
           q("[data-venn-label]"),
           { autoAlpha: 1, duration: 0.2, stagger: 0.08 },
-          4.75,
+          3.25,
         )
         .to(
           q("[data-venn-core]"),
           { scale: 1, autoAlpha: 1, duration: 0.3, ease: "back.out(2)" },
-          4.95,
+          3.45,
         )
         .to({}, { duration: 0.5 }); // hold on the finished scene
 
@@ -354,6 +265,17 @@ export function ExpertiseStory() {
             ease: "power3.out",
           },
           approach * 0.15,
+        )
+        // the year's digits rise into place, one after another
+        .to(
+          q("[data-year-digit]"),
+          {
+            yPercent: 0,
+            duration: approach * 0.45,
+            stagger: approach * 0.08,
+            ease: "power3.out",
+          },
+          approach * 0.2,
         )
         .fromTo(
           q("[data-head-rule]"),
@@ -416,7 +338,7 @@ export function ExpertiseStory() {
             className="absolute inset-0 flex flex-col gap-5 px-5 pt-[clamp(5rem,11svh,7.5rem)] pb-6 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10 lg:pb-10"
           >
             {/* ---------------- Stage (left) ---------------- */}
-            <div className="relative mx-auto aspect-square w-full max-w-[min(100%,34svh)] shrink-0 lg:col-span-6 lg:max-w-[min(100%,72svh)]">
+            <div className="relative mx-auto mb-8 aspect-square w-full max-w-[min(100%,34svh)] shrink-0 lg:col-span-6 lg:mb-0 lg:max-w-[min(100%,72svh)]">
               {/* Beat 1: odometer + decade ruler */}
               <div
                 data-beat="0"
@@ -429,24 +351,18 @@ export function ExpertiseStory() {
                   aria-label={ABOUT_FRAGMENTS.year}
                   className="font-condensed mt-2 flex text-[clamp(4.5rem,13vw,12rem)] leading-none"
                 >
-                  {ABOUT_FRAGMENTS.year.split("").map((_, i) => (
+                  {/* the year: each digit rises from its own mask; the last in fern */}
+                  {ABOUT_FRAGMENTS.year.split("").map((d, i, all) => (
                     <span
                       key={i}
                       aria-hidden
-                      className="relative block h-[1em] overflow-hidden"
+                      className="block overflow-hidden pb-[0.04em]"
                     >
-                      <span data-reel className="block">
-                        {Array.from({ length: 30 }, (_, k) => (
-                          <span
-                            key={k}
-                            className={cx(
-                              "block h-[1em]",
-                              i === 3 && k === 26 && "text-fern",
-                            )}
-                          >
-                            {k % 10}
-                          </span>
-                        ))}
+                      <span
+                        data-year-digit
+                        className={cx("block", i === all.length - 1 && "text-fern")}
+                      >
+                        {d}
                       </span>
                     </span>
                   ))}
@@ -513,7 +429,7 @@ export function ExpertiseStory() {
                       <circle
                         cx={s.x}
                         cy={s.y}
-                        r={3.2}
+                        r={NODE_R}
                         className="fill-paper stroke-carbon"
                         strokeWidth={0.5}
                       />
@@ -557,113 +473,64 @@ export function ExpertiseStory() {
                   return (
                     <p
                       key={label}
-                      data-node-label
                       className={cx(
                         "text-label absolute max-w-[14ch] text-carbon",
                         s.align === "center" &&
-                          "-translate-x-1/2 -translate-y-[170%] text-center",
-                        s.align === "left" && "translate-y-[90%] text-left",
-                        s.align === "right" &&
-                          "-translate-x-full translate-y-[90%] text-right",
+                          "-translate-x-1/2 -translate-y-full text-center",
+                        s.align === "left" && "text-left",
+                        s.align === "right" && "-translate-x-full text-right",
                       )}
-                      style={{ left: `${s.x}%`, top: `${s.y}%` }}
+                      // Clear of the node circles (r = NODE_R): above the top node;
+                      // below and out to the side for the two lower ones.
+                      style={
+                        s.align === "center"
+                          ? { left: `${s.x}%`, top: `${s.y - NODE_R - LABEL_GAP}%` }
+                          : {
+                              left: `${s.align === "left" ? s.x - NODE_R - 2 : s.x + NODE_R + 2}%`,
+                              top: `${s.y + NODE_R + LABEL_GAP}%`,
+                            }
+                      }
                     >
-                      {label}
+                      {/* Animated separately: GSAP would overwrite the positioning translate. */}
+                      <span data-node-label className="block">
+                        {label}
+                      </span>
                     </p>
                   );
                 })}
               </div>
 
-              {/* Beat 3: the path from custom tools to NERC BAL-007-1 */}
+              {/* Beat 3: three strands overlap on FernGrid */}
               <div data-beat="2" className="absolute inset-0">
-                <svg
-                  viewBox="0 0 100 100"
-                  className="absolute inset-0 size-full overflow-visible"
-                  aria-hidden
-                >
-                  <path
-                    d={PATH}
-                    fill="none"
-                    className="stroke-carbon/15"
-                    strokeWidth={0.5}
-                  />
-                  <path
-                    data-path
-                    d={PATH}
-                    fill="none"
-                    pathLength={1}
-                    strokeDasharray="1 1"
-                    className="stroke-fern"
-                    strokeWidth={0.9}
-                    strokeLinecap="round"
-                  />
-                  {STOPS.map((s, i) => (
-                    <g key={i} data-stop>
-                      <circle
-                        cx={s.x}
-                        cy={s.y}
-                        r={3}
-                        className="fill-paper stroke-carbon"
-                        strokeWidth={0.5}
-                      />
-                      <circle
-                        cx={s.x}
-                        cy={s.y}
-                        r={1.2}
-                        className="fill-carbon"
-                      />
-                    </g>
-                  ))}
-                </svg>
-                <span
-                  data-traveller
-                  aria-hidden
-                  className="absolute size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fern ring-4 ring-fern/25"
-                />
-                {ABOUT_FRAGMENTS.evolution.map((label, i) => {
-                  const s = STOPS[i];
-                  return (
-                    <p
-                      key={label}
-                      data-stop-label={i}
-                      className={cx(
-                        "font-display absolute max-w-[16ch] text-[clamp(0.95rem,1.4vw,1.3rem)] leading-tight",
-                        i === 0 && "translate-y-5",
-                        i === 1 && "-translate-x-1/2 translate-y-5 text-center",
-                        i === 2 &&
-                          "-translate-x-full -translate-y-[calc(100%+1.25rem)] text-right text-fern",
-                      )}
-                      style={{ left: `${s.x}%`, top: `${s.y}%` }}
-                    >
-                      {label}
-                    </p>
-                  );
-                })}
-              </div>
-
-              {/* Beat 4: three strands overlap on FernGrid */}
-              <div data-beat="3" className="absolute inset-0">
+                {/* Positioned wrappers; the inner circles animate (GSAP would
+                    otherwise overwrite the centring translate). */}
                 {VENN.map((v, i) => (
                   <div
                     key={i}
-                    data-venn={i}
-                    className="absolute flex aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-carbon/35 bg-fern/15 mix-blend-multiply"
+                    className="absolute aspect-square w-[52%] -translate-x-1/2 -translate-y-1/2 mix-blend-multiply"
                     style={{ left: `${v.x}%`, top: `${v.y}%` }}
-                  />
+                  >
+                    <div
+                      data-venn={i}
+                      className="size-full rounded-full border border-carbon/35 bg-fern/15"
+                    />
+                  </div>
                 ))}
                 {ABOUT_FRAGMENTS.combine.map((label, i) => {
                   const v = VENN[i];
+                  // As near each bubble's centre as the label can sit while staying
+                  // clear of the other two circles (0–100 box).
                   const off =
                     i === 0
-                      ? { x: 0, y: -14 }
+                      ? { x: 0, y: -6 }
                       : i === 1
-                        ? { x: -12, y: 8 }
-                        : { x: 12, y: 8 };
+                        ? { x: -7, y: 3 }
+                        : { x: 7, y: 3 };
                   return (
                     <p
                       key={label}
                       data-venn-label
-                      className="text-label absolute w-[22%] -translate-x-1/2 -translate-y-1/2 text-center text-carbon"
+                      className="text-label absolute w-[22%] -translate-x-1/2 -translate-y-1/2 text-center text-carbon max-md:text-[8px] max-md:tracking-[0.12em]"
                       style={{
                         left: `${v.x + off.x}%`,
                         top: `${v.y + off.y}%`,
@@ -673,16 +540,19 @@ export function ExpertiseStory() {
                     </p>
                   );
                 })}
-                <div
-                  data-venn-core
-                  className="absolute top-[52%] left-1/2 w-[15%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-paper p-[2.5%] shadow-[0_0_0_6px_rgb(135_169_107/0.35),0_18px_40px_-16px_rgb(18_22_10/0.5)]"
-                >
-                  <Image
-                    src={logoMark}
-                    alt=""
-                    sizes="100px"
-                    className="h-auto w-full"
-                  />
+                {/* the logo, on the centre of the three overlaps */}
+                <div className="absolute top-[52%] left-1/2 w-[15%] -translate-x-1/2 -translate-y-1/2">
+                  <div
+                    data-venn-core
+                    className="rounded-full bg-paper p-[17%] shadow-[0_0_0_6px_rgb(135_169_107/0.35),0_18px_40px_-16px_rgb(18_22_10/0.5)]"
+                  >
+                    <Image
+                      src={logoMark}
+                      alt=""
+                      sizes="100px"
+                      className="h-auto w-full"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -716,12 +586,7 @@ export function ExpertiseStory() {
                   {paragraphs[0]}
                 </p>
                 <p data-para className="col-start-1 row-start-1">
-                  {P2.map((s, i) => (
-                    <Fragment key={i}>
-                      {i > 0 && " "}
-                      <span data-sentence={i}>{s}</span>
-                    </Fragment>
-                  ))}
+                  {paragraphs[1]}
                 </p>
                 <p data-para className="col-start-1 row-start-1">
                   {paragraphs[2]}
@@ -730,7 +595,7 @@ export function ExpertiseStory() {
 
               {/* Beat dots */}
               <div aria-hidden className="mt-8 hidden gap-2 lg:flex">
-                {[0, 1, 2, 3].map((i) => (
+                {[0, 1, 2].map((i) => (
                   <span
                     key={i}
                     data-dot={i}
