@@ -9,7 +9,7 @@ import { Footer } from "../_components/footer";
 
 export const metadata: Metadata = {
   title: NERC.title,
-  description: NERC.requirements.intro.replace(/ that account for:$/, "."),
+  description: NERC.requirements.intro.replace(/ that account for:?$/, "."),
 };
 
 export default function NercPage() {

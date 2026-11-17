@@ -103,7 +103,7 @@ export const NERC = {
   requirements: {
     heading: "New BAL-007-1 Requirements",
     intro:
-      "As of April 2027, NERC Standard BAL-007-1 will require Balancing Authorities (BAs) to conduct Near Term Energy Reliability Assessments (ERA) that account for:",
+      "As of April 2027, NERC Standard BAL-007-1 will require Balancing Authorities (BAs) to conduct Near Term Energy Reliability Assessments (ERA) that account for",
     accountFor: [
       "Forecasted or assumed hourly load profiles",
       "Generation operational limitations (including fuel supply and temperature considerations)",
