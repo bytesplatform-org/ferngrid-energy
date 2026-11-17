@@ -118,12 +118,24 @@ export function CapacityEnergy() {
       <ArcSurface tone="carbon-deep" parallax="[data-req-inner]" />
 
       <div className="mx-auto max-w-[1600px]">
-        <h2 id="capacity-title" className="text-label-md max-w-[44ch] leading-relaxed text-paper/80">
-          {NERC.eraDifference.heading}
+        <h2
+          id="capacity-title"
+          className="font-condensed max-w-[24ch] text-[clamp(1.75rem,3.2vw,3.25rem)] leading-[0.95] text-paper uppercase"
+        >
+          {/* "Energy Reliability" in fern, as in the question on the Home page */}
+          {NERC.eraDifference.heading.split(/(Energy Reliability)/).map((part, i) =>
+            part === "Energy Reliability" ? (
+              <span key={i} className="text-fern">
+                {part}
+              </span>
+            ) : (
+              part
+            ),
+          )}
         </h2>
         <SplitReveal
           as="p"
-          className="font-display mt-6 max-w-[14ch] text-[clamp(3.75rem,9.5vw,11rem)] leading-[0.9]"
+          className="font-display mt-8 max-w-[14ch] md:mt-10 text-[clamp(3.75rem,9.5vw,11rem)] leading-[0.9]"
         >
           {FRAGMENTS.enoughEnergy}
         </SplitReveal>
