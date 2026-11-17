@@ -85,8 +85,22 @@ export function SmoothScroll() {
     if (document.readyState === "complete") requestAnimationFrame(refresh);
     else window.addEventListener("load", refresh, { once: true });
 
+    // Re-measure when the page's usable width changes without a window resize:
+    // a classic (non-overlay) scrollbar appears when the loader unlocks scrolling,
+    // shifting centred layouts by half its width. Pins measured before that would
+    // jump sideways while pinned.
+    const root = document.documentElement;
+    let width = root.clientWidth;
+    const widthWatch = new ResizeObserver(() => {
+      if (root.clientWidth === width) return;
+      width = root.clientWidth;
+      refresh();
+    });
+    widthWatch.observe(root);
+
     return () => {
       cancelled = true;
+      widthWatch.disconnect();
       window.clearTimeout(hashTimer);
       ScrollTrigger.removeEventListener("refresh", toHash);
       userEvents.forEach((e) => window.removeEventListener(e, stopHash));
