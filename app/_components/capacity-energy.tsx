@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useId, useRef } from "react";
 import { FRAGMENTS, NERC } from "@/lib/content";
 import { ArcSurface } from "./motion/arc-surface";
 import { gsap, useGSAP, MQ } from "./motion/gsap";
@@ -42,6 +42,7 @@ const pct = (v: number, of: number) => `${(v / of) * 100}%`;
 export function CapacityEnergy() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const fuelClipId = `fuel-reveal-${useId().replace(/:/g, "")}`;
 
   useGSAP(
     () => {
@@ -51,7 +52,8 @@ export function CapacityEnergy() {
         const bars = gsap.utils.toArray<SVGRectElement>("[data-hour]");
         // Step A: one tall capacity bar, centred.
         tl.from("[data-cap]", { attr: { x: CAP.startX, width: CAP.startW + 30 }, duration: 0.18, ease: "none" }, 0)
-          .from("[data-cap-label]", { left: pct(CAP.startX - 160, VB.w), duration: 0.18, ease: "none" }, 0)
+          // the label stays centred over the bar as it slides into place
+          .from("[data-cap-label]", { left: pct(CAP.startX + (CAP.startW + 30) / 2, VB.w), duration: 0.18, ease: "none" }, 0)
           .from(
             bars,
             {
@@ -66,7 +68,15 @@ export function CapacityEnergy() {
           .to("[data-cap]", { opacity: 0.3, duration: 0.2, ease: "none" }, 0.2)
           .from("[data-axis]", { scaleX: 0, transformOrigin: "0 0", duration: 0.3, ease: "power2.out" }, 0.22)
           .from("[data-b-label]", { autoAlpha: 0, y: 8, duration: 0.12, stagger: 0.04 }, 0.4)
-          .fromTo("[data-fuel]", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.42, ease: "none" }, 0.58)
+          // Fuel storage is revealed by a clip that grows in step with the playhead.
+          // (A pathLength/dash draw-on doesn't work with non-scaling strokes in Chrome:
+          // it showed nothing, then the whole line at once.)
+          .fromTo(
+            "[data-fuel-reveal]",
+            { attr: { width: 0 } },
+            { attr: { width: X1 - X0 + 8 }, duration: 0.42, ease: "none" },
+            0.58,
+          )
           .set("[data-playhead]", { opacity: 1 }, 0.58)
           .fromTo(
             "[data-playhead]",
@@ -75,6 +85,17 @@ export function CapacityEnergy() {
             0.58,
           )
           .fromTo(bars, { opacity: 0.3 }, { opacity: 0.85, duration: 0.02, stagger: 0.4 / N, ease: "none", immediateRender: false }, 0.58)
+          // "Demand + operating reserves" rides the top of the playhead, sliding from
+          // left-aligned at the first hour to right-aligned at the last (always on
+          // the chart), and stays above the series once the playhead fades.
+          .fromTo("[data-demand-tag]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.03 }, 0.58)
+          .fromTo(
+            "[data-demand-tag]",
+            { left: pct(X0, VB.w) },
+            { left: pct(X1, VB.w), duration: 0.42, ease: "none" },
+            0.58,
+          )
+          .fromTo("[data-demand-label]", { xPercent: 100 }, { xPercent: 0, duration: 0.42, ease: "none" }, 0.58)
           .to("[data-playhead]", { opacity: 0, duration: 0.04 }, 0.98);
         return tl;
       };
@@ -176,13 +197,18 @@ export function CapacityEnergy() {
                   ))}
                 </g>
 
-                {/* fuel storage depleting in steps (progress stroke: fern) */}
+                {/* fuel storage depleting in steps (progress stroke: fern), drawn on by a
+                    growing clip (full width without JS / under reduced motion) */}
+                <defs>
+                  <clipPath id={fuelClipId}>
+                    <rect data-fuel-reveal x={X0 - 4} y={0} width={X1 - X0 + 8} height={VB.h} />
+                  </clipPath>
+                </defs>
                 <path
                   data-fuel
                   d={FUEL_PATH}
                   fill="none"
-                  pathLength={1}
-                  strokeDasharray="1 1"
+                  clipPath={`url(#${fuelClipId})`}
                   stroke="var(--color-fern)"
                   strokeWidth="2"
                   vectorEffect="non-scaling-stroke"
@@ -195,10 +221,13 @@ export function CapacityEnergy() {
               </svg>
 
               {/* HTML labels stay crisp and legible at any width */}
+              {/* centred over the capacity bar, just above it (on narrow screens it
+                  leans right so it stays on the page, and sits a line higher, clear of
+                  the "Demand + operating reserves" tag) */}
               <span
                 data-cap-label
-                className="text-label absolute whitespace-nowrap text-paper"
-                style={{ left: pct(CAP.x, VB.w), top: pct(BASE - FULL - 100, VB.h) }}
+                className="text-label absolute -translate-x-[8%] -translate-y-[calc(100%+1.6rem)] sm:-translate-x-1/2 sm:-translate-y-full text-center whitespace-nowrap text-paper"
+                style={{ left: pct(CAP.x + CAP.w / 2, VB.w), top: pct(BASE - FULL - 40, VB.h) }}
               >
                 Capacity — a point in time
               </span>
@@ -208,6 +237,19 @@ export function CapacityEnergy() {
                 style={{ left: pct(X0, VB.w), top: pct(BASE - FULL * 0.96 - 34, VB.h) }}
               >
                 Fuel storage
+              </span>
+              {/* Rides the playhead (see the timeline); this is its finished position. */}
+              <span
+                data-demand-tag
+                className="absolute -translate-x-full -translate-y-full pb-2"
+                style={{ left: pct(X1, VB.w), top: pct(BASE - FULL - 30, VB.h) }}
+              >
+                <span
+                  data-demand-label
+                  className="text-label block bg-carbon-deep py-0.5 whitespace-nowrap text-paper/80"
+                >
+                  Demand + operating reserves
+                </span>
               </span>
               <span
                 data-b-label
@@ -222,7 +264,7 @@ export function CapacityEnergy() {
             <p className="sr-only">
               Diagram: a single tall bar labelled capacity, a point in time, splits into a long row of thin hourly bars
               along a timeline labelled hour by hour, through the study period. A stepped line labelled fuel storage
-              depletes across it.
+              depletes across it; the hourly bars are labelled demand plus operating reserves.
             </p>
           </figure>
         </div>
