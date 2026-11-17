@@ -10,10 +10,7 @@ import { PointCloud, type PointCloudHandle } from "./point-cloud";
 import { SHAPES } from "./shapes";
 
 /** Short titles for the four BAL-007-1 requirements (structural labels). */
-const STEPS = ["Load", "Generation", "Transfers", "Transmission"] as const;
-
-/** carbon → warmer carbon → olive-tinted carbon, blended continuously with scroll */
-const TONES = ["#12160a", "#16170a", "#171b0c", "#1a200f"];
+const STEPS = ["Load", "Generation", "Energy Transfers", "Transmission"] as const;
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
 const PIN_VH = 4.6;
@@ -86,14 +83,12 @@ export function EraScene() {
       // Scroll-driven position through the requirements (0 … n-1, fractional).
       const proxy = { f: 0 };
       let lastActive = -1;
-      const tone = gsap.utils.interpolate(TONES);
       const renderSteps = () => {
         const f = proxy.f;
         const a = Math.min(n - 1, Math.floor(f));
         const b = Math.min(n - 1, a + 1);
         cloudRef.current?.blend(a, b, f - a);
         callouts.forEach((c, i) => gsap.set(c, { autoAlpha: Math.max(0, 1 - Math.abs(f - i) * 3) }));
-        gsap.set(section, { backgroundColor: tone(f / (n - 1)) });
         const active = Math.round(f);
         if (active !== lastActive) {
           lastActive = active;
