@@ -152,8 +152,8 @@ export const FRAGMENTS = {
   statement: "Reliable Software Starts with Reliable Engineering.",
   /** From the ERA-difference paragraph. */
   enoughEnergy: "Enough energy for every hour.",
-  /** From the BAL-007-1 requirements paragraph. */
-  eeaForecast: "These Near Term ERAs must forecast level 2 and 3 Energy Emergency Alerts.",
+  /** From the BAL-007-1 requirements paragraph (client-edited: no "level 2 and 3"). */
+  eeaForecast: "These Near Term ERAs must forecast Energy Emergency Alerts.",
   /** Fuel and Energy Security Tool (FEST), from the Our Software paragraph. */
   festName: "Fuel and Energy Security Tool",
   /** Sub-steps lifted from the Our Services paragraph. */
