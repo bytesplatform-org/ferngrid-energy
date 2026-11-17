@@ -6,7 +6,6 @@ import { OurSoftware } from "./_components/our-software";
 import { AtAGlance } from "./_components/at-a-glance";
 import { HourlyStory } from "./_components/nerc/hourly-story";
 import { ServicesTraining } from "./_components/services-training";
-import { Marquee } from "./_components/marquee";
 import { Footer } from "./_components/footer";
 
 export const metadata: Metadata = {
@@ -23,7 +22,6 @@ export default function HomePage() {
         <AtAGlance />
         <HourlyStory />
         <ServicesTraining />
-        <Marquee />
       </main>
       <Footer />
     </>
