@@ -257,6 +257,11 @@ export function ContactForm() {
             ))}
           </h2>
           <span aria-hidden className="mt-5 block h-[2px] w-20 bg-fern" />
+          {/* the intro (it used to play in the hero's scroll scene) */}
+          <p className="mt-6 max-w-[40ch] text-[15px] leading-relaxed text-carbon/75">
+            {CONTACT.intro}
+          </p>
+          <p className="mt-3 text-[15px] font-medium text-carbon">{CONTACT.outro}</p>
 
           <ul aria-label="Required" className="mt-8 space-y-3">
             {checks.map((c) => (

@@ -547,7 +547,7 @@ export const CONTACT = {
     interests: [
       "A free Near-Term ERA Assumptions Questionnaire designed to plan Near-Term ERA Study Scenarios",
       "One year license of Fuel and Energy Security Tool (FEST)",
-      "Assistance developing initial NERC BAL 007-1 Near Term ERAs assumptions for FEST",
+      "Assistance developing initial NERC BAL-007-1 Near Term ERA assumptions",
       "FernGrid Energy run NERC BAL 007-1 Near Term ERAs",
       "Fuel and Energy Security Tool (FEST) Training",
       "General Power Systems Training",
