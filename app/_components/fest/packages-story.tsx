@@ -35,6 +35,12 @@ function Check({ className }: { className?: string }) {
   );
 }
 
+/**
+ * The checklist as three lines (client request, to keep the cards short):
+ * license + support hours, retainer months + discount, and who runs the ERAs.
+ */
+const ROWS = [[0, 1], [2, 3], [4]] as const;
+
 function Card({ pkg }: { pkg: FestPackage }) {
   return (
     <article
@@ -43,21 +49,20 @@ function Card({ pkg }: { pkg: FestPackage }) {
         pkg.featured && "ring-2 ring-fern",
       )}
     >
-      <h3
-        className={cx(
-          "px-5 py-4 text-center text-[clamp(1rem,1.3vw,1.25rem)] leading-snug font-medium text-balance md:px-6 md:py-5",
-          pkg.featured ? "bg-carbon text-paper" : "bg-fern text-carbon",
-        )}
-      >
+      {/* every header sage (the featured card keeps its ring) */}
+      <h3 className="bg-fern px-5 py-3 text-center text-[clamp(1rem,1.25vw,1.2rem)] leading-snug font-medium text-balance text-carbon md:px-6 md:py-4">
         {pkg.title}
       </h3>
-      <ul className="space-y-2.5 px-5 py-5 text-[14px] md:space-y-3 md:px-7 md:py-6 md:text-[15px]">
-        {pkg.items.map((it) => (
-          <li key={it} data-pk-item className="flex items-center gap-3">
-            <Check className="text-fern" />
-            {it}
-          </li>
-        ))}
+      <ul className="space-y-2 px-5 py-4 text-[13.5px] md:space-y-2.5 md:py-5 2xl:text-[14.5px]">
+        {ROWS.map((row) => {
+          const text = row.map((k) => pkg.items[k]).join(" + ");
+          return (
+            <li key={text} data-pk-item className="flex items-start gap-3">
+              <Check className="mt-[0.2em] text-fern" />
+              <span>{text}</span>
+            </li>
+          );
+        })}
       </ul>
     </article>
   );
@@ -201,8 +206,8 @@ export function PackagesStory() {
           pin.to(
             c,
             {
-              y: on ? -26 : 0,
-              scale: on ? 1.04 : 0.95,
+              y: on ? -12 : 0,
+              scale: on ? 1.03 : 0.95,
               opacity: on ? 1 : 0.4,
               duration: 0.3,
               ease: "power3.inOut",
@@ -401,7 +406,7 @@ export function PackagesStory() {
             {/* Cards: a row on wider screens, a sliding carousel on small ones */}
             <div
               data-pk-viewport
-              className="w-full max-w-[1200px] md:overflow-visible"
+              className="w-full max-w-[1500px] md:overflow-visible"
             >
               <div
                 data-pk-track
