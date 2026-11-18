@@ -183,6 +183,8 @@ export function FestModel({ scrub = false }: { scrub?: boolean } = {}) {
                 "group relative self-start transition-opacity duration-300",
                 PLACEMENT[id],
                 dim && "lg:opacity-35",
+                // the hovered box (and its info card) sits above the connector lines
+                hover === id && "z-40",
               )}
               onMouseEnter={() => setHover(id)}
               onMouseLeave={() => setHover(null)}
