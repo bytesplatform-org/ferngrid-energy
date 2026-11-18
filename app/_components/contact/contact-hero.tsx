@@ -150,7 +150,7 @@ export function ContactHero() {
             <p data-ch-meta className="text-label text-paper/70">
               {SITE.name}
             </p>
-            <span aria-hidden className="h-px flex-1 bg-paper/30" />
+            <span data-ch-meta aria-hidden className="h-px flex-1 bg-paper/30" />
             <a
               data-ch-meta
               href={`mailto:${SITE.email}`}

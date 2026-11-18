@@ -299,7 +299,7 @@ export function FaqHero() {
             <p data-fqh-meta className="text-label text-paper/70">
               {SITE.name}
             </p>
-            <span aria-hidden className="h-px flex-1 bg-paper/30" />
+            <span data-fqh-meta aria-hidden className="h-px flex-1 bg-paper/30" />
             <p data-fqh-meta className="text-label hidden text-fern md:block">
               {FAQ.categories.map((c) => c.label).join(" · ")}
             </p>
