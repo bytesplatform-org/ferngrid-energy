@@ -17,7 +17,7 @@ export default function FaqPage() {
         <FaqHero />
         <FaqList />
       </main>
-      <Footer />
+      <Footer stackOver="[data-fq-inner]" />
     </>
   );
 }

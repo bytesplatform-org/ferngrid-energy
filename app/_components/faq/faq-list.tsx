@@ -323,6 +323,42 @@ export function FaqList() {
     { scope: ref, dependencies: [listKey], revertOnUpdate: false },
   );
 
+  // Like the other pages' last scenes: once the list's bottom reaches the bottom
+  // of the screen it holds for one screen while the footer slides up over it as
+  // a card (Footer stackOver="[data-fq-inner]"). The list changes height (answers
+  // open, search, tabs), so re-measure whenever its height settles.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add(MQ.motion, () => {
+        const section = ref.current;
+        const inner = section?.querySelector<HTMLElement>("[data-fq-inner]");
+        if (!section || !inner) return;
+        ScrollTrigger.create({
+          trigger: section,
+          start: "bottom bottom",
+          end: () => `+=${window.innerHeight}`,
+          pin: true,
+          invalidateOnRefresh: true,
+        });
+        let h = inner.offsetHeight;
+        let timer = 0;
+        const ro = new ResizeObserver(() => {
+          if (inner.offsetHeight === h) return;
+          h = inner.offsetHeight;
+          window.clearTimeout(timer);
+          timer = window.setTimeout(() => ScrollTrigger.refresh(), 150);
+        });
+        ro.observe(inner);
+        return () => {
+          ro.disconnect();
+          window.clearTimeout(timer);
+        };
+      });
+    },
+    { scope: ref },
+  );
+
   return (
     <section
       ref={ref}
@@ -332,7 +368,12 @@ export function FaqList() {
     >
       <ArcSurface tone="paper" parallax="[data-fqh-inner]" />
 
-      <div className="mx-auto max-w-[1150px]">
+      {/* Inner wrapper: the footer pushes this back as it slides over (scaled about
+          the middle of the visible screen at the bottom of the section). */}
+      <div
+        data-fq-inner
+        className="mx-auto max-w-[1150px] origin-[50%_calc(100%-50svh)] will-change-transform"
+      >
         {/* Tabs + search */}
         <div className="flex flex-col-reverse gap-6 md:flex-row md:items-end md:justify-between">
           <div

@@ -3,7 +3,7 @@
 import { Fragment, useId, useRef, useState, type FormEvent } from "react";
 import { CONTACT, SITE } from "@/lib/content";
 import { ArcSurface } from "../motion/arc-surface";
-import { gsap, useGSAP, MQ } from "../motion/gsap";
+import { gsap, ScrollTrigger, useGSAP, MQ } from "../motion/gsap";
 import { cx } from "../ui/primitives";
 
 const { form } = CONTACT;
@@ -162,6 +162,17 @@ export function ContactForm() {
             once: true,
           },
         });
+
+        // Like the other pages' last scenes: once the form's bottom reaches the
+        // bottom of the screen it holds for one screen while the footer slides
+        // up over it as a card (Footer stackOver="[data-cf-inner]").
+        ScrollTrigger.create({
+          trigger: ref.current,
+          start: "bottom bottom",
+          end: () => `+=${window.innerHeight}`,
+          pin: true,
+          invalidateOnRefresh: true,
+        });
       });
     },
     { scope: ref },
@@ -231,7 +242,12 @@ export function ContactForm() {
     >
       <ArcSurface tone="paper" parallax="[data-ch-inner]" />
 
-      <div className="mx-auto grid max-w-[1300px] gap-12 lg:grid-cols-12 lg:gap-10">
+      {/* Inner wrapper: the footer pushes this back as it slides over (scaled about
+          the middle of the visible screen at the bottom of the section). */}
+      <div
+        data-cf-inner
+        className="mx-auto grid max-w-[1300px] origin-[50%_calc(100%-50svh)] gap-12 will-change-transform lg:grid-cols-12 lg:gap-10"
+      >
         {/* Left: heading, live checklist, direct contact */}
         <aside
           data-cf-aside

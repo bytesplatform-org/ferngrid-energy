@@ -17,7 +17,7 @@ export default function ContactPage() {
         <ContactHero />
         <ContactForm />
       </main>
-      <Footer />
+      <Footer stackOver="[data-cf-inner]" />
     </>
   );
 }
