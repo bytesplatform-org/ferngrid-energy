@@ -9,6 +9,8 @@
   --color-carbon-deep: #12160a;
   --color-ink: #1f241b;
   --color-fern: #87a96b;
+  /* A deeper shade of fern (sage) for active/hover states on sage (paper text: ~6:1). */
+  --color-fern-deep: #4a6438;
   --color-paper: #f8f9f7;
   --color-paper-warm: #eef0ea;
 

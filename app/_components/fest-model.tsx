@@ -197,7 +197,7 @@ export function FestModel({ scrub = false }: { scrub?: boolean } = {}) {
                 aria-describedby={`fest-links-${id}`}
                 className={cx(
                   "overflow-hidden rounded-[10px] border bg-paper transition-[border-color,box-shadow] duration-300 outline-offset-4",
-                  hover === id ? "border-carbon shadow-[0_18px_40px_-24px_rgb(18_22_10/0.6)]" : "border-carbon/20",
+                  hover === id ? "border-fern-deep shadow-[0_18px_40px_-24px_rgb(18_22_10/0.6)]" : "border-carbon/20",
                 )}
               >
                 <h3
@@ -205,7 +205,8 @@ export function FestModel({ scrub = false }: { scrub?: boolean } = {}) {
                   data-head
                   className={cx(
                     "text-label-md flex items-center justify-between gap-4 border-b px-4 py-3 transition-colors duration-300",
-                    hover === id ? "border-carbon bg-carbon text-paper" : "border-carbon/15 bg-paper-warm text-carbon",
+                    // sage at rest, dark green on hover/focus (client request)
+                    hover === id ? "border-fern-deep bg-fern-deep text-paper" : "border-fern bg-fern text-carbon",
                   )}
                 >
                   <span>{node.title}</span>
