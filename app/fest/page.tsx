@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { FEST_PAGE, NERC } from "@/lib/content";
 import { FestHero } from "../_components/fest/fest-hero";
+import { ScenariosStory } from "../_components/fest/scenarios-story";
 import { ModelSection } from "../_components/fest/model-section";
 import { PackagesStory } from "../_components/fest/packages-story";
 import { Footer } from "../_components/footer";
@@ -15,6 +16,7 @@ export default function FestPage() {
     <>
       <main id="main" className="overflow-x-clip">
         <FestHero />
+        <ScenariosStory />
         <ModelSection />
         <PackagesStory />
       </main>

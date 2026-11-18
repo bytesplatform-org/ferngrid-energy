@@ -111,7 +111,7 @@ export const NERC = {
       "Known Bulk Electric System (BES) Transmission constraints that limit the transfer of generated power to loads.",
     ],
     scenariosIntro:
-      "These Near Term ERAs must forecast level 2 and 3 Energy Emergency Alerts and consist of a set of Scenarios, starting with a base Scenario developed from expected system conditions then considering other Scenarios that stress the system due with the following assumptions:",
+      "These Near Term ERAs must forecast Energy Emergency Alerts and consist of a set of Scenarios, starting with a base Scenario developed from expected system conditions then considering other Scenarios that stress the system due with the following assumptions:",
     stressScenarios: [
       "Higher than forecasted load profiles",
       "The effects of an energy supply contingency",
@@ -278,6 +278,13 @@ export const FEST_PAGE = {
   acronym: "FEST",
   pricingCta: "Contact Us for Details on Package Pricing",
   modelHeading: "Fuel and Energy Security Tool (FEST) and Near Term ERAs",
+  /** Short labels for the four requirements around the Base Scenario (client copy). */
+  requirementBoxes: [
+    "Forecasted load profiles",
+    "Operational Generation Limitations",
+    "Energy transfers with Neighbors",
+    "Known Transmission Limits",
+  ],
   packagesHeading: "Our Packages",
   /** Card order as on the live page; descriptions map by retainer (0 / 1 / 12 months). */
   packages: [
