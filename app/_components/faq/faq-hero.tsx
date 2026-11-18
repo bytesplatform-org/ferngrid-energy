@@ -8,9 +8,17 @@ import { introPending, onIntro } from "../motion/intro";
 import { cx } from "../ui/primitives";
 import linesImg from "@/public/images/power-lines.webp";
 
-/** Every question on the page, with its category (for the jump-to). */
+/**
+ * The questions that float in the hero, with their category (for the jump-to).
+ * "How are Near-Term ERA Studies different from conventional capacity
+ * assessments?" is left out here (client request: it sat over the title); it is
+ * still in the list below.
+ */
+const HIDDEN_IN_HERO = new Set(["vs-capacity"]);
 const QUESTIONS = FAQ.categories.flatMap((c) =>
-  c.items.map((it) => ({ id: it.id, category: c.id, q: it.q })),
+  c.items
+    .filter((it) => !HIDDEN_IN_HERO.has(it.id))
+    .map((it) => ({ id: it.id, category: c.id, q: it.q })),
 );
 
 /**
@@ -24,10 +32,9 @@ const SPOTS = [
   { x: 53, y: 9, z: 0.3 },
   { x: 76, y: 7, z: 0.7 },
   { x: 14, y: 21, z: 0.2 },
-  { x: 62, y: 22, z: 0.95 },
   // band below the title
-  { x: 4, y: 67, z: 0.75 },
-  { x: 70, y: 66, z: 0.4 },
+  { x: 4, y: 70, z: 0.75 },
+  { x: 70, y: 70, z: 0.4 },
   { x: 26, y: 80, z: 0.55 },
   { x: 52, y: 83, z: 0.9 },
 ];
@@ -277,10 +284,7 @@ export function FaqHero() {
                   >
                     <span
                       data-fqh-word
-                      className={cx(
-                        "inline-block",
-                        w === "Questions" && "text-fern",
-                      )}
+                      className="inline-block"
                     >
                       {w}
                     </span>
