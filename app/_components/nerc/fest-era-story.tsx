@@ -10,7 +10,7 @@ import logoMark from "@/public/images/logo-mark.png";
 import solarImg from "@/public/images/fest-3.webp";
 import fallsImg from "@/public/images/fest-4.webp";
 
-const PIN_VH = 4.6;
+const PIN_VH = 5.2;
 const APPROACH_VH = 0.8;
 /** Extra pinned distance after the story: the closing section slides over it. */
 const COVER_VH = 1;
@@ -66,10 +66,12 @@ function StaticLayout() {
 /**
  * FernGrid Energy and Energy Reliability Assessments.
  * - Two photos open (clip reveal) at different parallax speeds as they pass.
- * - Pinned: FEST's five factors orbit a FEST core, then are pulled into it one
- *   by one; the core pulses and sends out hourly dispatch bars, which are then
- *   evaluated — "forecast potential Energy Emergencies". The paragraph's
- *   sentences light up in step; the Explore FEST button arrives last.
+ * - Pinned, two steps (client order):
+ *   1. FEST sends out the hourly generation dispatches, and a scan evaluates them
+ *      — "forecast potential Energy Emergencies" (sentence 1 lights up).
+ *   2. FEST's five factors orbit it (sentences 2 and 3 light up together).
+ *   End: the whole paragraph lit, the factors diagram on screen and Explore FEST
+ *   (which rises in as the scene locks in).
  */
 export function FestEraStory() {
   const ref = useRef<HTMLElement>(null);
@@ -165,91 +167,40 @@ export function FestEraStory() {
       });
 
       const s = (i: number) => q(`[data-sentence='${i}']`);
+      const dim = { opacity: 0.32, duration: 0.2 };
+      const lit = { opacity: 1, duration: 0.2 };
       const pin = gsap.timeline({ defaults: { ease: "none" } });
       pin
-        // factors orbit the core (sentence 2: what FEST accounts for)
-        .to(
-          q("[data-core]"),
-          { scale: 1, autoAlpha: 1, duration: 0.3, ease: "back.out(2)" },
-          0,
-        )
-        .to(q("[data-ring]"), { scale: 1, autoAlpha: 1, duration: 0.3 }, 0.05)
-        .to(
-          q("[data-chip]"),
-          {
-            scale: 1,
-            autoAlpha: 1,
-            duration: 0.25,
-            stagger: 0.08,
-            ease: "back.out(2)",
-          },
-          0.15,
-        )
-        .to(s(1), { opacity: 1, duration: 0.2 }, 0.15)
-        .fromTo(
-          spin,
-          { r: 0 },
-          {
-            r: 150,
-            duration: 1.6,
-            onUpdate: renderSpin,
-            immediateRender: false,
-          },
-          0,
-        )
-        // …and are pulled in, one by one
-        .to(
-          q("[data-arm-holder]"),
-          { top: "50%", duration: 0.3, stagger: 0.12, ease: "power3.in" },
-          1.05,
-        )
-        .to(
-          q("[data-chip]"),
-          {
-            scale: 0,
-            autoAlpha: 0,
-            duration: 0.15,
-            stagger: 0.12,
-            ease: "power2.in",
-          },
-          1.2,
-        )
-        .to(q("[data-ring]"), { scale: 0.5, autoAlpha: 0, duration: 0.3 }, 1.6)
-        .to(
-          q("[data-core]"),
-          { scale: 1.25, duration: 0.15, ease: "power2.out" },
-          1.75,
-        )
-        .to(
-          q("[data-core]"),
-          { scale: 1, duration: 0.25, ease: "elastic.out(1, 0.5)" },
-          1.9,
-        )
-        // dispatches for each hour (sentence 1)
-        .to(s(1), { opacity: 0.32, duration: 0.2 }, 1.9)
-        .to(s(0), { opacity: 1, duration: 0.2 }, 1.95)
-        .to(
-          q("[data-core-wrap]"),
-          { yPercent: -36, duration: 0.4, ease: "power3.inOut" },
-          1.95,
-        )
-        .to(q("[data-out='0']"), { autoAlpha: 1, y: 0, duration: 0.2 }, 2.15)
-        .to(
-          q("[data-bar]"),
-          { scaleY: 1, duration: 0.25, stagger: 0.025, ease: "power3.out" },
-          2.2,
-        )
-        // evaluated to forecast potential Energy Emergencies (sentence 3)
-        .to(s(0), { opacity: 0.32, duration: 0.2 }, 3.0)
-        .to(s(2), { opacity: 1, duration: 0.2 }, 3.05)
-        .to(
-          q("[data-scanbar]"),
-          { left: "100%", duration: 0.6, ease: "power1.inOut" },
-          3.05,
-        )
-        .to(q("[data-out='1']"), { autoAlpha: 1, y: 0, duration: 0.25 }, 3.5)
-        .to(q("[data-cta]"), { autoAlpha: 1, y: 0, duration: 0.25 }, 3.65)
-        .to({}, { duration: 0.6 });
+        // ---- Step 1: generation dispatches for each hour (sentence 1), then the scan
+        // evaluates them — "forecast potential Energy Emergencies"
+        .to(q("[data-core]"), { scale: 1, autoAlpha: 1, duration: 0.3, ease: "back.out(2)" }, 0)
+        // Explore FEST rises in just after the copy, once the scene has locked in
+        // (early in the pin, not during the approach where it's still off screen)
+        .to(q("[data-cta]"), { autoAlpha: 1, y: 0, duration: 0.3, ease: "power3.out" }, 0.15)
+        .to(q("[data-core-wrap]"), { yPercent: -36, duration: 0.4, ease: "power3.inOut" }, 0.25)
+        .to(s(0), lit, 0.35)
+        .to(q("[data-out='0']"), { autoAlpha: 1, y: 0, duration: 0.2 }, 0.45)
+        .to(q("[data-bar]"), { scaleY: 1, duration: 0.25, stagger: 0.025, ease: "power3.out" }, 0.5)
+        .fromTo(q("[data-scanbar]"), { left: "0%", autoAlpha: 1 }, { left: "100%", duration: 0.6, ease: "power1.inOut" }, 1.25)
+        .to(q("[data-out='1']"), { autoAlpha: 1, y: 0, duration: 0.25 }, 1.65)
+        // ---- Step 2: what FEST accounts for (sentences 2 and 3): the dispatch view clears,
+        // FEST returns to the centre, the factors orbit it and are pulled in
+        .to(s(0), dim, 2.2)
+        // sentences 2 and 3 light up together (client request)
+        .to([...s(1), ...s(2)], lit, 2.25)
+        .to(q("[data-out]"), { autoAlpha: 0, y: 14, duration: 0.2 }, 2.2)
+        .to(q("[data-scanbar]"), { autoAlpha: 0, duration: 0.15 }, 2.2)
+        .to(q("[data-bar]"), { scaleY: 0, duration: 0.2, stagger: { each: 0.012, from: "end" }, ease: "power2.in" }, 2.2)
+        .to(q("[data-core-wrap]"), { yPercent: 0, duration: 0.4, ease: "power3.inOut" }, 2.35)
+        .to(q("[data-ring]"), { scale: 1, autoAlpha: 1, duration: 0.3 }, 2.6)
+        .to(q("[data-chip]"), { scale: 1, autoAlpha: 1, duration: 0.25, stagger: 0.08, ease: "back.out(2)" }, 2.7)
+        // the factors keep circling to the end (no pull-in: the scene ends on this diagram)
+        // ends on a multiple of 72° (5 factors): one rests at the top, the rest evenly
+        // around it, so the labels don't crowd on small screens
+        .fromTo(spin, { r: 0 }, { r: 216, duration: 2.1, onUpdate: renderSpin, immediateRender: false }, 2.55)
+        // ---- End: the whole paragraph lit, the factors diagram, Explore FEST
+        .to(s(0), lit, 3.9)
+        .to({}, { duration: 0.6 }, 4.1);
 
       const approach = (pin.duration() * APPROACH_VH) / PIN_VH;
       gsap
@@ -420,7 +371,7 @@ export function FestEraStory() {
                       >
                         <span
                           data-chip
-                          className="font-display block w-max max-w-[11rem] rounded-[14px] border border-carbon/15 bg-white px-3.5 py-2 text-center text-[clamp(0.78rem,1vw,0.95rem)] leading-tight text-balance text-carbon shadow-[0_12px_30px_-16px_rgb(18_22_10/0.5)] md:max-w-[13rem]"
+                          className="font-display block w-max max-w-[6.75rem] rounded-[12px] border border-carbon/15 bg-white px-2.5 py-1.5 text-center text-[0.7rem] leading-tight text-balance text-carbon shadow-[0_12px_30px_-16px_rgb(18_22_10/0.5)] md:max-w-[13rem] md:rounded-[14px] md:px-3.5 md:py-2 md:text-[clamp(0.78rem,1vw,0.95rem)]"
                         >
                           {f}
                         </span>
