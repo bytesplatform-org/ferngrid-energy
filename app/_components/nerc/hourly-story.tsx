@@ -108,7 +108,9 @@ export function HourlyStory() {
       gsap.set(q("[data-snap-fill]"), { scaleY: 0 });
       gsap.set(q("[data-cell]"), { autoAlpha: 0, y: 30 });
       gsap.set(q("[data-cell-check]"), { scale: 0, opacity: 0 });
-      gsap.set(q("[data-line-word]"), { yPercent: 110 });
+      // Well past the mask (and transparent): descenders of a line that has left must
+      // never peek back in under the next one (Revision 2, mobile "white splotches").
+      gsap.set(q("[data-line-word]"), { yPercent: 140, opacity: 0 });
       gsap.set(q("[data-cta]"), { autoAlpha: 0, y: 40 });
       gsap.set(q("[data-cta-word]"), { opacity: 0.14 });
       gsap.set(q("[data-cta-button]"), { autoAlpha: 0, y: 16 });
@@ -156,13 +158,13 @@ export function HourlyStory() {
       const lineIn = (i: number, at: number) =>
         pin.to(
           q(`[data-line='${i}'] [data-line-word]`),
-          { yPercent: 0, duration: 0.25, stagger: 0.03, ease: "power3.out" },
+          { yPercent: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: "power3.out" },
           at,
         );
       const lineOut = (i: number, at: number) =>
         pin.to(
           q(`[data-line='${i}'] [data-line-word]`),
-          { yPercent: -110, duration: 0.2, stagger: 0.015, ease: "power2.in" },
+          { yPercent: -140, opacity: 0, duration: 0.2, stagger: 0.015, ease: "power2.in" },
           at,
         );
 

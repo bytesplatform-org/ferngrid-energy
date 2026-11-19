@@ -35,11 +35,6 @@ function Check({ className }: { className?: string }) {
   );
 }
 
-/**
- * The checklist as three lines (client request, to keep the cards short):
- * license + support hours, retainer months + discount, and who runs the ERAs.
- */
-const ROWS = [[0, 1], [2, 3], [4]] as const;
 
 function Card({ pkg }: { pkg: FestPackage }) {
   return (
@@ -50,19 +45,17 @@ function Card({ pkg }: { pkg: FestPackage }) {
       )}
     >
       {/* every header sage (the featured card keeps its ring) */}
-      <h3 className="bg-fern px-5 py-3 text-center text-[clamp(1rem,1.25vw,1.2rem)] leading-snug font-medium text-balance text-carbon md:px-6 md:py-4">
+      <h3 className="bg-fern px-5 py-3 text-center text-[clamp(1rem,1.25vw,1.2rem)] leading-snug font-medium text-balance text-carbon max-md:py-2.5 md:px-6 md:py-4">
         {pkg.title}
       </h3>
-      <ul className="space-y-2 px-5 py-4 text-[13.5px] md:space-y-2.5 md:py-5 2xl:text-[14.5px]">
-        {ROWS.map((row) => {
-          const text = row.map((k) => pkg.items[k]).join(" + ");
-          return (
-            <li key={text} data-pk-item className="flex items-start gap-3">
-              <Check className="mt-[0.2em] text-fern" />
-              <span>{text}</span>
-            </li>
-          );
-        })}
+      <ul className="space-y-2 px-5 py-3 text-[13.5px] md:space-y-2.5 md:py-5 2xl:text-[14.5px]">
+        {/* three short lines (Revision 2 client copy) */}
+        {pkg.items.map((text) => (
+          <li key={text} data-pk-item className="flex items-start gap-3">
+            <Check className="mt-[0.2em] text-fern" />
+            <span>{text}</span>
+          </li>
+        ))}
       </ul>
     </article>
   );
@@ -372,7 +365,7 @@ export function PackagesStory() {
         <div data-stage className="relative h-svh overflow-x-clip">
           <div
             data-pk-inner
-            className="absolute inset-0 flex origin-[50%_30%] flex-col items-center justify-center gap-[2.5svh] px-5 pt-[clamp(4.5rem,10svh,6.5rem)] pb-6 will-change-transform md:px-10"
+            className="absolute inset-0 flex origin-[50%_30%] flex-col items-center justify-start gap-2.5 px-5 md:justify-center md:gap-[2.5svh] pt-[clamp(4.5rem,10svh,6.5rem)] pb-6 will-change-transform md:px-10"
           >
             <div className="text-center">
               <h2
@@ -430,7 +423,7 @@ export function PackagesStory() {
             </div>
 
             {/* The matching description */}
-            <div className="grid w-full max-w-[1000px] text-[14px] leading-relaxed text-paper/80 md:text-[clamp(0.95rem,1.1vw,1.1rem)]">
+            <div className="grid w-full max-w-[1000px] text-[13px] leading-[1.55] text-paper/80 md:text-[clamp(0.95rem,1.1vw,1.1rem)] md:leading-relaxed">
               {packages.map((p, k) => (
                 <div
                   key={p.id}
@@ -456,7 +449,8 @@ export function PackagesStory() {
               <PillLink
                 href={ROUTES.contact}
                 tone="fern"
-                size="lg"
+                size="md"
+                className="md:h-13 md:px-6 md:text-[15px]"
                 icon="up-right"
               >
                 {pricingCta}

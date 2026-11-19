@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { SITE } from "@/lib/content";
 import { Hero } from "./_components/hero/hero";
-import { Statement } from "./_components/statement";
+import { TriadIntro } from "./_components/triad-intro";
 import { OurSoftware } from "./_components/our-software";
 import { AtAGlance } from "./_components/at-a-glance";
 import { HourlyStory } from "./_components/nerc/hourly-story";
@@ -17,7 +17,7 @@ export default function HomePage() {
     <>
       <main id="main" className="overflow-x-clip">
         <Hero />
-        <Statement />
+        <TriadIntro />
         <OurSoftware />
         <AtAGlance />
         <HourlyStory />

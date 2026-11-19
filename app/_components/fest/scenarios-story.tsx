@@ -8,8 +8,8 @@ import { cx } from "../ui/primitives";
 
 const PIN_VH = 3.6;
 const APPROACH_VH = 0.8;
-const { intro, accountFor, scenariosIntro, stressScenarios } = NERC.requirements;
-const { modelHeading, requirementBoxes } = FEST_PAGE;
+const { accountFor, scenariosIntro, stressScenarios } = NERC.requirements;
+const { modelHeading, requirementBoxes, requirementsIntro } = FEST_PAGE;
 
 /* Diagram (0–100 box): the centre box, and the four boxes in the corners around it. */
 const CORNERS = [
@@ -47,7 +47,7 @@ function StaticLayout() {
         <Heading />
       </div>
       <div className="space-y-6 text-[15px] leading-relaxed text-carbon/80 md:text-lg lg:col-span-6 lg:col-start-7">
-        <p>{intro}</p>
+        <p>{requirementsIntro}</p>
         <ul className="list-disc space-y-1 pl-6">
           {accountFor.map((a) => (
             <li key={a}>{a}</li>
@@ -188,7 +188,7 @@ export function ScenariosStory() {
               <span data-fs-rule aria-hidden className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6" />
               <div className="mt-5 grid text-[14px] leading-relaxed text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)]">
                 <p data-fs-para className="col-start-1 row-start-1">
-                  {intro}
+                  {requirementsIntro}
                 </p>
                 <p data-fs-para data-fs-scen className="col-start-1 row-start-1">
                   {scenariosIntro}

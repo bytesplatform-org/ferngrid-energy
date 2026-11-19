@@ -262,15 +262,17 @@ export function EraScene() {
         {STEPS.map((title, i) => (
           <div key={title} className="relative h-full w-screen">
             <div className="absolute inset-x-5 bottom-[16%] md:inset-x-10 lg:top-1/2 lg:right-auto lg:bottom-auto lg:w-[42vw] lg:-translate-y-[30%]">
-              <h3 className="font-display text-[clamp(3.25rem,8vw,9.5rem)] leading-[0.92]">{title}</h3>
-              <p className="mt-5 max-w-[34ch] text-lg leading-relaxed text-paper/80 md:text-xl">{reqs[i]}</p>
+              <h3 className="font-display text-[clamp(2.5rem,8vw,9.5rem)] leading-[0.92]">{title}</h3>
+              <p className="mt-3 max-w-[34ch] text-base leading-relaxed text-paper/80 md:mt-5 md:text-xl">{reqs[i]}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Illustration: one point cloud that morphs with scroll */}
-      <div className="pointer-events-none absolute top-[17%] left-1/2 aspect-square w-[min(74vw,46vh)] -translate-x-1/2 lg:top-1/2 lg:right-10 lg:left-auto lg:w-[min(40vw,62vh)] lg:translate-x-0 lg:-translate-y-[46%]">
+      {/* Phones (Revision 2): starts below the kicker and is sized from the height
+          left over, so its labels never reach the kicker or the step text. */}
+      <div className="pointer-events-none absolute top-[9.5rem] left-1/2 aspect-square w-[min(74vw,calc(100svh-440px))] -translate-x-1/2 lg:top-1/2 lg:right-10 lg:left-auto lg:w-[min(40vw,62vh)] lg:translate-x-0 lg:-translate-y-[46%]">
         <div data-visual className="absolute inset-0">
           <PointCloud ref={cloudRef} mode="morph" initial={0} className="absolute inset-0 size-full" />
           {SHAPES.map((shape) => (

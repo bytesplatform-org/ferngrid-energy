@@ -226,10 +226,11 @@ export function CapacityEnergy() {
                   the "Demand + operating reserves" tag) */}
               <span
                 data-cap-label
-                className="text-label absolute -translate-x-[8%] -translate-y-[calc(100%+1.6rem)] sm:-translate-x-1/2 sm:-translate-y-full text-center whitespace-nowrap text-paper"
+                className="text-label absolute -translate-x-[8%] -translate-y-[calc(100%+1.6rem)] sm:-translate-x-1/2 sm:-translate-y-full text-center whitespace-nowrap text-paper lg:leading-[1.7]"
                 style={{ left: pct(CAP.x + CAP.w / 2, VB.w), top: pct(BASE - FULL - 40, VB.h) }}
               >
-                Capacity — a point in time
+                {/* Two lines on desktop: on one line it ran into the paragraph beside the chart (Revision 2). */}
+                <span className="lg:block">Capacity —</span> a point in time
               </span>
               <span
                 data-b-label

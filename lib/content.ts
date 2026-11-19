@@ -110,8 +110,9 @@ export const NERC = {
       "Energy transfers with other BAs",
       "Known Bulk Electric System (BES) Transmission constraints that limit the transfer of generated power to loads.",
     ],
+    /** Revision 2 (client copy): the four stress scenarios are now named in the paragraph too. */
     scenariosIntro:
-      "These Near Term ERAs must forecast Energy Emergency Alerts and consist of a set of Scenarios, starting with a base Scenario developed from expected system conditions then considering other Scenarios that stress the system due with the following assumptions:",
+      "These Near-Term ERAs must forecast Energy Emergency Alerts and consist of a set of Scenarios, starting with a base Scenario developed from expected system conditions then considering other Scenarios that stress the system due to higher than forecasted load profiles, energy/fuel supply contingency, or other stressed conditions with historical precedent.",
     stressScenarios: [
       "Higher than forecasted load profiles",
       "The effects of an energy supply contingency",
@@ -278,6 +279,9 @@ export const FEST_PAGE = {
   acronym: "FEST",
   pricingCta: "Contact Us for Details on Package Pricing",
   modelHeading: "Fuel and Energy Security Tool (FEST) and Near Term ERAs",
+  /** Revision 2 (client copy): the side text beside the four requirement boxes names all four. */
+  requirementsIntro:
+    "As of April 2027, NERC Standard BAL-007-1 will require Balancing Authorities to conduct Near Term Energy Reliability Assessments that account for forecasted or assumed hourly load profiles, generation operational limitations, energy transfers with other BAs, and known transfer limits.",
   /** Short labels for the four requirements around the Base Scenario (client copy). */
   requirementBoxes: [
     "Forecasted load profiles",
@@ -286,45 +290,27 @@ export const FEST_PAGE = {
     "Known Transmission Limits",
   ],
   packagesHeading: "Our Packages",
-  /** Card order as on the live page; descriptions map by retainer (0 / 1 / 12 months). */
+  /** Card order as on the live page. Card bullets: Revision 2 shortened client copy (three lines each). */
   packages: [
     {
       id: "basic",
       title: "Standard Software License",
-      items: [
-        "One Year of FEST License",
-        "10 Free Hours of Support",
-        "Number of Retainer Months: 0",
-        "Retainer Discount: 0%",
-        "Customer Run ERAs",
-      ],
+      items: ["One Year of FEST License + 10 Free Hours of Support", "No Reserved Retainer Months", "Customer Run Near-Term ERAs"],
       label: "Basic Package:",
       body: "FernGrid Energy’s Basic Package is ideal for customers with a technically savvy Subject Matter Expert (SME) on staff. This SME will be responsible for updating key study inputs like Generator Fuel Survey Results and Forecasted Load/Temperature Shapes to maintain accurate Near Term ERA results. The customer will be responsible for running NERC BAL-007-1 Near Term ERAs using FEST.",
     },
     {
       id: "standard",
-      title: "Software License + Set-Up Retainer",
+      title: "Standard Software + Set Up Retainer",
       featured: true,
-      items: [
-        "One Year of FEST License",
-        "10 Free Hours of Support",
-        "Number of Retainer Months: 1",
-        "Retainer Discount: 10%",
-        "Customer Run ERAs",
-      ],
+      items: ["One Year of FEST License + 10 Free Hours of Support", "1-2 Retainer Months (10% Discount)", "Customer Run Near-Term ERAs"],
       label: "Standard Package:",
       body: "The Standard Package includes dedicated monthly support hours with FernGrid Energy to help configure and automate customer-specific study inputs, such as Generator Fuel Survey Results and Forecasted Load/Temperature Shapes. This package is well suited for customers with an in-house Subject Matter Expert (SME) who can collaborate with FernGrid Energy to establish study assumptions, provide representative input data, and learn the automated workflow. The customer SME will ultimately run NERC BAL-007-1 Near Term ERAs using FEST.",
     },
     {
       id: "premium",
       title: "FernGrid Energy Run BAL-007-1 Studies",
-      items: [
-        "One Year of FEST License",
-        "10 Free Hours of Support",
-        "Number of Retainer Months: 12",
-        "Retainer Discount: 15%",
-        "FernGrid Energy Run ERAs",
-      ],
+      items: ["One Year of FEST License + 10 Free Hours of Support", "12 Retainer Months (15% Discount)", "FernGrid Energy Run Near-Term ERAs"],
       label: "Premium Package:",
       body: "The Premium Package provides dedicated monthly support from FernGrid Energy for one year to manage your Near Term ERA process from start to finish. Our team will establish study assumptions with your SME, run/review FEST's Near Term ERA results, and deliver Near Term ERA results for NERC BAL-007-1 compliance. FernGrid Energy will be responsible for running NERC BAL 007-1 Near Term ERAs using FEST.",
     },

@@ -6,11 +6,12 @@ import { FRAGMENTS, HOME } from "@/lib/content";
 import { ArcSurface } from "./motion/arc-surface";
 import { gsap, ScrollTrigger, SplitText, useGSAP, MQ } from "./motion/gsap";
 import { cx } from "./ui/primitives";
+import { TRIAD, TRIAD_DIM, TRIAD_FONT } from "./triad-intro";
 import servicesImg from "@/public/images/our-services.webp";
 import trainingImg from "@/public/images/training-services.webp";
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
-const PIN_VH = 5.2;
+const PIN_VH = 5.8;
 /**
  * Extra pinned distance (viewport heights) after the story ends: the footer
  * slides up over the finished scene like a card (see ClosingCta `stackOver`).
@@ -27,7 +28,7 @@ const ZOOM_MAX = 90;
 const TEXT_PX_CAP = 7000;
 /** Half the width of the I's stroke, in em (Dosis bold). */
 const STEM_HALF_EM = 0.066;
-const TRIAD_SIZE = "clamp(4rem, 15vw, 16rem)";
+const TRIAD_SIZE = TRIAD_FONT;
 
 /** Static layout (no JS / reduced motion): the two services side by side with their photos. */
 function StaticLayout() {
@@ -51,9 +52,9 @@ function StaticLayout() {
         id="services-title"
         className="font-condensed text-condensed-xl uppercase"
       >
-        <span className="block">Software.</span>{" "}
-        <span className="block text-paper/35">Services.</span>{" "}
-        <span className="block">Training.</span>
+        <span className="block text-paper/35">Software</span>{" "}
+        <span className="block">Services</span>{" "}
+        <span className="block text-paper/35">Training</span>
       </h2>
       <div className="mt-16 grid gap-16 lg:grid-cols-2 lg:gap-10">
         {rows.map((r) => (
@@ -203,6 +204,8 @@ export function ServicesTraining() {
       gsap.set(q("[data-node]"), { scale: 0 });
       gsap.set(q("[data-tchar]"), { yPercent: 105 });
       gsap.set(q("[data-trn-step]"), { autoAlpha: 0.18, x: -16 });
+      gsap.set(q("[data-tri2]"), { autoAlpha: 0 });
+      gsap.set(q("[data-tri2-word]"), { yPercent: 110 });
 
       // The pin on its own…
       const pinST = ScrollTrigger.create({
@@ -315,6 +318,15 @@ export function ServicesTraining() {
           { autoAlpha: 0.6, duration: 0.7, ease: "power2.inOut" },
           3.8,
         )
+        // 4a. back to the triad, this time with only TRAINING lit (client mock-up)
+        .fromTo(q("[data-tri2]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: "power2.out" }, 3.95)
+        .to(q("[data-tri2-word]"), { yPercent: 0, duration: 0.35, stagger: 0.06, ease: "power3.out" }, 3.95)
+        .fromTo(
+          q("[data-tri2-word='dim']"),
+          { color: "#f8f9f7" },
+          { color: TRIAD_DIM, duration: 0.2, ease: "power2.inOut" },
+          4.3,
+        )
         .fromTo(
           q("[data-trn-panel]"),
           { clipPath: "inset(100% 0% 0% 0% round 0px)" },
@@ -323,50 +335,50 @@ export function ServicesTraining() {
             duration: 0.8,
             ease: "power3.inOut",
           },
-          4.0,
+          4.7,
         )
         .fromTo(
           q("[data-trn-media]"),
           { yPercent: 18, scale: 1.15 },
           { yPercent: 0, scale: 1, duration: 0.9, ease: "power3.out" },
-          4.0,
+          4.7,
         )
         .to(
           q("[data-tchar]"),
           { yPercent: 0, duration: 0.5, stagger: 0.05, ease: "power3.out" },
-          4.5,
+          5.2,
         )
         .to(
           q("[data-trn-word]"),
           { yPercent: 0, duration: 0.3, stagger: 0.08, ease: "power3.out" },
-          4.75,
+          5.45,
         )
         .fromTo(
           q("[data-trn-rule]"),
           { scaleX: 0 },
           { scaleX: 1, duration: 0.3, ease: "power2.out" },
-          4.9,
+          5.6,
         )
         .to(
           trnLines,
           { yPercent: 0, duration: 0.3, stagger: 0.06, ease: "power3.out" },
-          4.95,
+          5.65,
         )
         // the offerings light up along a fern rail, like the service steps
         .fromTo(
           q("[data-trn-rail-fill]"),
           { scaleY: 0 },
           { scaleY: 1, duration: (FRAGMENTS.trainingOfferings.length - 1) * 0.3 + 0.2 },
-          5.5,
+          6.2,
         );
       q("[data-trn-step]").forEach((step, i) => {
-        const at = 5.5 + i * 0.3;
+        const at = 6.2 + i * 0.3;
         pin
           .to(step, { autoAlpha: 1, x: 0, duration: 0.18, ease: "power3.out" }, at)
           .to(step.querySelector("[data-node]"), { scale: 1, duration: 0.14, ease: "back.out(3)" }, at);
       });
       pin
-        .addLabel("training", 6.4)
+        .addLabel("training", 7.1)
         .to({}, { duration: 0.6 }); // hold on the finished scene
 
       // Approach: the three words rise as the section arrives, before the pin.
@@ -543,8 +555,8 @@ export function ServicesTraining() {
               {/* SOFTWARE. / TRAINING. above and below the cut-out word */}
               {(
                 [
-                  ["top", "Software.", "calc(50% - 0.92em)"],
-                  ["bottom", "Training.", "calc(50% + 0.92em)"],
+                  ["top", "Software", "calc(50% - 0.92em)"],
+                  ["bottom", "Training", "calc(50% + 0.92em)"],
                 ] as const
               ).map(([pos, word, top]) => (
                 <p
@@ -623,6 +635,23 @@ export function ServicesTraining() {
                     </li>
                   ))}
                 </ol>
+              </div>
+            </div>
+
+            {/* ---------------- Triad again, TRAINING lit (between Services and Training) ---------------- */}
+            <div
+              data-tri2
+              aria-hidden
+              className="invisible absolute inset-0 flex flex-col items-center justify-center bg-carbon-deep px-5 pt-12 text-center opacity-0"
+            >
+              <div className="font-condensed leading-[0.88] uppercase" style={{ fontSize: TRIAD_SIZE }}>
+                {TRIAD.map((w, i) => (
+                  <p key={w} className="overflow-hidden pb-[0.04em]">
+                    <span data-tri2-word={i === 2 ? "lit" : "dim"} className="inline-block">
+                      {w}
+                    </span>
+                  </p>
+                ))}
               </div>
             </div>
 

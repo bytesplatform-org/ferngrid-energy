@@ -33,7 +33,8 @@ export function Callouts({ items, className }: { items: readonly Callout[]; clas
           )}
           <span
             className={cx(
-              "text-label absolute -translate-y-full rounded-sm bg-carbon/80 px-1.5 py-0.5 whitespace-nowrap text-paper max-md:px-1 max-md:text-[8px] max-md:tracking-[0.1em]",
+              // phones: may wrap, so two labels on one row can never run into each other
+              "text-label absolute -translate-y-full rounded-sm bg-carbon/80 px-1.5 py-0.5 whitespace-nowrap text-paper max-md:max-w-[46%] max-md:px-1 max-md:text-[8px] max-md:tracking-[0.1em] max-md:whitespace-normal",
               c.align === "right" && "-translate-x-full",
               c.plain && "whitespace-pre-line",
             )}

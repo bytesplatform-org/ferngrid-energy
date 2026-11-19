@@ -337,8 +337,12 @@ export function ExpertiseStory() {
             data-exp-inner
             className="absolute inset-0 flex flex-col gap-5 px-5 pt-[clamp(5rem,11svh,7.5rem)] pb-6 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10 lg:pb-10"
           >
-            {/* ---------------- Stage (left) ---------------- */}
-            <div className="relative mx-auto mb-8 aspect-square w-full max-w-[min(100%,34svh)] shrink-0 lg:col-span-6 lg:mb-0 lg:max-w-[min(100%,72svh)]">
+            {/* ---------------- Stage (left) ----------------
+                Phones (Revision 2): the copy keeps its natural height and the visual
+                takes whatever is left (padded so its labels never reach the heading
+                or the nav); its contents are sized to the box (cqw), not the screen. */}
+            <div className="relative flex min-h-0 flex-1 items-center justify-center pt-6 pb-9 lg:col-span-6 lg:block lg:flex-none lg:py-0">
+            <div className="relative aspect-square h-full max-h-[34svh] max-w-full [container-type:size] lg:mx-auto lg:h-auto lg:max-h-none lg:w-full lg:max-w-[min(100%,72svh)] lg:[container-type:normal]">
               {/* Beat 1: odometer + decade ruler */}
               <div
                 data-beat="0"
@@ -349,7 +353,7 @@ export function ExpertiseStory() {
                 </p>
                 <p
                   aria-label={ABOUT_FRAGMENTS.year}
-                  className="font-condensed mt-2 flex text-[clamp(4.5rem,13vw,12rem)] leading-none"
+                  className="font-condensed mt-2 flex text-[30cqw] leading-none lg:text-[clamp(4.5rem,13vw,12rem)]"
                 >
                   {/* the year: each digit rises from its own mask; the last in fern */}
                   {ABOUT_FRAGMENTS.year.split("").map((d, i, all) => (
@@ -370,7 +374,7 @@ export function ExpertiseStory() {
                 {/* a decade ruler: ten ticks, then one more ("more than a decade") */}
                 <div
                   aria-hidden
-                  className="mt-6 flex h-10 w-[80%] items-end justify-between border-b border-carbon/30"
+                  className="mt-[5cqw] flex h-[11cqw] w-[80%] items-end justify-between border-b border-carbon/30 lg:mt-6 lg:h-10"
                 >
                   {Array.from({ length: 11 }, (_, i) => (
                     <span
@@ -389,7 +393,7 @@ export function ExpertiseStory() {
                 </div>
                 <p
                   data-caption
-                  className="font-display mt-5 max-w-[24ch] text-center text-[clamp(1.1rem,1.8vw,1.6rem)] leading-tight"
+                  className="font-display mt-[4cqw] max-w-[24ch] text-center text-[max(0.8rem,7cqw)] leading-tight lg:mt-5 lg:text-[clamp(1.1rem,1.8vw,1.6rem)]"
                 >
                   {ABOUT_FRAGMENTS.decade}
                 </p>
@@ -474,7 +478,7 @@ export function ExpertiseStory() {
                     <p
                       key={label}
                       className={cx(
-                        "text-label absolute max-w-[14ch] text-carbon",
+                        "text-label absolute max-w-[14ch] text-carbon max-lg:max-w-[11ch] max-lg:text-[8px] max-lg:tracking-[0.12em]",
                         s.align === "center" &&
                           "-translate-x-1/2 -translate-y-full text-center",
                         s.align === "left" && "text-left",
@@ -557,11 +561,13 @@ export function ExpertiseStory() {
               </div>
             </div>
 
+            </div>
+
             {/* ---------------- Copy (right) ---------------- */}
-            <div className="flex min-h-0 flex-col justify-center lg:col-span-5 lg:col-start-8">
+            <div className="flex shrink-0 flex-col justify-center lg:col-span-5 lg:col-start-8 lg:min-h-0 lg:shrink">
               <h2
                 id="expertise-title"
-                className="font-condensed text-[clamp(2rem,4.2vw,4.6rem)] leading-[0.9] uppercase"
+                className="font-condensed text-[clamp(1.75rem,4.2vw,4.6rem)] leading-[0.9] uppercase"
               >
                 {heading.split(" ").map((w, i) => (
                   <Fragment key={i}>
@@ -577,11 +583,11 @@ export function ExpertiseStory() {
               <span
                 data-head-rule
                 aria-hidden
-                className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6"
+                className="mt-3 block h-[2px] w-20 origin-left bg-fern md:mt-6"
               />
 
               {/* All three paragraphs share one cell; the active one rises in. */}
-              <div className="mt-5 grid text-[14px] leading-relaxed text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)]">
+              <div className="mt-3 grid text-[12.5px] leading-[1.55] text-carbon/80 md:mt-7 md:leading-relaxed md:text-[clamp(0.95rem,1.15vw,1.15rem)]">
                 <p data-para className="col-start-1 row-start-1">
                   {paragraphs[0]}
                 </p>

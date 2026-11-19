@@ -299,7 +299,7 @@ export function FestEraStory() {
             className="absolute inset-0 flex origin-[50%_30%] flex-col gap-4 px-5 pt-[clamp(5rem,11svh,7.5rem)] pb-6 will-change-transform md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10 lg:pb-10"
           >
             {/* Copy (left) */}
-            <div className="flex flex-col justify-center lg:col-span-5">
+            <div className="flex shrink-0 flex-col justify-center lg:col-span-5">
               <h2
                 id="festera-title"
                 className="font-condensed text-[clamp(1.9rem,3.8vw,4.2rem)] leading-[0.92] uppercase"
@@ -328,7 +328,7 @@ export function FestEraStory() {
               />
               <p
                 data-para
-                className="mt-5 text-[14px] leading-relaxed text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)]"
+                className="mt-4 text-[13px] leading-[1.55] text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)] md:leading-relaxed"
               >
                 {SENTENCES.map((t, i) => (
                   <Fragment key={i}>
@@ -337,7 +337,7 @@ export function FestEraStory() {
                   </Fragment>
                 ))}
               </p>
-              <div data-cta className="mt-6 md:mt-8">
+              <div data-cta className="mt-8 hidden lg:block">
                 <PillLink
                   href={ROUTES.fest}
                   tone="carbon"
@@ -349,8 +349,17 @@ export function FestEraStory() {
               </div>
             </div>
 
-            {/* Stage (right) */}
-            <div className="relative mx-auto aspect-square w-full max-w-[min(100%,30svh)] shrink-0 lg:col-span-6 lg:col-start-7 lg:max-w-[min(100%,72svh)]">
+            {/* Stage (right). Phones (Revision 2): takes the height left under the copy
+                (padded for the chips that sit outside the ring), so the FEST core and
+                the outputs are never cut off at the bottom of the screen. */}
+            <div className="relative flex min-h-0 flex-1 items-center justify-end pt-6 pb-2 md:justify-center lg:col-span-6 lg:col-start-7 lg:block lg:flex-none lg:py-0">
+            {/* Phones: the button sits beside the visual (top left, clear of the chips) instead of under the copy. */}
+            <div data-cta className="absolute top-6 left-0 z-10 lg:hidden">
+              <PillLink href={ROUTES.fest} tone="carbon" size="md" icon="right">
+                Explore FEST
+              </PillLink>
+            </div>
+            <div className="relative aspect-square h-full max-h-[34svh] max-w-full lg:mx-auto lg:h-auto lg:max-h-none lg:w-full lg:max-w-[min(100%,72svh)]">
               <div data-core-wrap className="absolute inset-0">
                 {/* orbit ring + factor chips */}
                 <div
@@ -371,7 +380,7 @@ export function FestEraStory() {
                       >
                         <span
                           data-chip
-                          className="font-display block w-max max-w-[6.75rem] rounded-[12px] border border-carbon/15 bg-white px-2.5 py-1.5 text-center text-[0.7rem] leading-tight text-balance text-carbon shadow-[0_12px_30px_-16px_rgb(18_22_10/0.5)] md:max-w-[13rem] md:rounded-[14px] md:px-3.5 md:py-2 md:text-[clamp(0.78rem,1vw,0.95rem)]"
+                          className="font-display block w-max max-w-[5.5rem] rounded-[10px] border border-carbon/15 bg-white px-2 py-1 text-center text-[0.62rem] leading-tight text-balance text-carbon shadow-[0_12px_30px_-16px_rgb(18_22_10/0.5)] md:max-w-[13rem] md:rounded-[14px] md:px-3.5 md:py-2 md:text-[clamp(0.78rem,1vw,0.95rem)]"
                         >
                           {f}
                         </span>
@@ -400,7 +409,7 @@ export function FestEraStory() {
               <div className="absolute inset-x-0 bottom-[4%]">
                 <p
                   data-out="0"
-                  className="text-label mb-3 text-center text-muted"
+                  className="text-label mb-3 text-center whitespace-nowrap text-muted max-lg:mb-1.5 max-lg:flex max-lg:justify-end max-lg:text-[8px] md:max-lg:justify-center"
                 >
                   {NERC_FRAGMENTS.dispatches}
                 </p>
@@ -426,6 +435,7 @@ export function FestEraStory() {
                   {NERC_FRAGMENTS.emergencies}
                 </p>
               </div>
+            </div>
             </div>
           </div>
         </div>

@@ -197,8 +197,9 @@ export function OurSoftware() {
       id="our-software"
       aria-labelledby="our-software-title"
       className={cx(
-        "surface-light arc-prev relative bg-paper",
-        story ? "h-svh overflow-hidden" : "px-5 pt-24 md:px-10 md:pt-36",
+        "arc-prev relative",
+        // Story: dark, continuing straight on from the Software/Services/Training triad.
+        story ? "surface-dark h-svh overflow-hidden bg-carbon-deep" : "surface-light bg-paper px-5 pt-24 md:px-10 md:pt-36",
       )}
     >
       {/* Inner wrapper: the next section's parallax moves this, never the pinned section. */}
@@ -256,7 +257,7 @@ export function OurSoftware() {
                 className={cx(
                   "font-condensed uppercase",
                   story
-                    ? "col-start-1 row-start-1 text-[clamp(3.5rem,13vw,15rem)] leading-[0.86] text-carbon"
+                    ? "col-start-1 row-start-1 text-[clamp(3.5rem,13vw,15rem)] leading-[0.86] text-paper"
                     : "text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.9]",
                 )}
               >
@@ -279,7 +280,7 @@ export function OurSoftware() {
                 className={cx(
                   "font-condensed uppercase",
                   story
-                    ? "col-start-1 row-start-1 text-[clamp(2.4rem,8.6vw,10rem)] leading-[0.88] text-carbon"
+                    ? "col-start-1 row-start-1 text-[clamp(2.4rem,8.6vw,10rem)] leading-[0.88] text-paper"
                     : "text-condensed-xl mt-6 lg:text-[clamp(3rem,6vw,7rem)]",
                 )}
               >

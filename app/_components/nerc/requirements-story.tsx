@@ -88,7 +88,8 @@ export function RequirementsStory() {
         invalidateOnRefresh: true,
       });
 
-      const wide = window.matchMedia("(min-width: 1024px)").matches;
+      // 2×2 tree at every width since Revision 2 (the single-column rail no longer fit phones).
+      const wide = true;
       const conts = q("[data-cont]") as HTMLElement[];
       const lineIn = { duration: 0.12, ease: "power1.inOut" };
       const cardIn = (els: Element[], at: number) =>
@@ -196,7 +197,7 @@ export function RequirementsStory() {
               <span data-head-rule aria-hidden className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6" />
               <p
                 data-para
-                className="mt-5 text-[14px] leading-relaxed text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)]"
+                className="mt-4 text-[13px] leading-[1.55] text-carbon/80 md:mt-7 md:leading-relaxed [@media(max-height:620px)]:text-[12px] md:text-[clamp(0.95rem,1.15vw,1.15rem)]"
               >
                 {eeaBefore}
                 <span
@@ -212,7 +213,9 @@ export function RequirementsStory() {
             {/* ---------------- Scenario tree (right) ---------------- */}
             <div className="flex min-h-0 flex-1 flex-col justify-center lg:col-span-7 lg:col-start-6 lg:h-[72svh] lg:flex-none">
               {/* Base Scenario */}
-              <div className="flex justify-start lg:justify-center">
+              {/* Phones (Revision 2): a centred 2×2 tree like desktop, so the whole
+                  section fits one screen without running under the copy. */}
+              <div className="flex justify-center">
                 <div
                   data-base
                   className="w-[min(100%,18rem)] rounded-[18px] bg-carbon p-3 text-center text-paper shadow-[0_0_0_6px_rgb(135_169_107/0.25)] md:p-5 lg:w-[min(46%,17rem)]"
@@ -230,42 +233,42 @@ export function RequirementsStory() {
                 <span
                   aria-hidden
                   data-wire-y="stem"
-                  className="ml-3 block h-[clamp(1.5rem,4svh,2.75rem)] w-px origin-top bg-carbon/35 lg:ml-0"
+                  className="mx-auto block h-[clamp(1.75rem,4svh,2.75rem)] w-px origin-top bg-carbon/35"
                 />
-                <p data-cont-label className="text-label mb-1 ml-4 text-muted lg:hidden">
+                <p data-cont-label className="text-label mb-1 ml-4 hidden text-muted">
                   {NERC_FRAGMENTS.contingencies}
                 </p>
               </div>
               {/* Wide: a 2×2 grid; the spine runs down the gap between the columns (from
                   the stem to the middle of the last row) and branches to each box. */}
-              <div className="relative w-full [--gx:clamp(3rem,6vw,6rem)] [--gy:1.25rem] lg:mx-auto lg:max-w-[42rem]">
+              <div className="relative w-full [--gx:clamp(1.5rem,6vw,6rem)] [--gy:0.75rem] lg:mx-auto lg:max-w-[42rem] lg:[--gy:1.25rem]">
                 {/* rows are equal height, so a row's middle sits (100% - gap) / 4 from its edge */}
                 <span
                   aria-hidden
                   data-wire-y="spine-0"
-                  className="absolute top-0 left-1/2 hidden w-px origin-top bg-carbon/35 lg:block"
+                  className="absolute top-0 left-1/2 block w-px origin-top bg-carbon/35"
                   style={{ height: "calc((100% - var(--gy)) / 4)" }}
                 />
                 <span
                   aria-hidden
                   data-wire-y="spine-1"
-                  className="absolute left-1/2 hidden w-px origin-top bg-carbon/35 lg:block"
+                  className="absolute left-1/2 block w-px origin-top bg-carbon/35"
                   style={{ top: "calc((100% - var(--gy)) / 4)", bottom: "calc((100% - var(--gy)) / 4)" }}
                 />
                 <p
                   data-cont-label
-                  className="text-label absolute bottom-full left-0 mb-3 hidden text-muted lg:block"
+                  className="text-label absolute bottom-full left-0 mb-2 block text-muted lg:mb-3"
                 >
                   {NERC_FRAGMENTS.contingencies}
                 </p>
-                <ul className="grid gap-2.5 pl-8 lg:auto-rows-fr lg:grid-cols-2 lg:gap-x-[var(--gx)] lg:gap-y-[var(--gy)] lg:pl-0">
+                <ul className="grid auto-rows-fr grid-cols-2 gap-x-[var(--gx)] gap-y-[var(--gy)]">
                   {stressScenarios.map((s, i) => (
                     <li key={s} className="group relative">
                       {/* Narrow: this box's stretch of the rail (to its middle for the last) */}
                       <span
                         aria-hidden
                         data-wire-y="rail"
-                        className="absolute top-[-0.625rem] bottom-0 -left-5 block w-px origin-top bg-carbon/35 group-first:top-0 group-last:bottom-1/2 lg:hidden"
+                        className="absolute top-[-0.625rem] bottom-0 -left-5 hidden w-px origin-top bg-carbon/35 group-first:top-0 group-last:bottom-1/2"
                       />
                       {/* Wide: a branch from the spine (in the column gap) to this box */}
                       <span
@@ -273,20 +276,20 @@ export function RequirementsStory() {
                         data-wire-x={i % 2 === 0 ? "branch-l" : "branch-r"}
                         data-row={Math.floor(i / 2)}
                         className={cx(
-                          "absolute top-1/2 hidden h-px w-[calc(var(--gx)/2)] bg-carbon/35 lg:block",
+                          "absolute top-1/2 block h-px w-[calc(var(--gx)/2)] bg-carbon/35",
                           i % 2 === 0 ? "left-full origin-right" : "right-full origin-left",
                         )}
                       />
                       <span
                         aria-hidden
                         data-wire-x="branch"
-                        className="absolute top-1/2 -left-5 block h-px w-5 origin-left bg-carbon/35 lg:hidden"
+                        className="absolute top-1/2 -left-5 hidden h-px w-5 origin-left bg-carbon/35"
                       />
                       <div
                         data-cont
                         className="h-full rounded-[14px] border border-carbon/15 bg-paper p-2.5 shadow-[0_18px_36px_-24px_rgb(18_22_10/0.5)] md:p-4 lg:p-5"
                       >
-                        <p className="font-display text-[clamp(0.85rem,1.15vw,1.3rem)] leading-tight">{s}</p>
+                        <p className="font-display text-[12.5px] leading-tight md:text-[clamp(0.85rem,1.15vw,1.3rem)]">{s}</p>
                         {/* pressure gauge: fills as the stress is applied (no values) */}
                         <span aria-hidden className="mt-2 block h-1 w-full overflow-hidden rounded-full bg-carbon/10 md:mt-3">
                           <span data-pressure className="block h-full w-full origin-left rounded-full bg-fern" />
