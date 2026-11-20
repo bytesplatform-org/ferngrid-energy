@@ -94,7 +94,7 @@ function lightUnder(header: HTMLElement) {
 
 function Wordmark({ dark }: { dark: boolean }) {
   return (
-    <span className="flex items-center gap-3">
+    <span className="flex items-center gap-3 max-[380px]:gap-2">
       <span className="relative block size-9">
         <Image
           src={logoMarkPaper}
@@ -117,7 +117,8 @@ function Wordmark({ dark }: { dark: boolean }) {
           )}
         />
       </span>
-      <span className="font-sans hidden text-sm leading-none font-medium tracking-[0.28em] uppercase sm:block">
+      {/* Shown on phones too (beside the Menu button); a touch smaller there so it fits. */}
+      <span className="font-sans block text-xs leading-none font-medium tracking-[0.2em] whitespace-nowrap uppercase max-[380px]:tracking-[0.1em] sm:text-sm sm:tracking-[0.28em]">
         FernGrid Energy
       </span>
     </span>
@@ -275,7 +276,8 @@ export function Nav() {
               tone="fern"
               size="sm"
               icon="up-right"
-              className="h-10 px-4"
+              // hidden on phones (client request): the wordmark text takes its place
+              className="h-10 px-4 max-md:hidden"
             >
               {HOME.hero.buttons.contact.label}
             </PillLink>

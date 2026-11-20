@@ -106,7 +106,8 @@ export function Hero() {
       {/* Bottom bar */}
       <div data-hero-bar className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-4 px-5 pb-6 md:px-10 md:pb-10">
         <div className="flex flex-col items-start gap-1 md:flex-row md:items-center md:gap-6">
-          <span data-hero-cta className="inline-block">
+          {/* Hidden on phones (client request); shown from md up. */}
+          <span data-hero-cta className="hidden md:inline-block">
             <PillLink href={hero.buttons.learn.href} tone="paper" icon="up-right">
               {hero.buttons.learn.label}
             </PillLink>
