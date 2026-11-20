@@ -169,7 +169,7 @@ export function RequirementsStory() {
       style={story ? { paddingTop: "var(--arc-depth)", paddingBottom: "var(--arc-depth)" } : undefined}
     >
       {/* No parallax: the ERA scene above is pinned. */}
-      <ArcSurface tone="paper" />
+      <ArcSurface tone="paper" parallax="[data-era-inner]" />
 
       {!story ? (
         <StaticLayout />

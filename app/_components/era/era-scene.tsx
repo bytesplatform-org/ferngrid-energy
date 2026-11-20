@@ -224,92 +224,95 @@ export function EraScene() {
       aria-labelledby="era-title"
       className="surface-dark arc-prev relative z-10 h-svh overflow-hidden bg-carbon"
     >
-      {/* 1. Heading, huge and centred */}
-      <div className="pointer-events-none absolute inset-0 grid place-items-center px-5 text-center">
-        <h2
-          id="era-title"
-          className="font-condensed max-w-[12ch] text-[clamp(3.25rem,10.5vw,12rem)] leading-[0.88] uppercase"
+      {/* Inner wrapper: the next section's parallax moves this, never the pinned section. */}
+      <div data-era-inner className="absolute inset-0">
+        {/* 1. Heading, huge and centred */}
+        <div className="pointer-events-none absolute inset-0 grid place-items-center px-5 text-center">
+          <h2
+            id="era-title"
+            className="font-condensed max-w-[12ch] text-[clamp(3.25rem,10.5vw,12rem)] leading-[0.88] uppercase"
+          >
+            <MaskedWords text={NERC.requirements.heading} attr="data-heading-word" />
+          </h2>
+        </div>
+
+        {/* Kicker: the same heading, parked small top-left for context */}
+        <div aria-hidden data-kicker className="absolute top-24 left-5 z-10 md:top-28 md:left-10">
+          <p className="font-condensed text-[clamp(1.25rem,1.8vw,1.75rem)] leading-none uppercase">
+            {NERC.requirements.heading}
+          </p>
+          <span className="mt-3 block h-[2px] w-14 bg-fern" />
+        </div>
+
+        {/* 2. Intro, revealed word by word */}
+        <div
+          data-intro
+          className="pointer-events-none absolute inset-x-5 top-1/2 -translate-y-1/2 md:inset-x-10 lg:right-auto lg:w-[60vw]"
         >
-          <MaskedWords text={NERC.requirements.heading} attr="data-heading-word" />
-        </h2>
-      </div>
+          <p className="font-display text-[clamp(1.6rem,3.4vw,3.6rem)] leading-[1.12] text-paper">
+            {words(NERC.requirements.intro).map((w, i) => (
+              <Fragment key={i}>
+                {i > 0 && " "}
+                <span data-intro-word>{w}</span>
+              </Fragment>
+            ))}
+          </p>
+        </div>
 
-      {/* Kicker: the same heading, parked small top-left for context */}
-      <div aria-hidden data-kicker className="absolute top-24 left-5 z-10 md:top-28 md:left-10">
-        <p className="font-condensed text-[clamp(1.25rem,1.8vw,1.75rem)] leading-none uppercase">
-          {NERC.requirements.heading}
-        </p>
-        <span className="mt-3 block h-[2px] w-14 bg-fern" />
-      </div>
-
-      {/* 2. Intro, revealed word by word */}
-      <div
-        data-intro
-        className="pointer-events-none absolute inset-x-5 top-1/2 -translate-y-1/2 md:inset-x-10 lg:right-auto lg:w-[60vw]"
-      >
-        <p className="font-display text-[clamp(1.6rem,3.4vw,3.6rem)] leading-[1.12] text-paper">
-          {words(NERC.requirements.intro).map((w, i) => (
-            <Fragment key={i}>
-              {i > 0 && " "}
-              <span data-intro-word>{w}</span>
-            </Fragment>
-          ))}
-        </p>
-      </div>
-
-      {/* 3. Requirements: a horizontal track of full-width panels */}
-      <div data-track className="absolute inset-y-0 left-0 flex" style={{ width: `${STEPS.length * 100}vw` }}>
-        {STEPS.map((title, i) => (
-          <div key={title} className="relative h-full w-screen">
-            <div className="absolute inset-x-5 bottom-[16%] md:inset-x-10 lg:top-1/2 lg:right-auto lg:bottom-auto lg:w-[42vw] lg:-translate-y-[30%]">
-              <h3 className="font-display text-[clamp(2.5rem,8vw,9.5rem)] leading-[0.92]">{title}</h3>
-              <p className="mt-3 max-w-[34ch] text-base leading-relaxed text-paper/80 md:mt-5 md:text-xl">{reqs[i]}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Illustration: one point cloud that morphs with scroll */}
-      {/* Phones (Revision 2): starts below the kicker and is sized from the height
-          left over, so its labels never reach the kicker or the step text. */}
-      <div className="pointer-events-none absolute top-[9.5rem] left-1/2 aspect-square w-[min(74vw,calc(100svh-440px))] -translate-x-1/2 lg:top-1/2 lg:right-10 lg:left-auto lg:w-[min(40vw,62vh)] lg:translate-x-0 lg:-translate-y-[46%]">
-        <div data-visual className="absolute inset-0">
-          <PointCloud ref={cloudRef} mode="morph" initial={0} className="absolute inset-0 size-full" />
-          {SHAPES.map((shape) => (
-            <div key={shape.key} data-callouts className="absolute inset-0">
-              <Callouts items={shape.callouts} />
+        {/* 3. Requirements: a horizontal track of full-width panels */}
+        <div data-track className="absolute inset-y-0 left-0 flex" style={{ width: `${STEPS.length * 100}vw` }}>
+          {STEPS.map((title, i) => (
+            <div key={title} className="relative h-full w-screen">
+              <div className="absolute inset-x-5 bottom-[16%] md:inset-x-10 lg:top-1/2 lg:right-auto lg:bottom-auto lg:w-[42vw] lg:-translate-y-[30%]">
+                <h3 className="font-display text-[clamp(2.5rem,8vw,9.5rem)] leading-[0.92]">{title}</h3>
+                <p className="mt-3 max-w-[34ch] text-base leading-relaxed text-paper/80 md:mt-5 md:text-xl">{reqs[i]}</p>
+              </div>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Step row: words only, current one underlined; click to jump */}
-      <nav aria-label="BAL-007-1 requirements" className="absolute inset-x-0 bottom-6 z-20 flex justify-center px-5 md:bottom-8">
-        <ul data-steps className="flex gap-5 md:gap-10">
-          {STEPS.map((title, i) => (
-            <li key={title}>
-              <button
-                type="button"
-                data-step
-                onClick={() => jumpRef.current(i)}
-                className={cx(
-                  "relative py-2 text-sm font-medium text-paper/50 transition-colors duration-300 hover:text-paper md:text-base",
-                  "after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:origin-left after:scale-x-0 after:bg-fern after:transition-transform after:duration-500",
-                  "aria-[current=step]:text-paper aria-[current=step]:after:scale-x-100",
-                )}
-              >
-                {title}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+        {/* Illustration: one point cloud that morphs with scroll */}
+        {/* Phones (Revision 2): starts below the kicker and is sized from the height
+            left over, so its labels never reach the kicker or the step text. */}
+        <div className="pointer-events-none absolute top-[9.5rem] left-1/2 aspect-square w-[min(74vw,calc(100svh-440px))] -translate-x-1/2 lg:top-1/2 lg:right-10 lg:left-auto lg:w-[min(40vw,62vh)] lg:translate-x-0 lg:-translate-y-[46%]">
+          <div data-visual className="absolute inset-0">
+            <PointCloud ref={cloudRef} mode="morph" initial={0} className="absolute inset-0 size-full" />
+            {SHAPES.map((shape) => (
+              <div key={shape.key} data-callouts className="absolute inset-0">
+                <Callouts items={shape.callouts} />
+              </div>
+            ))}
+          </div>
+        </div>
 
-      {/* 4. Closing line */}
-      <div className="pointer-events-none absolute inset-0 grid place-items-center px-5 text-center md:px-10">
-        <p className="font-display max-w-[20ch] text-[clamp(2.25rem,6vw,7rem)] leading-[1]">
-          <MaskedWords text={FRAGMENTS.eeaForecast} attr="data-closing-word" />
-        </p>
+        {/* Step row: words only, current one underlined; click to jump */}
+        <nav aria-label="BAL-007-1 requirements" className="absolute inset-x-0 bottom-6 z-20 flex justify-center px-5 md:bottom-8">
+          <ul data-steps className="flex gap-5 md:gap-10">
+            {STEPS.map((title, i) => (
+              <li key={title}>
+                <button
+                  type="button"
+                  data-step
+                  onClick={() => jumpRef.current(i)}
+                  className={cx(
+                    "relative py-2 text-sm font-medium text-paper/50 transition-colors duration-300 hover:text-paper md:text-base",
+                    "after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:origin-left after:scale-x-0 after:bg-fern after:transition-transform after:duration-500",
+                    "aria-[current=step]:text-paper aria-[current=step]:after:scale-x-100",
+                  )}
+                >
+                  {title}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        {/* 4. Closing line */}
+        <div className="pointer-events-none absolute inset-0 grid place-items-center px-5 text-center md:px-10">
+          <p className="font-display max-w-[20ch] text-[clamp(2.25rem,6vw,7rem)] leading-[1]">
+            <MaskedWords text={FRAGMENTS.eeaForecast} attr="data-closing-word" />
+          </p>
+        </div>
       </div>
     </section>
   );
