@@ -60,7 +60,7 @@ export const HOME = {
 
   ourServices: {
     title: "Our Services",
-    body: "Leverage FernGrid Energy’s technical expertise to confidently run Near Term ERAs required by NERC’s BAL-007-1 standard. From developing study assumptions and executing FEST studies, to analyzing and validating ERA results, FernGrid Energy provides the support you need to streamline your fuel security assessments and meet evolving reliability requirements.",
+    body: "Leverage FernGrid Energy’s technical expertise to confidently run Near Term ERAs required by NERC’s BAL-007-1 standard. From developing study assumptions and executing FEST studies, to analyzing and validating Near Term ERA results, FernGrid Energy provides the support you need to streamline your fuel security assessments and meet evolving reliability requirements.",
   },
 
   trainingServices: {
@@ -161,7 +161,7 @@ export const FRAGMENTS = {
   serviceSteps: [
     "Developing study assumptions",
     "Executing FEST studies",
-    "Analyzing ERA results",
+    "Analyzing Near Term ERA results",
   ],
   /** Offerings lifted from the Training Services paragraph. */
   trainingOfferings: ["FEST documentation", "On-demand demonstration videos", "General Power Systems Training"],
