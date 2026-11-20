@@ -268,7 +268,7 @@ export function TrustStory() {
       ) : (
         <div
           data-stage
-          className="relative h-svh overflow-hidden bg-carbon-deep"
+          className="pin-screen relative overflow-hidden bg-carbon-deep"
         >
           {/* Inner wrapper: the closing section pushes this back as it slides over. */}
           <div

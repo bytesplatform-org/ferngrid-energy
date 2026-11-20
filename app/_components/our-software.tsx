@@ -220,7 +220,7 @@ export function OurSoftware() {
       // Pulled up one screen so it slides over the last screen of the triad's pin
       // (z-10 like the triad, later in the DOM, so it paints on top of it; the next
       // section, also z-10, still paints over this one).
-      className="arc-prev surface-dark relative z-10 h-svh overflow-hidden bg-carbon-deep"
+      className="arc-prev surface-dark pin-screen relative z-10 overflow-hidden bg-carbon-deep"
       style={{ marginTop: `-${COVER_VH * 100}svh` }}
     >
       {/* Inner wrapper: the next section's parallax moves this, never the pinned section. */}

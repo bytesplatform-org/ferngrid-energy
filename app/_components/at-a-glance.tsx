@@ -227,7 +227,7 @@ export function AtAGlance() {
     >
       <ArcSurface tone="paper" parallax="[data-software-inner]" />
 
-      <div data-stage className={cx("relative overflow-x-clip", story ? "h-svh" : "h-[max(600px,82svh)]")}>
+      <div data-stage className={cx("relative overflow-x-clip", story ? "pin-screen" : "h-[max(600px,82svh)]")}>
         {/* Inner wrapper: the next section's parallax moves this, never the pinned stage. */}
         <div ref={innerRef} data-glance-inner className="absolute inset-0">
           {/* Heading for screen readers only; the line speaks for itself. */}

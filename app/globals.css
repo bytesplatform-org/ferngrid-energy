@@ -164,6 +164,21 @@ html.lenis body {
   padding-bottom: calc(var(--arc-depth) + 5rem);
 }
 
+/* A pinned, screen-sized scene. It follows the visible screen height as the mobile
+   browser's address bar hides and shows. ScrollTrigger writes the height it measured
+   inline (px) and, on touch screens, deliberately doesn't re-measure when only the
+   bar moves, so a scene sized for "bar showing" left a strip below it once the bar
+   hid. !important beats that inline height; the pin itself stays put. */
+.pin-screen {
+  height: 100svh;
+}
+@supports (height: 100dvh) {
+  .pin-screen {
+    height: 100dvh !important;
+    max-height: none !important;
+  }
+}
+
 /* Page loader: scroll stays locked while it covers the page. If scripts never
    run, the failsafe fades the loader out (and the head script unlocks scroll). */
 html.is-loading {

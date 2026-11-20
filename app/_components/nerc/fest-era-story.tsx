@@ -292,7 +292,7 @@ export function FestEraStory() {
       {!story ? (
         <StaticLayout />
       ) : (
-        <div data-stage className="relative h-svh overflow-hidden">
+        <div data-stage className="pin-screen relative overflow-hidden">
           {/* Inner wrapper: the closing section pushes this back as it slides over. */}
           <div
             data-fe-inner

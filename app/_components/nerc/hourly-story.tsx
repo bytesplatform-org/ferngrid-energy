@@ -332,7 +332,7 @@ export function HourlyStory() {
       {!story ? (
         <StaticLayout />
       ) : (
-        <div data-stage className="relative h-svh overflow-x-clip">
+        <div data-stage className="pin-screen relative overflow-x-clip">
           <div data-hr-inner className="absolute inset-0">
             {/* 0. The question + paragraph */}
             <div

@@ -362,7 +362,7 @@ export function PackagesStory() {
       {!story ? (
         <StaticLayout />
       ) : (
-        <div data-stage className="relative h-svh overflow-x-clip">
+        <div data-stage className="pin-screen relative overflow-x-clip">
           <div
             data-pk-inner
             className="absolute inset-0 flex origin-[50%_30%] flex-col items-center justify-start gap-2.5 px-5 md:justify-center md:gap-[2.5svh] pt-[clamp(4.5rem,10svh,6.5rem)] pb-6 will-change-transform md:px-10"

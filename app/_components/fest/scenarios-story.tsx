@@ -176,7 +176,7 @@ export function ScenariosStory() {
       {!story ? (
         <StaticLayout />
       ) : (
-        <div data-stage className="relative h-svh overflow-x-clip">
+        <div data-stage className="pin-screen relative overflow-x-clip">
           {/* Inner wrapper: the next section's parallax moves this, never the pinned stage. */}
           <div
             data-fs-inner

@@ -119,7 +119,7 @@ export function TriadIntro() {
         data-stage
         className={cx(
           "relative flex flex-col items-center justify-center bg-carbon-deep px-5 text-center",
-          story ? "h-svh overflow-hidden pt-12" : "py-10",
+          story ? "pin-screen overflow-hidden pt-12" : "py-10",
         )}
       >
         <div aria-hidden className="font-condensed uppercase leading-[0.88]" style={{ fontSize: TRIAD_FONT }}>

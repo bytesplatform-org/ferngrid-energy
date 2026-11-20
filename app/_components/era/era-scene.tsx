@@ -222,7 +222,7 @@ export function EraScene() {
     <section
       ref={ref}
       aria-labelledby="era-title"
-      className="surface-dark arc-prev relative z-10 h-svh overflow-hidden bg-carbon"
+      className="surface-dark arc-prev pin-screen relative z-10 overflow-hidden bg-carbon"
     >
       {/* Inner wrapper: the next section's parallax moves this, never the pinned section. */}
       <div data-era-inner className="absolute inset-0">

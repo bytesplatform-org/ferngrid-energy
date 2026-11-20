@@ -465,7 +465,7 @@ export function ServicesTraining() {
 
           <div
             data-stage
-            className="relative h-svh overflow-hidden bg-carbon-deep"
+            className="pin-screen relative overflow-hidden bg-carbon-deep"
           >
             {/* Inner wrapper: the footer pushes this back as it slides over. */}
             <div
