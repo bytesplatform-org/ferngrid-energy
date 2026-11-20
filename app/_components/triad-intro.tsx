@@ -5,8 +5,12 @@ import { ArcSurface } from "./motion/arc-surface";
 import { gsap, ScrollTrigger, useGSAP, MQ } from "./motion/gsap";
 import { cx } from "./ui/primitives";
 
-/** Scroll distance (viewport heights) the triad stays pinned for. */
-const PIN_VH = 1.5;
+/**
+ * Scroll distance (viewport heights) the triad stays pinned for. The last screen
+ * of it is Our Software's photo wiping up over the triad (OurSoftware COVER_VH),
+ * so the words must finish dimming well before that.
+ */
+const PIN_VH = 2;
 /** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
 const APPROACH_VH = 0.8;
 

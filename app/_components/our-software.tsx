@@ -6,21 +6,17 @@ import { FRAGMENTS, HOME, ROUTES } from "@/lib/content";
 import { gsap, ScrollTrigger, useGSAP, MQ } from "./motion/gsap";
 import { MonoLink, PillLink, cx } from "./ui/primitives";
 import softwareImg from "@/public/images/our-software.webp";
-import gridImg from "@/public/images/fest-1.webp";
 
-/** Scroll distance the story stays pinned for. */
-/** Scroll distance (viewport heights) the story stays pinned for. */
-const PIN_VH = 3.8;
-/** Scroll distance (viewport heights) of the approach, from "top 80%" to the pin. */
-const APPROACH_VH = 0.8;
-// The first 0.27 of timeline time is the approach (before the pin); the
-// positions below already include that offset.
 /**
- * Hold on the finished scene (timeline time) after the CTA lands. The next
- * section's arc rises over the last --arc-depth of the pin, so everything must
- * be complete well before then.
+ * Scroll distance (viewport heights) the panel takes to wipe up over the triad.
+ * The section overlaps the end of the triad's pin by exactly this much (see
+ * TriadIntro's PIN_VH), so the triad holds still underneath while it covers it.
  */
-const HOLD = 0.34;
+const COVER_VH = 1;
+/** Scroll distance (viewport heights) the story stays pinned for once it has covered the screen. */
+const PIN_VH = 2;
+/** How far (fraction of the screen) the photo travels while the panel wipes up (the Training panel uses 18%). */
+const MEDIA_DRIFT = 0.18;
 
 /** Phrases in the (verbatim) paragraph that light up in fern. */
 const HIGHLIGHTS = [
@@ -50,14 +46,59 @@ function splitWords(text: string) {
   return words;
 }
 
+/** Static editorial layout (no JS / reduced motion). */
+function StaticLayout() {
+  const { ourSoftware } = HOME;
+  // The software's name (verbatim from the paragraph), on two lines.
+  const nameWords = FRAGMENTS.festName.split(" ");
+  const titleLines = [nameWords.slice(0, 3), nameWords.slice(3)];
+  return (
+    <div className="mx-auto grid max-w-[1600px] gap-14 lg:grid-cols-12 lg:gap-10">
+      <figure className="relative aspect-[3/4] overflow-hidden bg-paper-warm lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:mt-28">
+        <Image
+          src={softwareImg}
+          alt="Greyscale desk at dusk: a monitor showing source code beside a desk lamp, laptop and keyboard"
+          fill
+          sizes="(min-width: 1024px) 40vw, 100vw"
+          placeholder="blur"
+          className="photo object-cover"
+        />
+        <figcaption className="text-label absolute top-4 left-4 z-10 rounded-full bg-paper px-3 py-1.5 text-carbon">
+          FEST
+        </figcaption>
+      </figure>
+
+      <div className="lg:col-span-7 lg:row-start-1 lg:pr-6">
+        <h2 id="our-software-title" className="font-condensed text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.9] uppercase">
+          {ourSoftware.title}
+        </h2>
+        <p className="font-condensed text-condensed-xl mt-6 uppercase lg:text-[clamp(3rem,6vw,7rem)]">
+          {titleLines.map((line, l) => (
+            <Fragment key={l}>
+              {l > 0 && " "}
+              <span className="block">{line.join(" ")}</span>
+            </Fragment>
+          ))}
+        </p>
+      </div>
+
+      <div className="max-w-[60ch] lg:col-span-7 lg:row-start-2">
+        <p className="text-base leading-relaxed text-muted md:text-lg">{ourSoftware.body}</p>
+        <MonoLink href={ROUTES.fest} className="mt-8 text-carbon">
+          {HOME.closing.buttons.explore.label}
+        </MonoLink>
+      </div>
+    </div>
+  );
+}
+
 /**
- * 01 / Our Software — a pinned, scroll-scrubbed story (Trident-style):
- * 1. "OUR SOFTWARE" rises in, huge; then rolls out as its name — "FUEL AND ENERGY
- *    SECURITY TOOL" — rolls in.
- * 2. Two photos fly in from opposite corners across the title (grid → software).
- * 3. They converge; the software photo expands to fill the screen.
- * 4. The paragraph brightens word by word, key terms in fern.
- * 5. The CTA rises in; the pin releases.
+ * 01 / Our Software — enters the same way Training Services does:
+ * 1. With the triad (SOFTWARE lit) held on screen, the software photo wipes up
+ *    over it from the bottom, drifting up a little as it comes.
+ * 2. A giant SOFTWARE rises letter by letter along the bottom edge; the heading
+ *    follows, then the paragraph brightens word by word, key terms in fern.
+ * 3. The CTA rises in; the pin releases.
  * Static editorial layout without JS / under reduced motion.
  */
 export function OurSoftware() {
@@ -65,9 +106,6 @@ export function OurSoftware() {
   const ref = useRef<HTMLElement>(null);
   const [story, setStory] = useState(false);
   const words = splitWords(ourSoftware.body);
-  // The software's name (verbatim from the paragraph), on two lines.
-  const nameWords = FRAGMENTS.festName.split(" ");
-  const titleLines = [nameWords.slice(0, 3), nameWords.slice(3)];
 
   // Story layout whenever motion is allowed.
   useGSAP(() => {
@@ -83,286 +121,179 @@ export function OurSoftware() {
       const section = ref.current;
       if (!story || !section) return;
       const q = gsap.utils.selector(section);
-      const cardA = q("[data-card='a']")[0];
-      const cardB = q("[data-card='b']")[0];
-      const W = () => window.innerWidth;
       const H = () => window.innerHeight;
-      const cw = () => (W() < 768 ? W() * 0.7 : W() * 0.34);
-      const ch = () => cw() * 0.64;
 
-      // Cards start hidden and fully off-screen (past the corner by their own size).
-      gsap.set([cardA, cardB], { xPercent: -50, yPercent: -50, width: cw, height: ch, autoAlpha: 0 });
-      const offX = () => W() / 2 + cw() * 0.75 + 60;
-      const offY = () => H() / 2 + ch() * 0.75 + 60;
-
-      // Explicit starting states for every staggered target. A staggered fromTo
-      // only pre-renders its *first* target (the others haven't "started" yet at
-      // time 0), which left "SOFTWARE" / "APRIL 2027." visible on the first pass.
-      gsap.set(q("[data-heading-word]"), { yPercent: 115 });
-      gsap.set(q("[data-title-word]"), { yPercent: 115 });
+      gsap.set(q("[data-schar]"), { yPercent: 105 });
+      gsap.set(q("[data-sw-word]"), { yPercent: 110 });
+      gsap.set(q("[data-sw-rule]"), { scaleX: 0 });
+      gsap.set(q("[data-sw-para]"), { autoAlpha: 0 });
       gsap.set(q("[data-word]"), { opacity: 0.14 });
+      gsap.set(q("[data-cta]"), { autoAlpha: 0, y: 16 });
 
-      // The pin on its own, with no animation attached…
-      ScrollTrigger.create({
+      // 1. The wipe. The section scrolls up over the (still pinned) triad and its
+      // own edge is the wipe; the photo is held back against the scroll so it only
+      // drifts up MEDIA_DRIFT of the screen, as in the Training panel. Tied
+      // straight to the scroll (no smoothing) so the photo never slips against
+      // the section edge.
+      const wipe = gsap.fromTo(
+        q("[data-sw-media]"),
+        { y: () => -(1 - MEDIA_DRIFT) * H(), scale: 1.15 },
+        {
+          y: 0,
+          scale: 1,
+          ease: "none",
+          scrollTrigger: {
+            trigger: section,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
+
+      const pinST = ScrollTrigger.create({
         trigger: section,
         start: "top top",
-        end: () => `+=${window.innerHeight * PIN_VH}`,
+        end: () => `+=${H() * PIN_VH}`,
         pin: true,
         invalidateOnRefresh: true,
       });
 
-      // …and ONE scrubbed timeline that owns the whole sequence, from the approach
-      // ("top 80%") to the end of the pin. Every property is driven by a single
-      // timeline, so smoothed tweens can never fight and leave words stuck on screen.
+      // One scrubbed timeline from the start of the wipe to the end of the pin.
+      // Timeline time is measured in viewport heights of scroll.
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         scrollTrigger: {
           trigger: section,
-          start: "top 80%",
-          end: () => `+=${window.innerHeight * (APPROACH_VH + PIN_VH)}`,
+          start: "top bottom",
+          end: () => `+=${H() * (COVER_VH + PIN_VH)}`,
           scrub: 0.7,
           invalidateOnRefresh: true,
         },
       });
-
-      // 1. "Our Software" rises in as the section arrives (before the pin locks)
-      tl.fromTo(
-        q("[data-heading-word]"),
-        { yPercent: 115 },
-        { yPercent: 0, duration: 0.2, stagger: 0.04, ease: "power3.out" },
-        0.02,
-      );
-
       tl
-        // 1b. "Our Software" rolls out, "Beginning April 2027." rolls in
-        .fromTo(
-          q("[data-heading-word]"),
-          { yPercent: 0 },
-          { yPercent: -115, duration: 0.07, stagger: 0.025, ease: "power3.in", immediateRender: false },
-          0.28,
-        )
-        .fromTo(
-          q("[data-title-word]"),
-          { yPercent: 115 },
-          { yPercent: 0, duration: 0.08, stagger: 0.03, ease: "power3.out" },
-          0.34,
-        )
-        // 2. photos fly in from opposite corners, crossing the title
-        .fromTo(
-          cardA,
-          { x: () => -offX(), y: () => offY(), rotate: -14, autoAlpha: 0 },
-          { x: () => -W() * 0.14, y: () => H() * 0.1, rotate: -4, autoAlpha: 1, duration: 0.3, ease: "power2.out" },
-          0.46,
-        )
-        .fromTo(
-          cardB,
-          { x: () => offX(), y: () => -offY(), rotate: 14, autoAlpha: 0 },
-          { x: () => W() * 0.15, y: () => -H() * 0.12, rotate: 5, autoAlpha: 1, duration: 0.3, ease: "power2.out" },
-          0.5,
-        )
-        // 3. converge, then the software photo fills the screen
-        .to([cardA, cardB], { x: 0, y: 0, rotate: 0, duration: 0.12, ease: "power2.inOut" }, 0.81)
-        .to(cardB, { autoAlpha: 0, scale: 0.9, duration: 0.05 }, 0.91)
-        // Taller than the screen (clipped by the section): the next section's parallax
-        // nudges this layer down over the last --arc-depth of the pin, and the overflow
-        // keeps the photo covering the top edge instead of uncovering paper.
-        .to(cardA, { width: W, height: () => H() * 1.2, borderRadius: 0, duration: 0.14, ease: "power2.inOut" }, 0.93)
-        .to(q("[data-on-image]"), { color: "#f8f9f7", duration: 0.08 }, 0.97)
-        .to(q("[data-shade]"), { autoAlpha: 1, duration: 0.1 }, 0.99)
-        // 4. title leaves; paragraph brightens word by word
-        .to(q("[data-title]"), { yPercent: -35, autoAlpha: 0, filter: "blur(12px)", duration: 0.08 }, 1.05)
-        .to(q("[data-para]"), { autoAlpha: 1, duration: 0.03 }, 1.07)
-        .fromTo(q("[data-para-heading]"), { yPercent: 110 }, { yPercent: 0, duration: 0.05, ease: "power3.out" }, 1.07)
-        .fromTo(q("[data-para-rule]"), { scaleX: 0 }, { scaleX: 1, duration: 0.05, ease: "power2.out" }, 1.1)
-        .fromTo(
-          q("[data-word]"),
-          { opacity: 0.14 },
-          { opacity: 1, duration: 0.02, stagger: 0.17 / words.length },
-          1.12,
-        )
-        // 5. the CTA
-        .fromTo(q("[data-cta]"), { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.04 }, 1.3)
-        .to({}, { duration: HOLD });
+        // 2. giant word along the bottom, then the heading, rule and paragraph
+        .to(q("[data-schar]"), { yPercent: 0, duration: 0.45, stagger: 0.04, ease: "power3.out" }, 0.7)
+        .to(q("[data-sw-word]"), { yPercent: 0, duration: 0.25, stagger: 0.07, ease: "power3.out" }, 0.95)
+        .to(q("[data-sw-rule]"), { scaleX: 1, duration: 0.2, ease: "power2.out" }, 1.1)
+        .to(q("[data-sw-para]"), { autoAlpha: 1, duration: 0.1 }, 1.1)
+        .to(q("[data-word]"), { opacity: 1, duration: 0.06, stagger: 0.75 / words.length }, 1.2)
+        // 3. the CTA
+        .to(q("[data-cta]"), { autoAlpha: 1, y: 0, duration: 0.15, ease: "power2.out" }, 2.05);
+      // Hold on the finished scene; the next section's arc rises over the end of the pin.
+      tl.to({}, { duration: COVER_VH + PIN_VH - tl.duration() });
 
       // This pin is created after a state change, so re-order and re-measure.
       ScrollTrigger.sort();
       ScrollTrigger.refresh();
+      return () => {
+        pinST.kill();
+        wipe.scrollTrigger?.kill();
+        wipe.kill();
+      };
     },
     { scope: ref, dependencies: [story], revertOnUpdate: true },
   );
+
+  if (!story) {
+    return (
+      <section
+        ref={ref}
+        id="our-software"
+        aria-labelledby="our-software-title"
+        className="arc-prev surface-light relative bg-paper px-5 pt-24 md:px-10 md:pt-36"
+      >
+        {/* Inner wrapper: the next section's parallax moves this. */}
+        <div data-software-inner>
+          <StaticLayout />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
       ref={ref}
       id="our-software"
       aria-labelledby="our-software-title"
-      className={cx(
-        "arc-prev relative",
-        // Story: dark, continuing straight on from the Software/Services/Training triad.
-        story ? "surface-dark h-svh overflow-hidden bg-carbon-deep" : "surface-light bg-paper px-5 pt-24 md:px-10 md:pt-36",
-      )}
+      // Pulled up one screen so it slides over the last screen of the triad's pin
+      // (z-10 like the triad, later in the DOM, so it paints on top of it; the next
+      // section, also z-10, still paints over this one).
+      className="arc-prev surface-dark relative z-10 h-svh overflow-hidden bg-carbon-deep"
+      style={{ marginTop: `-${COVER_VH * 100}svh` }}
     >
       {/* Inner wrapper: the next section's parallax moves this, never the pinned section. */}
-      <div data-software-inner className={cx(story && "absolute inset-0")}>
-        <div className={cx(story ? "absolute inset-0" : "mx-auto grid max-w-[1600px] gap-14 lg:grid-cols-12 lg:gap-10")}>
-          {/* Photos (story: flying cards; static: the right-hand figure) */}
-          {story && (
-            <div
-              data-card="b"
-              className="absolute top-1/2 left-1/2 z-10 overflow-hidden rounded-[18px] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.55)]"
-            >
-              <Image src={gridImg} alt="" fill sizes="40vw" className="photo object-cover" />
-            </div>
-          )}
-          <figure
-            data-card={story ? "a" : undefined}
-            className={cx(
-              "overflow-hidden",
-              story
-                ? // surface-dark: once the photo fills the screen, the nav reads it as dark and turns white.
-                  "surface-dark absolute top-1/2 left-1/2 z-10 rounded-[18px] shadow-[0_30px_80px_-30px_rgb(0_0_0/0.55)]"
-                : "relative aspect-[3/4] bg-paper-warm lg:col-span-5 lg:col-start-8 lg:row-span-2 lg:mt-28",
-            )}
-          >
-            <Image
-              src={softwareImg}
-              alt="Greyscale desk at dusk: a monitor showing source code beside a desk lamp, laptop and keyboard"
-              fill
-              sizes={story ? "100vw" : "(min-width: 1024px) 40vw, 100vw"}
-              placeholder="blur"
-              className="photo object-cover"
-            />
-            {story && (
-              <div
-                data-shade
-                aria-hidden
-                className="invisible absolute inset-0 opacity-0 [background:linear-gradient(to_right,rgb(18_22_10/0.88),rgb(18_22_10/0.55)_55%,rgb(18_22_10/0.35)),linear-gradient(to_top,rgb(18_22_10/0.6),transparent_45%)]"
-              />
-            )}
-            {!story && (
-              <figcaption className="text-label absolute top-4 left-4 z-10 rounded-full bg-paper px-3 py-1.5 text-carbon">
-                FEST
-              </figcaption>
-            )}
-          </figure>
-
-          {/* Titles: "Our Software" first, then "Beginning April 2027." in the same spot */}
-          <div className={cx(story ? "pointer-events-none absolute inset-0 z-20" : "lg:col-span-7 lg:row-start-1 lg:pr-6")}>
-            <div
-              data-title
-              className={cx(story && "absolute inset-0 grid place-items-center px-5 text-center")}
-            >
-              <h2
-                id="our-software-title"
-                className={cx(
-                  "font-condensed uppercase",
-                  story
-                    ? "col-start-1 row-start-1 text-[clamp(3.5rem,13vw,15rem)] leading-[0.86] text-paper"
-                    : "text-[clamp(2.25rem,4.5vw,4rem)] leading-[0.9]",
-                )}
-              >
-                {story
-                  ? ourSoftware.title.split(" ").map((w, i) => (
-                      <Fragment key={w}>
-                        {i > 0 && " "}
-                        <span className="block overflow-hidden pb-[0.04em]">
-                          <span data-heading-word className="inline-block">
-                            {w}
-                          </span>
-                        </span>
-                      </Fragment>
-                    ))
-                  : ourSoftware.title}
-              </h2>
-
-              <p
-                data-on-image
-                className={cx(
-                  "font-condensed uppercase",
-                  story
-                    ? "col-start-1 row-start-1 text-[clamp(2.4rem,8.6vw,10rem)] leading-[0.88] text-paper"
-                    : "text-condensed-xl mt-6 lg:text-[clamp(3rem,6vw,7rem)]",
-                )}
-              >
-                {titleLines.map((line, l) => (
-                  <Fragment key={l}>
-                    {l > 0 && " "}
-                    <span className={cx("block", story && "overflow-hidden pb-[0.04em]")}>
-                      {story ? (
-                        <span data-title-word className="inline-block">
-                          {line.join(" ")}
-                        </span>
-                      ) : (
-                        line.join(" ")
-                      )}
-                    </span>
-                  </Fragment>
-                ))}
-              </p>
-            </div>
-          </div>
-
-          {/* Paragraph, CTA */}
+      <div data-software-inner className="absolute inset-0">
+        {/* Photo + shade. Taller than the screen: the next section's parallax nudges
+            this layer down over the end of the pin, and the overflow keeps the photo
+            covering the top edge. */}
+        <div data-sw-media className="absolute inset-x-0 -top-[10svh] h-[120svh] will-change-transform">
+          <Image
+            src={softwareImg}
+            alt="Greyscale desk at dusk: a monitor showing source code beside a desk lamp, laptop and keyboard"
+            fill
+            sizes="100vw"
+            placeholder="blur"
+            className="photo object-cover"
+          />
           <div
-            className={cx(
-              story
-                ? "pointer-events-none absolute inset-0 z-20"
-                : "max-w-[60ch] lg:col-span-7 lg:row-start-2",
-            )}
-          >
-            <div
-              data-para
-              className={cx(
-                story &&
-                  "invisible absolute top-1/2 left-5 w-[min(88vw,640px)] -translate-y-1/2 opacity-0 md:left-10 lg:w-[44vw] lg:max-w-[760px]",
-              )}
+            aria-hidden
+            className="absolute inset-0 [background:linear-gradient(to_right,rgb(18_22_10/0.9),rgb(18_22_10/0.62)_55%,rgb(18_22_10/0.4)),linear-gradient(to_top,rgb(18_22_10/0.75),transparent_55%)]"
+          />
+        </div>
+
+        {/* Giant word along the bottom edge */}
+        <p
+          aria-hidden
+          className="font-condensed absolute inset-x-0 -bottom-[0.14em] flex justify-center overflow-hidden text-[24vw] leading-[0.9] text-paper/[0.08] uppercase"
+        >
+          {"Software".split("").map((c, i) => (
+            <span key={i} data-schar className="inline-block">
+              {c}
+            </span>
+          ))}
+        </p>
+
+        {/* Heading + paragraph */}
+        <div className="absolute inset-0 flex flex-col justify-center px-5 pt-20 pb-8 md:px-10 lg:pt-24">
+          <div className="w-[min(88vw,640px)] lg:w-[44vw] lg:max-w-[760px]">
+            <h2
+              id="our-software-title"
+              className="font-condensed text-[clamp(2.5rem,6vw,6.5rem)] leading-[0.9] text-paper uppercase"
             >
-              {/* Visible heading for the paragraph (the section's h2 is the big title above). */}
-              {story && (
-                <div aria-hidden className="mb-5 md:mb-7">
-                  <span className="block overflow-hidden pb-[0.05em]">
-                    <span
-                      data-para-heading
-                      className="font-condensed inline-block text-[clamp(2.25rem,4.6vw,5rem)] leading-[0.9] text-paper uppercase"
-                    >
-                      {ourSoftware.title}
+              {ourSoftware.title.split(" ").map((w, i) => (
+                <Fragment key={w}>
+                  {i > 0 && " "}
+                  <span className="inline-block overflow-hidden pb-[0.05em] align-bottom">
+                    <span data-sw-word className="inline-block">
+                      {w}
                     </span>
                   </span>
-                  <span data-para-rule className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-5" />
-                </div>
-              )}
-              <p
-                className={cx(
-                  story
-                    ? "font-display text-[clamp(1.35rem,2.3vw,2.6rem)] leading-[1.16] text-paper"
-                    : "text-base leading-relaxed text-muted md:text-lg",
-                )}
-              >
-                {story
-                  ? words.map(({ w, hi }, i) => (
-                      <Fragment key={i}>
-                        {i > 0 && " "}
-                        <span data-word className={cx(hi && "text-fern")}>
-                          {w}
-                        </span>
-                      </Fragment>
-                    ))
-                  : ourSoftware.body}
-              </p>
-            </div>
-
-            {story ? (
-              <div data-cta className="pointer-events-auto invisible absolute right-5 bottom-[8%] opacity-0 md:right-10">
-                <PillLink href={ROUTES.fest} tone="paper" size="lg">
-                  {HOME.closing.buttons.explore.label}
-                </PillLink>
-              </div>
-            ) : (
-              <MonoLink href={ROUTES.fest} className="mt-8 text-carbon">
-                {HOME.closing.buttons.explore.label}
-              </MonoLink>
-            )}
+                </Fragment>
+              ))}
+            </h2>
+            <span data-sw-rule aria-hidden className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6" />
+            <p
+              data-sw-para
+              className="font-display mt-5 text-[clamp(1.35rem,2.3vw,2.6rem)] leading-[1.16] text-paper md:mt-7"
+            >
+              {words.map(({ w, hi }, i) => (
+                <Fragment key={i}>
+                  {i > 0 && " "}
+                  <span data-word className={cx(hi && "text-fern")}>
+                    {w}
+                  </span>
+                </Fragment>
+              ))}
+            </p>
           </div>
+        </div>
+
+        <div data-cta className="absolute right-5 bottom-[8%] z-10 md:right-10">
+          <PillLink href={ROUTES.fest} tone="paper" size="lg">
+            {HOME.closing.buttons.explore.label}
+          </PillLink>
         </div>
       </div>
     </section>

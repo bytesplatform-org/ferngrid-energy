@@ -11,7 +11,7 @@ import servicesImg from "@/public/images/our-services.webp";
 import trainingImg from "@/public/images/training-services.webp";
 
 /** Scroll distance (viewport heights) the story stays pinned for. */
-const PIN_VH = 5.8;
+const PIN_VH = 6.1;
 /**
  * Extra pinned distance (viewport heights) after the story ends: the footer
  * slides up over the finished scene like a card (see ClosingCta `stackOver`).
@@ -204,7 +204,7 @@ export function ServicesTraining() {
       gsap.set(q("[data-node]"), { scale: 0 });
       gsap.set(q("[data-tchar]"), { yPercent: 105 });
       gsap.set(q("[data-trn-step]"), { autoAlpha: 0.18, x: -16 });
-      gsap.set(q("[data-tri2]"), { autoAlpha: 0 });
+      gsap.set(q("[data-tri2]"), { yPercent: 100 });
       gsap.set(q("[data-tri2-word]"), { yPercent: 110 });
 
       // The pin on its own…
@@ -295,37 +295,30 @@ export function ServicesTraining() {
       });
       pin
         .addLabel("services", 3.4)
-        // 4. the scene recedes; training wipes up over it
-        .to(
-          q("[data-svc-content]"),
-          { yPercent: -12, autoAlpha: 0, duration: 0.4, ease: "power2.in" },
+        // 4. the site's usual section change, played inside the pin: a carbon
+        // panel with the rounded (arc) top rises over Our Services at full speed
+        // while the services scene drifts up at ~60% speed (the ArcSurface
+        // parallax), landing on the triad with only TRAINING lit (client mock-up).
+        .fromTo(
+          q("[data-tri2]"),
+          { yPercent: 100 },
+          { yPercent: 0, duration: 0.8, ease: "none" },
           3.7,
         )
-        .to(
-          q("[data-svc-scene]"),
-          {
-            scale: 0.86,
-            borderRadius: 28,
-            duration: 0.7,
-            ease: "power2.inOut",
-          },
-          3.8,
-        )
-        // darken with an overlay (a CSS filter here made Chrome paint the scene black)
         .fromTo(
-          q("[data-svc-dim]"),
-          { autoAlpha: 0 },
-          { autoAlpha: 0.6, duration: 0.7, ease: "power2.inOut" },
-          3.8,
+          q("[data-svc-scene]"),
+          { yPercent: 0 },
+          { yPercent: -60, duration: 0.8, ease: "none" },
+          3.7,
         )
-        // 4a. back to the triad, this time with only TRAINING lit (client mock-up)
-        .fromTo(q("[data-tri2]"), { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: "power2.out" }, 3.95)
-        .to(q("[data-tri2-word]"), { yPercent: 0, duration: 0.35, stagger: 0.06, ease: "power3.out" }, 3.95)
+        // the three words rise in, all lit, as the panel arrives (as in TriadIntro)
+        .to(q("[data-tri2-word]"), { yPercent: 0, duration: 0.45, stagger: 0.06, ease: "power3.out" }, 3.95)
+        // hold on all three, then only TRAINING stays lit
         .fromTo(
           q("[data-tri2-word='dim']"),
           { color: "#f8f9f7" },
           { color: TRIAD_DIM, duration: 0.2, ease: "power2.inOut" },
-          4.3,
+          4.65,
         )
         .fromTo(
           q("[data-trn-panel]"),
@@ -335,50 +328,50 @@ export function ServicesTraining() {
             duration: 0.8,
             ease: "power3.inOut",
           },
-          4.7,
+          5.05,
         )
         .fromTo(
           q("[data-trn-media]"),
           { yPercent: 18, scale: 1.15 },
           { yPercent: 0, scale: 1, duration: 0.9, ease: "power3.out" },
-          4.7,
+          5.05,
         )
         .to(
           q("[data-tchar]"),
           { yPercent: 0, duration: 0.5, stagger: 0.05, ease: "power3.out" },
-          5.2,
+          5.55,
         )
         .to(
           q("[data-trn-word]"),
           { yPercent: 0, duration: 0.3, stagger: 0.08, ease: "power3.out" },
-          5.45,
+          5.8,
         )
         .fromTo(
           q("[data-trn-rule]"),
           { scaleX: 0 },
           { scaleX: 1, duration: 0.3, ease: "power2.out" },
-          5.6,
+          5.95,
         )
         .to(
           trnLines,
           { yPercent: 0, duration: 0.3, stagger: 0.06, ease: "power3.out" },
-          5.65,
+          6.0,
         )
         // the offerings light up along a fern rail, like the service steps
         .fromTo(
           q("[data-trn-rail-fill]"),
           { scaleY: 0 },
           { scaleY: 1, duration: (FRAGMENTS.trainingOfferings.length - 1) * 0.3 + 0.2 },
-          6.2,
+          6.55,
         );
       q("[data-trn-step]").forEach((step, i) => {
-        const at = 6.2 + i * 0.3;
+        const at = 6.55 + i * 0.3;
         pin
           .to(step, { autoAlpha: 1, x: 0, duration: 0.18, ease: "power3.out" }, at)
           .to(step.querySelector("[data-node]"), { scale: 1, duration: 0.14, ease: "back.out(3)" }, at);
       });
       pin
-        .addLabel("training", 7.1)
+        .addLabel("training", 7.45)
         .to({}, { duration: 0.6 }); // hold on the finished scene
 
       // Approach: the three words rise as the section arrives, before the pin.
@@ -486,9 +479,15 @@ export function ServicesTraining() {
             {/* ---------------- Services scene ---------------- */}
             <div
               data-svc-scene
-              className="absolute inset-0 overflow-hidden will-change-transform"
+              className="absolute inset-0 will-change-transform"
             >
-              <div data-svc-clip className="absolute inset-0">
+              {/* The photo runs one arc-depth below the screen (like `arc-prev`):
+                  when the scene drifts up under the arc, the photo, not the
+                  carbon stage, shows beside the curve. */}
+              <div
+                data-svc-clip
+                className="absolute inset-x-0 top-0 bottom-[calc(-1*var(--arc-depth))]"
+              >
                 <div data-svc-media className="absolute inset-0">
                   <Image
                     src={servicesImg}
@@ -505,12 +504,6 @@ export function ServicesTraining() {
                   className="invisible absolute inset-0 opacity-0 [background:linear-gradient(to_right,rgb(18_22_10/0.9),rgb(18_22_10/0.72)_55%,rgb(18_22_10/0.55)),linear-gradient(to_top,rgb(18_22_10/0.6),transparent_50%)]"
                 />
               </div>
-
-              <div
-                data-svc-dim
-                aria-hidden
-                className="invisible absolute inset-0 z-30 bg-carbon-deep opacity-0"
-              />
 
               {/* Carbon plate with the word cut out of it: the photo shows only through SERVICES */}
               <svg
@@ -638,20 +631,32 @@ export function ServicesTraining() {
               </div>
             </div>
 
-            {/* ---------------- Triad again, TRAINING lit (between Services and Training) ---------------- */}
+            {/* ---------------- Triad again, TRAINING lit (between Services and Training) ----------------
+                Rises over the services scene with the site's curved section top: the
+                arc sits above the screen-sized panel, so the panel is the stage
+                height plus --arc-depth and ends with the arc just off screen. */}
             <div
               data-tri2
               aria-hidden
-              className="invisible absolute inset-0 flex flex-col items-center justify-center bg-carbon-deep px-5 pt-12 text-center opacity-0"
+              className="absolute inset-x-0 bottom-0 h-[calc(100%+var(--arc-depth))] will-change-transform"
             >
-              <div className="font-condensed leading-[0.88] uppercase" style={{ fontSize: TRIAD_SIZE }}>
-                {TRIAD.map((w, i) => (
-                  <p key={w} className="overflow-hidden pb-[0.04em]">
-                    <span data-tri2-word={i === 2 ? "lit" : "dim"} className="inline-block">
-                      {w}
-                    </span>
-                  </p>
-                ))}
+              <svg
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                className="absolute inset-x-0 top-0 block h-[var(--arc-depth)] w-full fill-carbon-deep"
+              >
+                <path d="M0 100 Q50 -100 100 100 Z" />
+              </svg>
+              <div className="absolute inset-x-0 bottom-0 top-[calc(var(--arc-depth)-1px)] flex flex-col items-center justify-center bg-carbon-deep px-5 pt-12 text-center">
+                <div className="font-condensed leading-[0.88] uppercase" style={{ fontSize: TRIAD_SIZE }}>
+                  {TRIAD.map((w, i) => (
+                    <p key={w} className="overflow-hidden pb-[0.04em]">
+                      <span data-tri2-word={i === 2 ? "lit" : "dim"} className="inline-block">
+                        {w}
+                      </span>
+                    </p>
+                  ))}
+                </div>
               </div>
             </div>
 
