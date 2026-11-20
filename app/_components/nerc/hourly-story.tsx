@@ -155,18 +155,27 @@ export function HourlyStory() {
         invalidateOnRefresh: true,
       });
 
+      // A line that is not on screen is also visibility:hidden as a whole. Mobile
+      // Safari does not always clip the masked words (it left white specks of the
+      // stacked lines under "Enough energy for every hour."); hidden can't leak.
+      gsap.set(q("[data-line]"), { autoAlpha: 0 });
       const lineIn = (i: number, at: number) =>
-        pin.to(
-          q(`[data-line='${i}'] [data-line-word]`),
-          { yPercent: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: "power3.out" },
-          at,
-        );
+        pin
+          .set(q(`[data-line='${i}']`), { autoAlpha: 1 }, at)
+          .to(
+            q(`[data-line='${i}'] [data-line-word]`),
+            { yPercent: 0, opacity: 1, duration: 0.25, stagger: 0.03, ease: "power3.out" },
+            at,
+          );
       const lineOut = (i: number, at: number) =>
-        pin.to(
-          q(`[data-line='${i}'] [data-line-word]`),
-          { yPercent: -140, opacity: 0, duration: 0.2, stagger: 0.015, ease: "power2.in" },
-          at,
-        );
+        pin
+          .to(
+            q(`[data-line='${i}'] [data-line-word]`),
+            { yPercent: -140, opacity: 0, duration: 0.2, stagger: 0.015, ease: "power2.in" },
+            at,
+          )
+          // as soon as the last word has left
+          .set(q(`[data-line='${i}']`), { autoAlpha: 0 }, ">");
 
       const pin = gsap.timeline({ defaults: { ease: "none" } });
       pin
@@ -377,7 +386,8 @@ export function HourlyStory() {
                   {l.split(" ").map((w, k) => (
                     <Fragment key={k}>
                       {k > 0 && " "}
-                      <span className="inline-block overflow-hidden pb-[0.08em] align-bottom">
+                      {/* deep enough for g/y descenders; the negative margin keeps the line spacing */}
+                      <span className="-mb-[0.14em] inline-block overflow-hidden pb-[0.22em] align-bottom">
                         <span data-line-word className="inline-block">
                           {w}
                         </span>
