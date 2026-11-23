@@ -167,7 +167,10 @@ export function CapacityEnergy() {
           </FadeUp>
 
           <figure className="lg:col-span-8">
-            <div className="relative aspect-[4/3] w-full sm:aspect-[1200/640]">
+            {/* Phones (client request): no capacity bar, so the chart is shifted left by the
+                bar's strip (X0 = 150 of 1200: 1/8 of the chart, 1/7 of the figure) and the
+                hourly bars start at the text edge. The aspect ratios keep the same height. */}
+            <div className="relative -ml-[calc(100%/7)] aspect-[32/21] w-[calc(800%/7)] sm:aspect-[15/7] md:ml-0 md:aspect-[1200/640] md:w-full">
               <svg
                 viewBox={`0 0 ${VB.w} ${VB.h}`}
                 preserveAspectRatio="none"
@@ -185,10 +188,10 @@ export function CapacityEnergy() {
                   strokeOpacity="0.35"
                   vectorEffect="non-scaling-stroke"
                 />
-                <line x1={CAP.x - 10} x2={CAP.x + CAP.w + 10} y1={BASE} y2={BASE} stroke="currentColor" strokeOpacity="0.35" vectorEffect="non-scaling-stroke" />
+                <line x1={CAP.x - 10} x2={CAP.x + CAP.w + 10} y1={BASE} y2={BASE} stroke="currentColor" strokeOpacity="0.35" vectorEffect="non-scaling-stroke" className="max-md:hidden" />
 
-                {/* capacity: a single point in time */}
-                <rect data-cap x={CAP.x} y={BASE - FULL} width={CAP.w} height={FULL} fill="currentColor" opacity="0.3" />
+                {/* capacity: a single point in time (hidden on phones: client request) */}
+                <rect data-cap x={CAP.x} y={BASE - FULL} width={CAP.w} height={FULL} fill="currentColor" opacity="0.3" className="max-md:hidden" />
 
                 {/* hour-by-hour bars */}
                 <g>
@@ -226,7 +229,7 @@ export function CapacityEnergy() {
                   the "Demand + operating reserves" tag) */}
               <span
                 data-cap-label
-                className="text-label absolute -translate-x-[8%] -translate-y-[calc(100%+1.6rem)] sm:-translate-x-1/2 sm:-translate-y-full text-center whitespace-nowrap text-paper lg:leading-[1.7]"
+                className="text-label absolute max-md:hidden -translate-x-[8%] -translate-y-[calc(100%+1.6rem)] sm:-translate-x-1/2 sm:-translate-y-full text-center whitespace-nowrap text-paper lg:leading-[1.7]"
                 style={{ left: pct(CAP.x + CAP.w / 2, VB.w), top: pct(BASE - FULL - 40, VB.h) }}
               >
                 {/* Two lines on desktop: on one line it ran into the paragraph beside the chart (Revision 2). */}
