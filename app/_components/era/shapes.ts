@@ -234,11 +234,9 @@ const transfers: ShapeDef = {
       fill(ctx, 1);
     }
   },
-  // Leaders never cross another label: two labels top left (each leader drops
-  // past the other), one top right, two staggered at the bottom.
+  // Leaders never cross another label: one top left, one top right, two
+  // staggered at the bottom.
   callouts: [
-    // on the A → B internal transfer
-    { label: "Internal transfer limits", ax: 106 / BOX, ay: N_A[1] / BOX, lx: 0.03, ly: 0.06, align: "left" },
     { label: "Interface", ax: IFACE_X / BOX, ay: 68 / BOX, lx: 0.03, ly: 0.14, align: "left" },
     { label: "Energy transfers", ax: 244 / BOX, ay: N_B[1] / BOX, lx: 0.95, ly: 0.06, align: "right" },
     // the two area labels sit on staggered rows so the long names never meet
