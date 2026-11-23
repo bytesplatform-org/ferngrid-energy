@@ -171,7 +171,7 @@ export function ScenariosStory() {
       className={cx("surface-light arc-next relative z-10", !story && "arc-prev")}
       style={story ? { paddingTop: "var(--arc-depth)", paddingBottom: "var(--arc-depth)" } : undefined}
     >
-      <ArcSurface tone="paper" parallax="[data-fh-inner]" />
+      <ArcSurface tone="paper" parallax="[data-fb-inner]" />
 
       {!story ? (
         <StaticLayout />

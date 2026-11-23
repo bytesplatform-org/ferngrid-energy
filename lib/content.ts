@@ -282,6 +282,17 @@ export const FEST_PAGE = {
   /** Revision 2 (client copy): the side text beside the four requirement boxes names all four. */
   requirementsIntro:
     "As of April 2027, NERC Standard BAL-007-1 will require Balancing Authorities to conduct Near Term Energy Reliability Assessments that account for forecasted or assumed hourly load profiles, generation operational limitations, energy transfers with other BAs, and known transfer limits.",
+  /**
+   * Revision 3 (client copy): the section after the hero — what FEST does, then
+   * its fuel tracking. The heading is ours (the client's slides have none).
+   */
+  benefits: {
+    heading: "Built for Near-Term ERAs",
+    dispatch:
+      "FEST performs Near-Term ERAs for Balancing Authorities by developing hourly generation dispatches that meet demand and maintain operating reserves while accounting for transmission limits, demand response, fuel availability, natural gas constraints, and generator temperature limits. The resulting dispatches are then assessed for potential Energy Emergencies in accordance with BAL-007-1.",
+    fuel: "Fuel scarcity is a critical consideration in Near-Term ERAs, yet most traditional capacity and resource adequacy software does not track inventoried fuel storage, such as oil and coal, as they deplete over time. FernGrid Energy’s Fuel and Energy Security Tool (FEST) is specifically built to fill this gap, tracking fuel inventory over time and modeling fuel deliveries to help Balancing Authorities accurately assess fuel availability.",
+    fuelDelivery: "Fuel delivery",
+  },
   /** Short labels for the four requirements around the Base Scenario (client copy). */
   requirementBoxes: [
     "Forecasted load profiles",
