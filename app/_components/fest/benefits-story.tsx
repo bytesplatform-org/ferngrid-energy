@@ -293,7 +293,9 @@ export function BenefitsStory() {
           {/* The section ends dark: the next section's arc rises over this strip. */}
           <div aria-hidden className="surface-dark absolute inset-x-0 bottom-0 h-[calc(var(--arc-depth)+2px)] bg-carbon-deep" />
 
-          <div data-stage className="pin-screen relative overflow-hidden">
+          {/* overflow-x only: when the next section's parallax pushes the content down,
+              it must stay visible beside that section's arc (not clipped to a black strip) */}
+          <div data-stage className="pin-screen relative overflow-x-clip">
             {/* Part 2's dark stage: clipped to a circle that grows out of FEST. */}
             <div data-fb-night aria-hidden className="absolute inset-0 bg-carbon-deep" />
 
