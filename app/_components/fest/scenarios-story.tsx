@@ -8,8 +8,12 @@ import { cx } from "../ui/primitives";
 
 const PIN_VH = 3.6;
 const APPROACH_VH = 0.8;
-const { accountFor, scenariosIntro, stressScenarios } = NERC.requirements;
-const { modelHeading, requirementBoxes, requirementsIntro } = FEST_PAGE;
+const { scenariosIntro, stressScenarios } = NERC.requirements;
+const { modelHeading, requirementBoxes } = FEST_PAGE;
+/** Revision 3: the paragraph's two halves, lit in turn — the base Scenario, then the stresses. */
+const SPLIT_AT = scenariosIntro.indexOf(" then considering");
+const PARTS = [scenariosIntro.slice(0, SPLIT_AT), scenariosIntro.slice(SPLIT_AT + 1)] as const;
+const DIM = 0.32;
 
 /* Diagram (0–100 box): the centre box, and the four boxes in the corners around it. */
 const CORNERS = [
@@ -39,7 +43,7 @@ function Heading() {
   );
 }
 
-/** Static layout (no JS / reduced motion): both parts, as text. */
+/** Static layout (no JS / reduced motion): the paragraph, and both diagrams as lists. */
 function StaticLayout() {
   return (
     <div className="mx-auto grid max-w-[1400px] gap-10 px-5 pb-28 md:px-10 lg:grid-cols-12">
@@ -47,13 +51,12 @@ function StaticLayout() {
         <Heading />
       </div>
       <div className="space-y-6 text-[15px] leading-relaxed text-carbon/80 md:text-lg lg:col-span-6 lg:col-start-7">
-        <p>{requirementsIntro}</p>
+        <p>{scenariosIntro}</p>
         <ul className="list-disc space-y-1 pl-6">
-          {accountFor.map((a) => (
+          {requirementBoxes.map((a) => (
             <li key={a}>{a}</li>
           ))}
         </ul>
-        <p>{scenariosIntro}</p>
         <ul className="list-disc space-y-1 pl-6">
           {stressScenarios.map((a) => (
             <li key={a}>{a}</li>
@@ -66,11 +69,12 @@ function StaticLayout() {
 
 /**
  * FEST page — Fuel and Energy Security Tool (FEST) and Near Term ERAs, pinned in
- * two parts under one heading (client layout):
- * 1. "As of April 2027… that account for": a Base Scenario in the middle, wired
- *    to the four requirements around it.
- * 2. The scenarios paragraph: the centre becomes "Contingency scenarios" and the
- *    four stresses take the corners, their pressure gauges filling.
+ * two parts under one heading and one paragraph (the scenarios paragraph, dimmed;
+ * each part lights its half — Revision 3, client request):
+ * 1. "…developed from expected system conditions": a Base Scenario in the middle,
+ *    wired to the four requirements around it.
+ * 2. "then considering other Scenarios…": the centre becomes "Contingency
+ *    scenarios" and the four stresses take the corners, their pressure gauges filling.
  */
 export function ScenariosStory() {
   const ref = useRef<HTMLElement>(null);
@@ -91,17 +95,16 @@ export function ScenariosStory() {
       if (!story || !section || !stage) return;
       const q = gsap.utils.selector(section);
 
-      const splits = q("[data-fs-para]").map((el) => SplitText.create(el, { type: "lines", mask: "lines" }));
-      splits.forEach((s) =>
-        gsap.set(s.masks, { paddingBottom: "0.2em", marginBottom: "-0.2em", paddingTop: "0.05em", marginTop: "-0.05em" }),
-      );
-      const [introLines, scenLines] = splits.map((s) => s.lines);
+      const split = SplitText.create(q("[data-fs-para]")[0], { type: "lines", mask: "lines" });
+      gsap.set(split.masks, { paddingBottom: "0.2em", marginBottom: "-0.2em", paddingTop: "0.05em", marginTop: "-0.05em" });
+      // (a half can be split across lines into several pieces: select them all)
+      const part = (i: number) => q(`[data-fs-part='${i}']`);
 
       // Starting states (animated nodes are inner elements; their wrappers own
       // the centring translate, which GSAP would otherwise overwrite).
       gsap.set(q("[data-fs-word]"), { yPercent: 110 });
-      gsap.set([...introLines, ...scenLines], { yPercent: 110 });
-      gsap.set(q("[data-fs-scen]"), { autoAlpha: 0 });
+      gsap.set(split.lines, { yPercent: 110 });
+      gsap.set(q("[data-fs-part]"), { opacity: DIM });
       gsap.set(q("[data-fs-centre]"), { scale: 0.6, autoAlpha: 0 });
       gsap.set(q("[data-fs-centre-b]"), { autoAlpha: 0, yPercent: 30 });
       gsap.set(q("[data-fs-wire]"), { strokeDashoffset: 1 });
@@ -118,15 +121,15 @@ export function ScenariosStory() {
 
       const pin = gsap
         .timeline({ defaults: { ease: "none" } })
-        // Part 1 — the Base Scenario, wired to the four requirements
+        // Part 1 — the first half lights; the Base Scenario, wired to the four requirements
+        .to(part(0), { opacity: 1, duration: 0.2 }, 0)
         .to(q("[data-fs-centre]"), { scale: 1, autoAlpha: 1, duration: 0.3, ease: "back.out(2)" }, 0.05)
         .to(q("[data-fs-wire]"), { strokeDashoffset: 0, duration: 0.3, stagger: 0.08, ease: "power2.inOut" }, 0.3)
         .to(q("[data-fs-req]"), { scale: 1, autoAlpha: 1, duration: 0.3, stagger: 0.12, ease: "back.out(2.2)" }, 0.5)
-        // Part 2 — the copy swaps; the centre becomes "Contingency scenarios";
-        // the requirements give way to the four stresses
-        .to(introLines, { yPercent: -110, duration: 0.25, stagger: 0.03, ease: "power2.in" }, 1.55)
-        .to(q("[data-fs-scen]"), { autoAlpha: 1, duration: 0.05 }, 1.75)
-        .to(scenLines, { yPercent: 0, duration: 0.3, stagger: 0.04, ease: "power3.out" }, 1.8)
+        // Part 2 — the second half lights instead; the centre becomes "Contingency
+        // scenarios"; the requirements give way to the four stresses
+        .to(part(0), { opacity: DIM, duration: 0.2 }, 1.55)
+        .to(part(1), { opacity: 1, duration: 0.2 }, 1.65)
         .to(q("[data-fs-req]"), { scale: 0.6, autoAlpha: 0, duration: 0.25, stagger: 0.05, ease: "power2.in" }, 1.55)
         .to(q("[data-fs-centre-a]"), { autoAlpha: 0, yPercent: -30, duration: 0.2, ease: "power2.in" }, 1.7)
         .to(q("[data-fs-centre-b]"), { autoAlpha: 1, yPercent: 0, duration: 0.25, ease: "power3.out" }, 1.85)
@@ -148,14 +151,14 @@ export function ScenariosStory() {
         })
         .to(q("[data-fs-word]"), { yPercent: 0, duration: approach * 0.5, stagger: approach * 0.05, ease: "power3.out" }, approach * 0.15)
         .fromTo(q("[data-fs-rule]"), { scaleX: 0 }, { scaleX: 1, duration: approach * 0.4 }, approach * 0.4)
-        .to(introLines, { yPercent: 0, duration: approach * 0.4, stagger: approach * 0.05, ease: "power3.out" }, approach * 0.45)
+        .to(split.lines, { yPercent: 0, duration: approach * 0.4, stagger: approach * 0.05, ease: "power3.out" }, approach * 0.45)
         .add(pin, approach);
 
       ScrollTrigger.sort();
       ScrollTrigger.refresh();
       return () => {
         pinST.kill();
-        splits.forEach((s) => s.revert());
+        split.revert();
       };
     },
     { scope: ref, dependencies: [story], revertOnUpdate: true },
@@ -182,18 +185,16 @@ export function ScenariosStory() {
             data-fs-inner
             className="absolute inset-0 flex flex-col gap-4 px-5 pt-[clamp(5rem,11svh,7.5rem)] pb-6 md:px-10 lg:grid lg:grid-cols-12 lg:items-center lg:gap-10 lg:pb-10"
           >
-            {/* Copy (left): one heading; the paragraph swaps between the parts */}
+            {/* Copy (left): one heading, one paragraph whose halves light in turn */}
             <div className="flex flex-col justify-center lg:col-span-5">
               <Heading />
               <span data-fs-rule aria-hidden className="mt-4 block h-[2px] w-20 origin-left bg-fern md:mt-6" />
-              <div className="mt-5 grid text-[14px] leading-relaxed text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)]">
-                <p data-fs-para className="col-start-1 row-start-1">
-                  {requirementsIntro}
-                </p>
-                <p data-fs-para data-fs-scen className="col-start-1 row-start-1">
-                  {scenariosIntro}
-                </p>
-              </div>
+              <p
+                data-fs-para
+                className="mt-5 text-[14px] leading-relaxed text-carbon/80 md:mt-7 md:text-[clamp(0.95rem,1.15vw,1.15rem)]"
+              >
+                <span data-fs-part="0">{PARTS[0]}</span> <span data-fs-part="1">{PARTS[1]}</span>
+              </p>
             </div>
 
             {/* Diagram (right) */}
