@@ -12,7 +12,7 @@ export type NavItem = { label: string; href: string };
 export const SITE = {
   name: "FernGrid Energy LLC",
   shortName: "FernGrid Energy",
-  url: "https://ferngrid-energy.com",
+  url: "https://www.ferngrid-energy.com",
   email: "help@ferngrid-energy.com",
   phone: "518-227-0290",
   phoneHref: "tel:+15182270290",
