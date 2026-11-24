@@ -28,3 +28,10 @@ Retain qualifying friction even if it is later fixed or worked around; record th
 Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
 
 <!-- END:nextjs-agent-feedback -->
+
+## Sitemap
+
+`app/sitemap.ts` builds `/sitemap.xml` by scanning `app/` for `page.tsx` files, so a new static page is listed automatically. Two cases need a manual edit in that file:
+
+- A page that should not be indexed (thank-you pages, drafts): add its route to `EXCLUDE`.
+- A dynamic route (`[slug]`): the scan skips it, so add each of its URLs to `EXTRA_URLS` (or generate them there from the same data the page uses).
